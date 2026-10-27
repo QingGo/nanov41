@@ -105,9 +105,10 @@ Measured on macOS (Python 3.13.2, torch 2.9.0, CPU unless noted):
 | CPU training smoke (tiny_all_topk, 100 steps) | **PASS**: loss **6.2230 → 5.3106** in 4.8 s |
 | `d8` / `d12` configs | build and step on CPU; parameter counts match the docs |
 | MPS device path | `parity.py --device mps` → **ALL PASS** |
+| CUDA parity (re-checked 2026-10-28, RTX 5090, torch 2.12.1+cu130) | **ALL PASS** for fp32 and bf16: T1 max diff **2.384e-07** / **1.788e-07**, T2 **0.0**; logs in [`runs/`](runs/) |
 
-Benchmark numbers on an RTX 5090 are in [`docs/benchmarks.md`](docs/benchmarks.md)
-(raw evidence in [`runs/`](runs/)).
+Benchmark numbers on an RTX 5090 (including re-validated NVFP4/FP8 experiment numbers) are in
+[`docs/benchmarks.md`](docs/benchmarks.md) (raw evidence in [`runs/`](runs/)).
 
 ## Known limitations (W2+)
 
@@ -118,9 +119,11 @@ Benchmark numbers on an RTX 5090 are in [`docs/benchmarks.md`](docs/benchmarks.m
   many exact zeros; `topk` tie order then depends on the candidate count (prefix length). This can
   make full-sequence vs incremental prefill differ at those ties (`T1b` probes it: 1 position above
   tolerance). A canonical tie-break is planned for W2.
-- **CUDA bf16 parity:** bf16 T1 differences up to ~7e-2 were observed on a 4090 (Hyper-Connections
-  amplify GEMM reduction-order noise). Strict causality checks are done in fp32; a HC-aware
-  bf16 tolerance or `hc_mult=1` control is planned for W2.
+- **CUDA bf16 parity:** bf16 T1 differences up to ~7e-2 were observed on a 4090 during W2
+  (Hyper-Connections amplify GEMM reduction-order noise). Re-checked on 2026-10-28 on an RTX 5090
+  (torch 2.12.1+cu130): **T1/T2/T3 pass in both fp32 and bf16**. The informational T1b indexer
+  tie probe still shows 6.6e-2 on CUDA because top-k tie order is device-dependent; a canonical
+  tie-break is still a W2 item.
 - `original_seq_len=0` in the nano configs → YaRN is disabled (short-context training only).
 - If `tilelang`/`triton`/TileKernels are absent, fused-kernel modules silently fall back to torch
   (or stay unavailable); `import nanov41` never requires them.

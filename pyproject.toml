@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "nanov41"
-version = "0.2.0"
+version = "0.2.1"
 description = "A nano-scale trainable port of the DeepSeek-V4.1-Flash architecture, with a parity harness against the official reference implementation."
 readme = "README.md"
 requires-python = ">=3.10"

@@ -58,6 +58,10 @@ infra-refs/
 !/runs/README.md
 !/runs/p0_b8.json
 !/runs/p1_b16_s512.json
+!/runs/p0_b8_5090_rerun_2026-10-28.json
+!/runs/tl_kernels_5090_2026-10-28.json
+!/runs/parity_cuda_fp32_5090.log
+!/runs/parity_cuda_bf16_5090.log
 
 # ========== internal / one-off material: default ignored, whitelist only ==========
 # Development docs: milestones, experiment notes, ops runbooks are internal by default.

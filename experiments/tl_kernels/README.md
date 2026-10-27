@@ -39,20 +39,21 @@ layer = NVFP4Linear(in_features=384, out_features=384)
 Constraints (inherited from the TileLang example): `K` is padded to a multiple of 256;
 `M` and `N` must be multiples of 128; the FP4 GEMM uses 128×128×256 tiles.
 
-## Measured numbers (internal run — not re-validated by this public test suite)
+## Measured numbers (re-validated 2026-10-28)
 
-Environment: RTX 5090 (sm_120), torch 2.12.1+cu130, tilelang 0.1.15, 2026-10-21.
-These numbers come from the internal development log; the GPU tests here are skipped
-without an sm_120 GPU, and no performance claim is made for other versions/hardware.
-Re-run `pytest experiments/tl_kernels/tests` on your GPU to validate correctness.
+Environment: fresh RTX 5090 (sm_120), torch 2.12.1+cu130, tilelang 0.1.15. All 13 GPU tests in
+this directory passed, and `python experiments/tl_kernels/bench.py` produced the numbers below
+(raw JSON: [`runs/tl_kernels_5090_2026-10-28.json`](../../runs/tl_kernels_5090_2026-10-28.json)).
+Absolute timings vary by a few percent between runs; re-run the script for your own hardware.
 
 | Item | Result |
 |---|---|
-| NVFP4 GEMM kernel-only, head shape 8192×129280×384→pad512 | ≈1.66 ms, ≈652 TFLOPS (bf16 baseline ≈215.7 TFLOPS, ≈3.0×) |
-| Fused quantizer, [129280, 512] weight | ≈0.54 ms vs ≈9.43 ms for the PyTorch quantizer (≈17.4×); scale words 100% identical, packed bytes ≈94% identical (E2M1 ties) |
-| Quantize/dequantize agreement | max abs diff ≈1.4e-2 (expected FP4 rounding) |
-| FP8 cast, [8192, 129280] | ≈2.12 ms vs ≈4.90 ms for `(x*inv).to(fp8)` (≈2.3×); bytes 100% equal |
-| FP4 forward + FP8 backward (head) | ≈2.2× vs bf16 (≈11.3 ms vs ≈24.6 ms) |
+| NVFP4 GEMM kernel-only, head shape 8192×129280×384→pad512 | **1.66–1.72 ms, 632–655 TFLOPS**, ≈2.2–2.3× vs bf16 (`a @ b.T`, 3.73 ms) |
+| Fused quantizer, [129280, 512] weight | **0.53–0.54 ms** vs 9.42 ms for the PyTorch quantizer (**17.3–17.7×**) |
+| Quantizer agreement vs PyTorch | scale words **100% identical**, packed bytes **93.97%** identical (E2M1 ties), dequant max abs diff **1.37e-2** |
+| NVFP4 GEMM vs dequantized-operand reference (small shape) | max abs diff **0.0** (bit-identical) |
+| FP8 cast, [8192, 129280] | **2.10 ms** vs 4.84 ms for the bf16-math PyTorch path (**2.3×**; strict fp32 path 13.2 ms → 6.3×); bytes **100% equal** |
+| FP4 forward + FP8 backward (head) | ≈2.2× vs bf16 — from the internal log, **not** re-measured in this validation run |
 
 ## Attribution
 

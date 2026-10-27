@@ -1,0 +1,45 @@
+{
+  "device": "NVIDIA GeForce RTX 5090",
+  "capability": [
+    12,
+    0
+  ],
+  "torch": "2.12.1+cu130",
+  "cuda": "13.0",
+  "tilelang": "0.1.15",
+  "correctness": {
+    "shape": [
+      8192,
+      384
+    ],
+    "quant_scale_words_identical_pct": 100.0,
+    "quant_packed_bytes_identical_pct": 93.97,
+    "dequant_max_abs_diff": 0.013671875,
+    "gemm_max_abs_diff": 0.0,
+    "gemm_rel_diff": 0.0,
+    "fp8_cast_bytes_identical_pct": 100.0,
+    "fp8_row_cast_bytes_identical_pct": 100.0
+  },
+  "bench": {
+    "head_shape": [
+      8192,
+      129280,
+      384,
+      512
+    ],
+    "bf16_ms": 3.732,
+    "nvfp4_gemm_kernel_only_ms": 1.716,
+    "nvfp4_fwd_with_quant_a_ms": 1.841,
+    "head_gemm_tflops": 632.0,
+    "gemm_speedup_vs_bf16": 2.175,
+    "fwd_with_quant_speedup_vs_bf16": 2.027,
+    "torch_quantizer_ms": 9.416,
+    "fused_quantizer_ms": 0.532,
+    "quantizer_speedup": 17.71,
+    "fp8_cast_ms": 2.101,
+    "fp8_cast_torch_bf16_ms": 4.841,
+    "fp8_cast_torch_fp32_ms": 13.226,
+    "fp8_cast_speedup_vs_bf16_path": 2.3,
+    "fp8_cast_speedup_vs_fp32_path": 6.3
+  }
+}

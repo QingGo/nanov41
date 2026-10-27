@@ -1,0 +1,244 @@
+{
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.12.1+cu130",
+  "b": 8,
+  "seq": 1024,
+  "tokens_per_step": 8192,
+  "step_ms": 275.64,
+  "tokens_per_s": 29719.8,
+  "flops_per_step": 3472.59,
+  "achieved_tflops": 12.6,
+  "bf16_mfu_pct": 6.01,
+  "precision_mfu_pct": 6.01,
+  "peak_used": "bf16_5090",
+  "ce_mode": "shift",
+  "head_mode": "fused",
+  "moe_mode": "loop",
+  "device_busy_ms": 150.39,
+  "device_busy_pct": 54.6,
+  "gap_ms": 125.25,
+  "fwd_total_ms": 135.19,
+  "bwd_total_ms": 9.7,
+  "ce_fwd_ms": 5.5,
+  "opt_ms": 0.0,
+  "fwd_extra_ms": 71.21,
+  "bwd_extra_ms": -62.48,
+  "kernel_launches_per_step": 18361,
+  "top_kernels": [
+    [
+      "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native:",
+      21.39
+    ],
+    [
+      "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl<at::native::Binary",
+      11.45
+    ],
+    [
+      "void at::native::reduce_kernel<128, 4, at::native::ReduceOp<float, at::native::func_wrappe",
+      10.74
+    ],
+    [
+      "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda",
+      9.66
+    ],
+    [
+      "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_128x256_32x3_tn_align8",
+      7.7
+    ],
+    [
+      "void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kernel_cuda",
+      7.19
+    ],
+    [
+      "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::func_wrappe",
+      5.8
+    ],
+    [
+      "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<float>, std:",
+      5.41
+    ],
+    [
+      "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFunctor<float, float, ",
+      5.23
+    ],
+    [
+      "void at::native::",
+      5.16
+    ],
+    [
+      "void gemmSN_TN_kernel<float, 128, 16, 2, 4, 8, 9, false, cublasGemvTensorStridedBatched<fl",
+      5.15
+    ],
+    [
+      "void at::native::vectorized_gather_kernel<16, long>",
+      4.46
+    ],
+    [
+      "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native:",
+      4.26
+    ],
+    [
+      "void magma_sgemmEx_kernel<float, float, float, false, true, 6, 4, 6, 3, 4>",
+      3.99
+    ],
+    [
+      "void gemmSN_NN_kernel<float, 128, 2, 4, 8, 4, 4, false, cublasGemvTensorStridedBatched<flo",
+      3.68
+    ]
+  ],
+  "rows": [
+    {
+      "scope": "FWD:head",
+      "category": "head",
+      "kind": "FWD",
+      "ms": 0.0,
+      "share": 0.0,
+      "tflops": 0.0,
+      "prec_mfu": 0.0,
+      "cpu_ms": 0.06,
+      "count": 3
+    },
+    {
+      "scope": "BWD:head",
+      "category": "head",
+      "kind": "BWD",
+      "ms": 0.0,
+      "share": 0.0,
+      "tflops": 0.0,
+      "prec_mfu": 0.0,
+      "cpu_ms": 0.04,
+      "count": 3
+    },
+    {
+      "scope": "FWD:moe",
+      "category": "moe",
+      "kind": "FWD",
+      "ms": 31.78,
+      "share": 11.5,
+      "tflops": 8.3,
+      "prec_mfu": 3.9,
+      "cpu_ms": 0.0,
+      "count": 72
+    },
+    {
+      "scope": "BWD:moe",
+      "category": "moe",
+      "kind": "BWD",
+      "ms": 42.53,
+      "share": 15.4,
+      "tflops": 18.5,
+      "prec_mfu": 8.8,
+      "cpu_ms": 0.0,
+      "count": 72
+    },
+    {
+      "scope": "FWD:attn",
+      "category": "attn",
+      "kind": "FWD",
+      "ms": 32.2,
+      "share": 11.7,
+      "tflops": 2.1,
+      "prec_mfu": 1.0,
+      "cpu_ms": 0.0,
+      "count": 36
+    },
+    {
+      "scope": "BWD:attn",
+      "category": "attn",
+      "kind": "BWD",
+      "ms": 29.64,
+      "share": 10.8,
+      "tflops": 6.8,
+      "prec_mfu": 3.2,
+      "cpu_ms": 0.0,
+      "count": 36
+    },
+    {
+      "scope": "FWD:embed",
+      "category": "embed",
+      "kind": "FWD",
+      "ms": 0.01,
+      "share": 0.0,
+      "tflops": 0.0,
+      "prec_mfu": 0.0,
+      "cpu_ms": 0.0,
+      "count": 3
+    },
+    {
+      "scope": "BWD:embed",
+      "category": "embed",
+      "kind": "BWD",
+      "ms": 0.0,
+      "share": 0.0,
+      "tflops": 0.0,
+      "prec_mfu": 0.0,
+      "cpu_ms": 0.03,
+      "count": 3
+    },
+    {
+      "scope": "FWD:ce_fwd",
+      "category": "ce_fwd",
+      "kind": "FWD",
+      "ms": 5.5,
+      "share": 2.0,
+      "tflops": null,
+      "prec_mfu": null,
+      "cpu_ms": 0.0,
+      "count": 3
+    },
+    {
+      "scope": "X:opt",
+      "category": "opt",
+      "kind": "X",
+      "ms": 0.0,
+      "share": 0.0,
+      "tflops": null,
+      "prec_mfu": null,
+      "cpu_ms": 0.03,
+      "count": 3
+    }
+  ],
+  "fwd_extra_share_pct": 25.8,
+  "bwd_extra_share_pct": -22.7,
+  "gap_share_pct": 45.4,
+  "instrumented": [
+    "inner.embed",
+    "inner.head",
+    "inner.layers.0.attn",
+    "inner.layers.0.ffn",
+    "inner.layers.0.ffn_norm",
+    "inner.layers.1.attn",
+    "inner.layers.1.ffn",
+    "inner.layers.1.ffn_norm",
+    "inner.layers.10.attn",
+    "inner.layers.10.ffn",
+    "inner.layers.10.ffn_norm",
+    "inner.layers.11.attn",
+    "inner.layers.11.ffn",
+    "inner.layers.11.ffn_norm",
+    "inner.layers.2.attn",
+    "inner.layers.2.ffn",
+    "inner.layers.2.ffn_norm",
+    "inner.layers.3.attn",
+    "inner.layers.3.ffn",
+    "inner.layers.3.ffn_norm",
+    "inner.layers.4.attn",
+    "inner.layers.4.ffn",
+    "inner.layers.4.ffn_norm",
+    "inner.layers.5.attn",
+    "inner.layers.5.ffn",
+    "inner.layers.5.ffn_norm",
+    "inner.layers.6.attn",
+    "inner.layers.6.ffn",
+    "inner.layers.6.ffn_norm",
+    "inner.layers.7.attn",
+    "inner.layers.7.ffn",
+    "inner.layers.7.ffn_norm",
+    "inner.layers.8.attn",
+    "inner.layers.8.ffn",
+    "inner.layers.8.ffn_norm",
+    "inner.layers.9.attn",
+    "inner.layers.9.ffn",
+    "inner.layers.9.ffn_norm"
+  ]
+}

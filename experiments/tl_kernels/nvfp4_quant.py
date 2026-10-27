@@ -20,8 +20,6 @@ PyTorch quantizer, with 100% identical scale words and ~94% identical packed byt
 (remaining bytes differ only at E2M1 rounding ties). See ``README.md``.
 """
 
-from __future__ import annotations
-
 import torch
 import torch.nn.functional as F
 

@@ -40,23 +40,40 @@ Absolute peak used for the MFU denominator: **bf16, 5090 vendor peak (165.2 TFLO
 figures should be compared between variants measured in the same interleaved run
 (`tools/ab_bench.py`), not across sessions.
 
+**Host-CPU sensitivity (re-run 2026-10-28).** A fresh run of the same command on a different 5090
+host gave **275.6 ms/step, 29,720 tok/s, device-busy 54.6%** (vs 236.93 ms / 34,576 tok/s /
+85.1% above): the step is CPU-launch bound, so the host CPU (and its contention) changes the result
+by ~15%. Both runs are kept as evidence — [`runs/p0_b8.json`](../runs/p0_b8.json) (original) and
+[`runs/p0_b8_5090_rerun_2026-10-28.json`](../runs/p0_b8_5090_rerun_2026-10-28.json) (re-run) —
+and numbers should only be compared within one session.
+
 ## 3. sm_120 NVFP4 / FP8 experiments (optional, experimental)
 
 [`experiments/tl_kernels/`](../experiments/tl_kernels/) contains optional TileLang kernels for
 NVFP4 block-scaled GEMM and fused FP8 casts on sm_120 (RTX 5090). They are **not** used by
-`parity.py` / `train.py` and are not covered by the performance CI. The numbers below are from the
-internal development run (RTX 5090, torch 2.12.1+cu130, tilelang 0.1.15) and have **not been
-re-validated in this checkout**; treat them as indicative and re-run the GPU tests/benchmarks
-yourself before relying on them. Correctness tests for the pure-torch host quantizer run on CPU
-(`pytest experiments/tl_kernels/tests`); GPU tests skip without sm_120 + TileLang.
+`parity.py` / `train.py` and are not covered by the performance CI. Correctness tests for the
+pure-torch host quantizer run on CPU (`pytest experiments/tl_kernels/tests`); GPU tests skip
+without sm_120 + TileLang.
 
-| Item | Result (internal run) |
+**Re-validated on 2026-10-28** on a fresh RTX 5090 (torch 2.12.1+cu130, tilelang 0.1.15):
+all 13 GPU tests passed, and `python experiments/tl_kernels/bench.py` produced the numbers below
+(raw: [`runs/tl_kernels_5090_2026-10-28.json`](../runs/tl_kernels_5090_2026-10-28.json)). Absolute
+timings vary by a few percent between runs.
+
+| Item | Re-validated result (2026-10-28) |
 |---|---|
-| NVFP4 GEMM kernel-only (head shape 8192×129280×384→pad 512) | ≈1.66 ms, ≈652 TFLOPS (bf16 baseline ≈215.7 TFLOPS, ≈3.0×) |
-| Fused TileLang NVFP4 quantizer ([129280, 512] weight) | ≈0.54 ms vs ≈9.43 ms for the PyTorch quantizer (≈17.4×); scale words 100% identical, packed bytes ≈94% (E2M1 ties) |
-| Quantize/dequantize agreement | max abs diff ≈1.4e-2 (expected FP4 rounding) |
-| Fused FP8 cast ([8192, 129280]) | ≈2.12 ms vs ≈4.90 ms for `(x*inv).to(fp8)` (≈2.3×); bytes 100% equal |
-| FP4 forward + FP8 backward (head) | ≈2.2× vs bf16 (≈11.3 ms vs ≈24.6 ms) |
+| NVFP4 GEMM kernel-only (head shape 8192×129280×384→pad 512) | **1.66–1.72 ms, 632–655 TFLOPS**, ≈2.2–2.3× vs bf16 (`a @ b.T`, 3.73 ms) |
+| Fused TileLang NVFP4 quantizer ([129280, 512] weight) | **0.53–0.54 ms** vs 9.42 ms for the PyTorch quantizer (**17.3–17.7×**) |
+| Quantizer agreement vs PyTorch | scale words **100% identical**, packed bytes **93.97%** identical (E2M1 rounding ties), dequant max abs diff **1.37e-2** |
+| NVFP4 GEMM vs dequantized reference (small shape) | max abs diff **0.0** (bit-identical to the dequantized-operand matmul) |
+| Fused FP8 cast ([8192, 129280]) | **2.10 ms** vs 4.84 ms for the bf16-math PyTorch path (**2.3×**; strict fp32 math path: 13.2 ms, 6.3×); bytes **100% equal** |
+| FP4 forward + FP8 backward (head) | ≈2.2× vs bf16 — this end-to-end number is from the internal log and was **not** re-measured here |
+
+CUDA parity was also re-checked on the same instance: `parity.py --dtype float32` and
+`--dtype bf16` both print **ALL PASS** (T1 max diff 2.384e-07 / 1.788e-07; T2 0.0). The
+informational T1b indexer tie probe shows 6.6e-02 on CUDA (device-dependent tie order; see the
+README limitations). Logs: [`runs/parity_cuda_fp32_5090.log`](../runs/parity_cuda_fp32_5090.log),
+[`runs/parity_cuda_bf16_5090.log`](../runs/parity_cuda_bf16_5090.log).
 
 ## 4. Reproducing
 

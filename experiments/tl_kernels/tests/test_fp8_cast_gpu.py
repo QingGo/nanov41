@@ -27,7 +27,8 @@ def test_cast_fp8_matches_torch_scalar_scale() -> None:
     x = (torch.randn(m, n, device="cuda", dtype=torch.bfloat16) * 0.5).contiguous()
     scale = F.tensor_amax(x) / 448.0
     out = F.cast_fp8(x, scale)
-    ref = (x * (1.0 / scale)).to(torch.float8_e4m3fn)
+    # float32 math: bf16 * a 0-dim float32 tensor would stay bf16 in PyTorch
+    ref = (x.float() * (1.0 / scale)).to(torch.float8_e4m3fn)
     eq = (out.view(torch.uint8) == ref.view(torch.uint8)).float().mean().item()
     assert eq == 1.0, f"only {eq:.4f} of bytes match the PyTorch cast"
 
@@ -37,8 +38,8 @@ def test_cast_fp8_row_matches_torch_row_scale() -> None:
     torch.manual_seed(0)
     m, n = 256, 512
     x = (torch.randn(m, n, device="cuda", dtype=torch.bfloat16) * 0.5).contiguous()
-    scale_row = (x.abs().amax(dim=1) / 448.0).clamp_min(1e-8)
+    scale_row = (x.float().abs().amax(dim=1) / 448.0).clamp_min(1e-8)
     out = F.cast_fp8_row(x, scale_row)
-    ref = (x / scale_row[:, None]).to(torch.float8_e4m3fn)
+    ref = (x.float() / scale_row[:, None]).to(torch.float8_e4m3fn)
     eq = (out.view(torch.uint8) == ref.view(torch.uint8)).float().mean().item()
     assert eq == 1.0, f"only {eq:.4f} of bytes match the PyTorch row cast"

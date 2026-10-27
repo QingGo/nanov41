@@ -25,8 +25,6 @@ Training use: FP4 forward + BF16 STE backward (one FP4 GEMM of three matmuls for
 linear layer). All-FP4 backward (also quantizing dC) is a later experiment.
 """
 
-from __future__ import annotations
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F

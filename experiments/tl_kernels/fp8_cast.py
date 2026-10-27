@@ -11,8 +11,6 @@ the public test suite here): ~2.12 ms vs 4.90 ms for the PyTorch cast (2.3x); se
 ``README.md``. Requires TileLang + CUDA (sm_120 was the tested target).
 """
 
-from __future__ import annotations
-
 import torch
 
 try:  # TileLang is optional; this module is importable without it.
