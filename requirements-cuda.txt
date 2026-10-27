@@ -1,0 +1,14 @@
+# Optional extras for the CUDA / fused-kernel paths.
+# Not needed for `parity.py`, `train.py` or `import nanov41` on CPU/Mac.
+-r requirements.txt
+
+# Fused kernel modules under nanov41/ (automatic torch fallback when missing)
+triton>=3.3
+tilelang>=0.1.15
+
+# Official inference helpers in ref/ (ref/convert.py, ref/generate.py);
+# weights and tokenizer are NOT included in this repository.
+safetensors>=0.5
+tokenizers
+transformers
+tqdm

@@ -1,0 +1,10 @@
+# Core runtime for parity checks and the training smoke test.
+# Works on CPU or Apple MPS (no CUDA needed); the same requirements cover CUDA.
+#
+# Verified with: Python 3.13 + torch 2.9.0 (macOS arm64 CPU/MPS)
+#                Python 3.12 + torch 2.12.1+cu130 (Linux, RTX 4090/5090)
+# Note: numpy is imported by ref/engram.py (via the patched reference model), so it is
+# required even though Engram is disabled in the nano configs.
+torch>=2.9
+numpy>=2.0
+sympy>=1.13

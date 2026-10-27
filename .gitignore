@@ -1,0 +1,78 @@
+# ========== Python / build artifacts ==========
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# ========== tool caches ==========
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.cache/
+.tilelang/
+tilelang_cache/
+
+# ========== macOS / editors ==========
+.DS_Store
+._*
+.ipynb_checkpoints/
+.vscode/
+.idea/
+
+# ========== artifacts / binaries / logs ==========
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.ckpt
+*.log
+*.jsonl
+nohup.out
+
+# ========== local secrets (never commit) ==========
+.env
+.env.*
+*.env
+.autodl_token
+.autodl_actions.jsonl
+**/.autodl_token
+*_token
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.netrc
+.pgpass
+infra-refs/
+.release_audit/
+
+# ========== experiment output: keep curated evidence only ==========
+/runs/*
+!/runs/README.md
+!/runs/p0_b8.json
+!/runs/p1_b16_s512.json
+
+# ========== internal / one-off material: default ignored, whitelist only ==========
+# Development docs: milestones, experiment notes, ops runbooks are internal by default.
+# Only explicitly whitelisted docs are version-controlled.
+/docs/**
+!/docs/README.md
+!/docs/architecture.md
+!/docs/benchmarks.md
+
+# Internal ops tooling (cloud enable/disable, SSH sync) is not part of the public release.
+/tools/**
+!/tools/README.md
+!/tools/make_patched_ref.py
+!/tools/ab_bench.py
+
+# One-off kernel/benchmark experiments.
+/tl_kernels/
+/experiments/
