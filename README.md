@@ -8,6 +8,10 @@ official implementation on the same weights — on a laptop CPU — before doing
 > **Status:** W1 complete (parity harness passing). Research code, not a production trainer.
 > No model weights, tokenizer or pretrained-data pipeline are included.
 > This project is independent and **not affiliated with or endorsed by DeepSeek**.
+>
+> **W2 best measured (RTX 5090):** 60.43 ms/step at b=16×1024 = 114.9 TFLOP/s =
+> **54.9% bf16-MFU** (3-step parameter parity 0.0; graph replay + optimizer). See
+> [W2 training-step results](#w2-training-step-results-best-measured-rtx-5090).
 
 ## What is in the box
 
@@ -107,8 +111,43 @@ Measured on macOS (Python 3.13.2, torch 2.9.0, CPU unless noted):
 | MPS device path | `parity.py --device mps` → **ALL PASS** |
 | CUDA parity (re-checked 2026-10-28, RTX 5090, torch 2.12.1+cu130) | **ALL PASS** for fp32 and bf16: T1 max diff **2.384e-07** / **1.788e-07**, T2 **0.0**; logs in [`runs/`](runs/) |
 
-Benchmark numbers on an RTX 5090 (including re-validated NVFP4/FP8 experiment numbers) are in
-[`docs/benchmarks.md`](docs/benchmarks.md) (raw evidence in [`runs/`](runs/)).
+Benchmark numbers on an RTX 5090 — W1 step breakdown, W2 best training steps (above) and the
+re-validated NVFP4/FP8 experiment numbers — are in [`docs/benchmarks.md`](docs/benchmarks.md)
+(raw evidence in [`runs/`](runs/)).
+
+## W2 training-step results (best measured, RTX 5090)
+
+After W1, the training path was optimized outside this repository (fused kernels, grouped MoE,
+CUDA-graph capture) and measured with the internal graph-training driver. Best measured on
+2026-10-22: d12, bf16, **b=16 × seq=1024** (16,384 tokens/step), 3-step parameter parity
+(`parity_param_rel = 0.0`), graph replay + optimizer, torch 2.14.1+cu130, RTX 5090.
+
+| Variant (b=16, seq=1024) | step (ms) | TFLOP/s | bf16-MFU | note |
+|---|---:|---:|---:|---|
+| R42 — first graph-trained best | 92.08 | 75.43 | 36.0% | trajectory baseline |
+| R48 — best | 60.92 | 114.01 | 54.42% | |
+| R49 — best (re-measured as R50 base) | 60.94 | 113.96 | 54.40% | |
+| **R50 — best (+ MoE NOPAD)** | **60.43–60.48** | **114.83–114.93** | **54.81–54.86%** | new absolute best, two repeats |
+| R50 — MoE fp8 v1 | 60.88–60.94 | 114.07–113.96 | 54.40–54.45% | **no gain** (see below) |
+| R50 — best at b=8, seq=1024 | 34.87 | 99.58 | 47.53% | 8,192 tokens/step |
+
+- **bf16-MFU** is the cross-round comparable metric: `TFLOP/s ÷ 209.5 TF` (bf16 peak, fp32
+  accumulate, 5090 vendor spec). At b=16 the 60% wall is **55.25 ms**, so the R50 best is
+  **5.2 ms** away (114.9 vs 125.7 TFLOP/s).
+- **Precision-MFU** under the current mixed precision (fp8 head + bf16 MoE) is ≈35.6% against a
+  weighted precision peak of 322.97 TF. Since the denominator scales with precision, bf16-MFU is
+  the headline metric rather than precision-MFU.
+- **MoE fp8 v1 did not pay off**: 60.88–60.94 ms vs 60.94 ms bf16. The MoE grouped GEMMs have
+  K=384 (only 6 k-steps), so they are launch/latency-bound, and per-tile activation quantization
+  inside the kernel eats the dot-product savings. The next direction (planned, **not yet
+  measured**) is fp8 on the large-K dW segment with pre-quantized activations/weights, targeting
+  ≈57.5 ms / ≈57.6% bf16-MFU.
+- Evidence: [`runs/r50_best_b16.json`](runs/r50_best_b16.json),
+  [`runs/r50_best_b8.json`](runs/r50_best_b8.json), [`runs/r50_base.json`](runs/r50_base.json),
+  [`runs/r50_fp8.json`](runs/r50_fp8.json), [`runs/r48_best_b16.json`](runs/r48_best_b16.json),
+  [`runs/r42_best_final.json`](runs/r42_best_final.json). The graph-training driver is internal
+  tooling and is not part of this repository; these numbers come from a single 5090 session and
+  are not directly comparable across hosts (launch-bound steps depend on host CPU).
 
 ## Known limitations (W2+)
 

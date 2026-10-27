@@ -1,0 +1,19 @@
+{
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.14.1+cu130",
+  "b": 16,
+  "seq": 1024,
+  "parity_param_rel": 0.0,
+  "variants": {
+    "eager step(+opt)": {
+      "ms": 122.9,
+      "tflops": 56.51,
+      "mfu_pct": 26.97
+    },
+    "graph replay+opt": {
+      "ms": 92.08,
+      "tflops": 75.43,
+      "mfu_pct": 36.0
+    }
+  }
+}

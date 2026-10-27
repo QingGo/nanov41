@@ -33,10 +33,11 @@ bf16 peak. Raw results: [`runs/p0_b8.json`](../runs/p0_b8.json),
 
 Each step launches ~8.5k–9.9k kernels, so these runs are partly **CPU-launch bound**, not tensor-core
 bound. That is the motivation for the fused/chunked head, grouped MoE GEMM and CUDA-graph work
-tracked for W2; those experiments live outside this repository and are not part of the public
-release (W1/W2 kernel-parity checks that are CPU-runnable are in [`tests/`](../tests/)).
+tracked for W2; the graph-training driver is internal tooling, but the W2 results and their JSON
+evidence are summarized in §3 below (W1/W2 kernel-parity checks that are CPU-runnable are in
+[`tests/`](../tests/)).
 
-Absolute peak used for the MFU denominator: **bf16, 5090 vendor peak (165.2 TFLOPS)**. Throughput
+Absolute peak used for the MFU denominator: **bf16, 5090 vendor peak (209.5 TFLOPS)**. Throughput
 figures should be compared between variants measured in the same interleaved run
 (`tools/ab_bench.py`), not across sessions.
 
@@ -47,7 +48,43 @@ by ~15%. Both runs are kept as evidence — [`runs/p0_b8.json`](../runs/p0_b8.js
 [`runs/p0_b8_5090_rerun_2026-10-28.json`](../runs/p0_b8_5090_rerun_2026-10-28.json) (re-run) —
 and numbers should only be compared within one session.
 
-## 3. sm_120 NVFP4 / FP8 experiments (optional, experimental)
+## 3. W2 training-step results (best measured, R42 → R50)
+
+W2 optimized the training path (fused kernels, grouped MoE, CUDA-graph capture) using an internal
+graph-training driver that is **not part of this repository**. Curated JSON evidence is checked in
+under [`runs/`](../runs/); this section states the measurement protocol and the results.
+
+**Protocol.** d12, bf16 on RTX 5090, torch 2.14.1+cu130. The step includes the optimizer
+(graph replay + optimizer); before timing, 3 training steps are compared against eager and the
+parameter parity is reported as `parity_param_rel` (all runs below: **0.0**). Tokens/step =
+16,384 at b=16×seq=1024 (8,192 at b=8). FLOPs/token = 423.9 MFLOP (3× forward FlopCounter).
+Convention: **bf16-MFU = TFLOP/s ÷ 209.5 TF**; precision-MFU mixes the precision-specific peaks
+(see note) and is *not* comparable across precision mixes.
+
+| Run (b=16, seq=1024) | eager step (ms) | graph step (ms) | graph TFLOP/s | bf16-MFU | precision-MFU |
+|---|---:|---:|---:|---:|---:|
+| R42 — first graph-trained best | 122.90 | 92.08 | 75.43 | 36.0% | — |
+| R48 — best | 110.38 | 60.92 | 114.01 | 54.42% | — |
+| R49 — best (re-measured as R50 base) | 102.34 | 60.94 | 113.96 | 54.40% | 35.3% |
+| **R50 — best (+ MoE NOPAD)** | — | **60.43–60.48** | **114.83–114.93** | **54.81–54.86%** | **35.6%** |
+| R50 — MoE fp8 v1 | — | 60.88–60.94 | 114.07–113.96 | 54.40–54.45% | ≈35.3% |
+| R50 — best at b=8, seq=1024 | 103.13 | 34.87 | 99.58 | 47.53% | — |
+
+- **60% bf16 wall at b=16: 55.25 ms** (125.7 TFLOP/s); R50 best is **5.2 ms** away.
+- Precision-MFU denominator: weighted precision peak **322.97 TF** for the current mix
+  (fp8 head + bf16 MoE). If the MoE also ran fp8 the weighted peak would be ≈391.6 TF and the
+  precision-60% wall would tighten to ≈29.56 ms — i.e. converting precision does not make
+  precision-MFU look better by itself; its only justification is being faster at equal MFU.
+- **Negative result — MoE fp8 v1**: kernel-level wins (`_aggemm_tb` −25%, `_swiglu_fwd` −5.4%)
+  were cancelled by the added per-layer weight/activation quantization (~0.45 ms) and the
+  latency-bound K=384 grouped GEMMs. End-to-end step was unchanged (60.88–60.94 vs 60.94 ms).
+  Next planned work (not measured): fp8 on the large-K dW segment with pre-quantized
+  activations/weights → projected ≈57.5 ms / ≈57.6% bf16-MFU.
+- **Reproducing**: the driver is internal, so these numbers cannot be reproduced from this
+  checkout; the JSON files under `runs/` are the primary evidence. Absolute timings are single
+  session and host-CPU sensitive (see the re-run caveat in §2).
+
+## 4. sm_120 NVFP4 / FP8 experiments (optional, experimental)
 
 [`experiments/tl_kernels/`](../experiments/tl_kernels/) contains optional TileLang kernels for
 NVFP4 block-scaled GEMM and fused FP8 casts on sm_120 (RTX 5090). They are **not** used by
@@ -75,7 +112,7 @@ informational T1b indexer tie probe shows 6.6e-02 on CUDA (device-dependent tie 
 README limitations). Logs: [`runs/parity_cuda_fp32_5090.log`](../runs/parity_cuda_fp32_5090.log),
 [`runs/parity_cuda_bf16_5090.log`](../runs/parity_cuda_bf16_5090.log).
 
-## 4. Reproducing
+## 5. Reproducing
 
 ```bash
 # CPU/Mac parity + smoke numbers
