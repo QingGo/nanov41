@@ -34,19 +34,44 @@ bf16 peak. Raw results: [`runs/p0_b8.json`](../runs/p0_b8.json),
 Each step launches ~8.5k–9.9k kernels, so these runs are partly **CPU-launch bound**, not tensor-core
 bound. That is the motivation for the fused/chunked head, grouped MoE GEMM and CUDA-graph work
 tracked for W2; those experiments live outside this repository and are not part of the public
-release.
+release (W1/W2 kernel-parity checks that are CPU-runnable are in [`tests/`](../tests/)).
 
 Absolute peak used for the MFU denominator: **bf16, 5090 vendor peak (165.2 TFLOPS)**. Throughput
 figures should be compared between variants measured in the same interleaved run
 (`tools/ab_bench.py`), not across sessions.
 
-## 3. Reproducing
+## 3. sm_120 NVFP4 / FP8 experiments (optional, experimental)
+
+[`experiments/tl_kernels/`](../experiments/tl_kernels/) contains optional TileLang kernels for
+NVFP4 block-scaled GEMM and fused FP8 casts on sm_120 (RTX 5090). They are **not** used by
+`parity.py` / `train.py` and are not covered by the performance CI. The numbers below are from the
+internal development run (RTX 5090, torch 2.12.1+cu130, tilelang 0.1.15) and have **not been
+re-validated in this checkout**; treat them as indicative and re-run the GPU tests/benchmarks
+yourself before relying on them. Correctness tests for the pure-torch host quantizer run on CPU
+(`pytest experiments/tl_kernels/tests`); GPU tests skip without sm_120 + TileLang.
+
+| Item | Result (internal run) |
+|---|---|
+| NVFP4 GEMM kernel-only (head shape 8192×129280×384→pad 512) | ≈1.66 ms, ≈652 TFLOPS (bf16 baseline ≈215.7 TFLOPS, ≈3.0×) |
+| Fused TileLang NVFP4 quantizer ([129280, 512] weight) | ≈0.54 ms vs ≈9.43 ms for the PyTorch quantizer (≈17.4×); scale words 100% identical, packed bytes ≈94% (E2M1 ties) |
+| Quantize/dequantize agreement | max abs diff ≈1.4e-2 (expected FP4 rounding) |
+| Fused FP8 cast ([8192, 129280]) | ≈2.12 ms vs ≈4.90 ms for `(x*inv).to(fp8)` (≈2.3×); bytes 100% equal |
+| FP4 forward + FP8 backward (head) | ≈2.2× vs bf16 (≈11.3 ms vs ≈24.6 ms) |
+
+## 4. Reproducing
 
 ```bash
 # CPU/Mac parity + smoke numbers
 python3 parity.py --dtype float32
 python3 train.py --config tiny_all_topk --steps 100 --batch-size 4 --seq-len 32 --lr 1e-3
 python3 train.py --config d8 --steps 0
+
+# CPU kernel-parity regressions (fast subset; slow subset ~133 s)
+python3 -m pytest -q -m "not slow"
+python3 -m pytest -q -m slow
+
+# optional sm_120 experiments (needs CUDA + TileLang; GPU tests skip otherwise)
+python3 -m pytest experiments/tl_kernels/tests -q
 
 # GPU breakdown (needs CUDA; e.g. RTX 5090)
 python3 bench_mfu.py --b 8 --seq 1024 --json /tmp/p0_b8.json

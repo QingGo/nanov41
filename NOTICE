@@ -20,6 +20,11 @@ Third-party code included in this repository
    upstream file and is distributed under the same upstream MIT terms below,
    together with this project's own MIT license.
 
+   experiments/tl_kernels/nvfp4_quant.py is adapted from ref/kernel.py's
+   fp4_quant_kernel (same upstream MIT terms below); the changes (group size 32->16,
+   E4M3 scale output, uint32 scale packing + blockscaled swizzle) are documented in
+   that file's docstring.
+
    MIT License
 
    Copyright (c) 2023 DeepSeek
@@ -41,6 +46,44 @@ Third-party code included in this repository
    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
    SOFTWARE.
+
+2) TileLang sm_120 NVFP4 example (adapted)
+   Files: experiments/tl_kernels/nvfp4_gemm.py (kernel structure and scale-word
+          swizzle helper), experiments/tl_kernels/fp8_cast.py (independent code,
+          no upstream derivation), experiments/tl_kernels/nvfp4_quant.py
+          (see section 1 for its DeepSeek derivation).
+   Source: https://github.com/tile-ai/tilelang
+           tag v0.1.15 (commit a35f8ddf45eba16c21211ec8822d56ce5363036f),
+           examples/gemm_sm120/sm120_nvfp4_blockscaled_gemm.py
+   Copyright (c) Tile-AI.
+   Licensed under the MIT License, reproduced below (upstream text, verbatim).
+   Changes made by this project: host quantizer/dequantizer and NVFP4Linear were
+   written for nanov41; the kernel structure, scale-word swizzle helper and E2M1
+   decode LUT follow the upstream example.
+
+   MIT License
+
+   Copyright (c) Tile-AI.
+   **During the period from December 1, 2024, to Mar 14, 2025, this project is
+   subject to additional collaboration terms with Microsoft Corporation.**
+
+   Permission is hereby granted, free of charge, to any person obtaining a copy
+   of this software and associated documentation files (the "Software"), to deal
+   in the Software without restriction, including without limitation the rights
+   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+   copies of the Software, and to permit persons to whom the Software is
+   furnished to do so, subject to the following conditions:
+
+   The above copyright notice and this permission notice shall be included in all
+   copies or substantial portions of the Software.
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+   SOFTWARE
 
 ------------------------------------------------------------------------------
 Optional runtime dependencies (NOT vendored in this repository)

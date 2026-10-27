@@ -14,5 +14,8 @@ Notes:
 - `make_patched_ref.py --check` is what keeps the vendored `ref/model.py` and the generated
   training module from drifting; run it after any `ref/` update.
 - `ab_bench.py` exits with an error on machines without CUDA.
+- CPU kernel-parity regression scripts that used to live in `tools/` were promoted to
+  `tests/kernel_parity_*.py` (run by CI); `tl_kernels/` experimental code was curated into
+  `experiments/tl_kernels/`.
 - `tools/` used to contain cloud ops tooling (instance start/stop over a web-console API, SSH sync)
   and ~120 one-off W2 kernel/benchmark scripts. Those are intentionally not versioned.

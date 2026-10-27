@@ -73,6 +73,8 @@ infra-refs/
 !/tools/make_patched_ref.py
 !/tools/ab_bench.py
 
-# One-off kernel/benchmark experiments.
+# One-off kernel/benchmark experiments (default ignored; curated packages are whitelisted).
 /tl_kernels/
-/experiments/
+/experiments/*
+!/experiments/README.md
+!/experiments/tl_kernels/

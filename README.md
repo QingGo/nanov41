@@ -22,9 +22,10 @@ official implementation on the same weights — on a laptop CPU — before doing
 | `train.py` | Speedrun-style training loop skeleton (AdamW + cosine + clip, synthetic learnable data) |
 | `bench_mfu.py` | Per-component MFU / time breakdown (needs CUDA; benchmarked on RTX 5090) |
 | `tools/ab_bench.py` | Interleaved A/B benchmark of head × MoE implementations (needs CUDA) |
+| `experiments/tl_kernels/` | Optional sm_120 (RTX 5090) NVFP4/FP8 kernels (TileLang): host quantizer, FP4 GEMM, fused FP8 cast — not needed for parity/training |
 | `docs/` | [Architecture notes](docs/architecture.md), [benchmarks](docs/benchmarks.md) |
 | `runs/` | Curated benchmark evidence (RTX 5090 JSON) |
-| `tests/` | CPU smoke tests used by CI |
+| `tests/` | CPU tests: parity smoke, config counts, generated-file check, kernel-parity regressions |
 
 Internal development notes and one-off experiment scripts are intentionally **not part of this
 repository** (see `.gitignore`); only the material needed to reproduce the W1 claims is versioned.
@@ -54,9 +55,10 @@ The official TileLang kernels are replaced by pure-torch fallbacks with identica
 
 - Python >= 3.10, PyTorch >= 2.9 (CPU, Apple MPS, or CUDA).
 - **CPU / Apple MPS:** `parity.py` and the `train.py` smoke test (no CUDA needed).
-- **NVIDIA GPU (optional):** `bench_mfu.py`, `tools/ab_bench.py` and the fused-kernel modules
-  (`nanov41/fused_*`, `nanov41/triton_*`, `nanov41/tl_*`) need CUDA; `bench_mfu.py` and
-  `tools/ab_bench.py` exit early without it.
+- **NVIDIA GPU (optional):** `bench_mfu.py`, `tools/ab_bench.py`, `experiments/tl_kernels/` and
+  the fused-kernel modules (`nanov41/fused_*`, `nanov41/triton_*`, `nanov41/tl_*`) need CUDA;
+  `bench_mfu.py` and `tools/ab_bench.py` exit early without it. The experiments package targets
+  sm_120 (RTX 5090) with TileLang; its pure-torch host quantizer also runs on CPU.
 
 ## Install
 
@@ -150,7 +152,8 @@ under their own upstream terms.
 ├── train.py            speedrun-style training skeleton
 ├── bench_mfu.py        per-component MFU breakdown (needs CUDA)
 ├── docs/               architecture notes and benchmarks
+├── experiments/        optional sm_120 NVFP4/FP8 kernels (TileLang; needs CUDA)
 ├── runs/               curated benchmark evidence (JSON)
-├── tests/              CPU smoke tests (CI)
+├── tests/              CPU tests (CI), incl. kernel-parity regressions
 └── tools/              make_patched_ref.py, ab_bench.py (needs CUDA)
 ```
