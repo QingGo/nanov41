@@ -77,6 +77,15 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   bf16 rest) = **35.58%** discounted MFU; its 60% wall is **35.83 ms**. What-if the MoE also ran
   fp8 at the same 60.43 ms: discounted MFU 29.35%, 60% wall 29.56 ms — i.e. precision only helps
   when it is actually faster at equal effective work. Tools: `tools/mfu_accounting.py`.
+- **Low-precision expert GEMMs are a full-scale win, not a nano-scale one (R51 microbench,
+  2026-10-29):** with MXFP4-QAT expert weights + FP8 compute, per-expert GEMMs at the **nano
+  d12 shapes** are *not* faster than bf16 (graph-replay wgrad 384×384×2048: FP8 0.0103 ms vs
+  bf16 0.0083 ms; eager loops 3–4× slower because the GEMMs are launch/tile dominated). At
+  **full V4.1-Flash expert shapes** (dim 5120, moe_inter 2304, 2k–16k tokens/expert) FP8 is
+  **1.76–2.43× faster** (374–551 vs 213–227 TFLOPS). A 30-step MXFP4-QAT training A/B at nano
+  scale decreased loss 0.2499→0.1486 vs bf16 →0.1412 (+5.2% final loss), i.e. QAT trains but
+  the throughput win only appears at target scale. Evidence:
+  [`runs/r51_fp4_expert_microbench_5090.json`](../runs/r51_fp4_expert_microbench_5090.json).
 - **Scaling check:** d12 matches V4.1-Flash **226.5×** down-scaling in both activated parameters
   (16B vs 70.65M) and raw decode FLOPs (32 GFLOP vs 141.3 MFLOP); total backbone params (552B,
   2854×) are **not** a compute-scaling metric. See

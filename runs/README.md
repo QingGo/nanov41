@@ -19,6 +19,7 @@ steps (internal graph-training driver, r42/r48/r49/r50), and the 2026-10-28 GPU 
 | `r50_best_b16.json` | **W2 best** (+ MoE NOPAD), 3-step parity 0.0 | b=16, seq=1024 | **60.43 ms/step, 114.93 TFLOP/s, 54.86% bf16-MFU** |
 | `r50_best_b8.json` | W2 best at b=8 | b=8, seq=1024 | 34.87 ms/step, 99.58 TFLOP/s, 47.53% bf16-MFU |
 | `r50_fp8.json` | MoE fp8 v1 (negative result) | b=16, seq=1024 | 60.94 ms/step, 54.40% — no gain vs bf16 |
+| `r51_fp4_expert_microbench_5090.json` | R51: MXFP4-QAT expert weights + FP8 compute / FP8 wgrad microbench | d12 expert shapes + full V4.1 expert shapes | nano shapes: FP8 not faster (0.0103 vs 0.0083 ms graph-replay wgrad); full V4.1 shapes: FP8 1.76–2.43× faster; 30-step QAT loss 0.2499→0.1486 vs bf16 →0.1412 |
 
 Interpretation and caveats: [`../docs/benchmarks.md`](../docs/benchmarks.md). Other JSON files
 that may exist in this directory locally are experiment output and are not part of the repository.

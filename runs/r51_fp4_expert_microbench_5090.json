@@ -1,0 +1,167 @@
+{
+  "title": "R51 microbench: MXFP4-QAT expert weights + FP8 compute / FP8 wgrad on RTX 5090",
+  "date": "2026-10-29",
+  "device": "NVIDIA GeForce RTX 5090 (sm_120), 32GB",
+  "torch": "2.14.1+cu130",
+  "tilelang": "0.1.15",
+  "tilekernels": "deepseek-ai/TileKernels @ main (PYTHONPATH)",
+  "note": "Internal W2/R51 microbench. The run used the torch MXFP4 fallback for the storage path (the official TileKernels e2m1 cast was verified OK separately); timings are per-expert-loop, not a grouped kernel.",
+  "nano_d12_expert_shapes": {
+    "shape": {
+      "dim": 384,
+      "inter": 384,
+      "tokens_per_expert": 2048,
+      "layers": 12,
+      "experts": 16
+    },
+    "forward_ms": {
+      "bf16_ms": 0.15443791635334492,
+      "fp8_precast_ms": 0.3143233712762594,
+      "fp8_precast_speedup": 0.49133449964689113,
+      "mxfp4qat_fp8_ms": 0.41790083050727844,
+      "mxfp4qat_fp8_speedup": 0.3695563757695264,
+      "fp8_rel_diff": 0.06864161789417267,
+      "mxfp4qat_rel_diff": 0.26878613233566284,
+      "nvfp4_error": "TypeError: 'module' object is not callable"
+    },
+    "wgrad_aggregate_12x16_ms": {
+      "iterations": 192,
+      "bf16_ms": 7.263927534222603,
+      "fp8_ms": 87.62240093201399,
+      "fp8_precast_ms": 20.871125534176826,
+      "speedup": 0.08290034804979456,
+      "speedup_precast": 0.3480371732865004,
+      "quant_overhead_ms": 66.75127539783715,
+      "fp8_rel_diff_dw1": 0.03737745061516762
+    },
+    "single_expert_fwd_bwd_ms": {
+      "step_bf16_ms": 0.7792285643517971,
+      "step_mxfp4qat_fp8_ms": 2.9663450084626675,
+      "speedup": 0.262689795734731,
+      "loss_bf16": 5.852263711858541e-05,
+      "loss_qat_fp8": 5.1278384489705786e-05,
+      "loss_rel_diff": 0.12378547833038471,
+      "y_rel_diff": 0.26878613233566284,
+      "dw1_rel_diff": 0.25524476170539856,
+      "dw3_rel_diff": 0.2654109597206116,
+      "dw2_rel_diff": 0.2590090036392212
+    },
+    "qat_train_ab_30_steps": {
+      "steps": 30,
+      "bf16": {
+        "loss_start": 0.2498818039894104,
+        "loss_end": 0.14121973514556885,
+        "losses": [
+          0.2498818039894104,
+          0.24872653186321259,
+          0.2474992573261261,
+          0.2460366189479828,
+          0.24420897662639618,
+          0.24191491305828094,
+          0.23907314240932465,
+          0.23562580347061157,
+          0.2315528243780136,
+          0.22688308358192444,
+          0.2217109650373459,
+          0.21620625257492065,
+          0.2105947732925415,
+          0.2051018923521042,
+          0.19986280798912048,
+          0.19494788348674774,
+          0.19033271074295044,
+          0.18590132892131805,
+          0.181560680270195,
+          0.17727455496788025,
+          0.17304080724716187,
+          0.16889333724975586,
+          0.16487258672714233,
+          0.16101446747779846,
+          0.1573348045349121,
+          0.15382811427116394,
+          0.15047846734523773,
+          0.14727230370044708,
+          0.14419102668762207,
+          0.14121973514556885
+        ]
+      },
+      "mxfp4_qat_fp8": {
+        "loss_start": 0.24987447261810303,
+        "loss_end": 0.14860934019088745,
+        "losses": [
+          0.24987447261810303,
+          0.24885694682598114,
+          0.2477564811706543,
+          0.24645432829856873,
+          0.24484489858150482,
+          0.24278977513313293,
+          0.24028229713439941,
+          0.23724304139614105,
+          0.2335626482963562,
+          0.22934210300445557,
+          0.22488832473754883,
+          0.21976950764656067,
+          0.2144983857870102,
+          0.2092067301273346,
+          0.20405402779579163,
+          0.19925060868263245,
+          0.19468173384666443,
+          0.19035732746124268,
+          0.1862792670726776,
+          0.1823449581861496,
+          0.1784897744655609,
+          0.1746511459350586,
+          0.17082378268241882,
+          0.16718831658363342,
+          0.16367344558238983,
+          0.16034775972366333,
+          0.1572420597076416,
+          0.15444205701351166,
+          0.15145589411258698,
+          0.14860934019088745
+        ]
+      }
+    },
+    "graph_replay_one_wgrad_gemm_ms": {
+      "bf16": 0.0083,
+      "fp8": 0.0103,
+      "note": "M=384 N=384 K=2048, no launch overhead"
+    }
+  },
+  "full_v41_expert_shapes_graph_replay": [
+    {
+      "M": 2048,
+      "N": 2304,
+      "K": 5120,
+      "bf16_ms": 0.227,
+      "fp8_ms": 0.129,
+      "fp8_speedup": 1.76,
+      "bf16_tflops": 213,
+      "fp8_tflops": 374
+    },
+    {
+      "M": 5120,
+      "N": 2304,
+      "K": 2048,
+      "bf16_ms": 0.227,
+      "fp8_ms": 0.101,
+      "fp8_speedup": 2.25,
+      "bf16_tflops": 213,
+      "fp8_tflops": 479
+    },
+    {
+      "M": 16384,
+      "N": 2304,
+      "K": 5120,
+      "bf16_ms": 1.703,
+      "fp8_ms": 0.701,
+      "fp8_speedup": 2.43,
+      "bf16_tflops": 227,
+      "fp8_tflops": 551
+    }
+  ],
+  "conclusion": [
+    "At nano d12 expert shapes (M=N=384, K=384/2048) FP8 is NOT faster than bf16 (graph-replay wgrad 0.0103 vs 0.0083 ms; fwd/wgrad loops 3-4x slower) because the GEMMs are too small / launch-and-tile dominated.",
+    "At full V4.1-Flash expert shapes (dim=5120, moe_inter=2304, 2k-16k tokens/expert) FP8 is 1.76-2.43x faster than bf16 (374-551 TFLOPS), so the low-precision expert direction is a full-scale win, not a nano-scale one.",
+    "MXFP4-QAT weights + FP8 compute trained 30 AdamW steps: loss 0.2499->0.1486 vs bf16 0.2499->0.1412 (+5.2% final loss, both decreasing) - QAT is feasible; the accuracy cost needs a longer QAT schedule to judge."
+  ]
+}
