@@ -7,6 +7,11 @@ Adapted from the official TileLang example
 pin: tilelang v0.1.15) — see ``NOTICE`` and ``README.md``. The host quantizer /
 dequantizer and the ``NVFP4Linear`` training wrapper are additions from this project.
 
+Format note: this is **NVFP4** (E2M1 + E4M3 scales per 1x16), the format of the V4.1
+*KV cache* and of TileLang's sm120 example — **not** the **MXFP4** (E8M0 scales per 1x32)
+format used for the official V4/V4.1 *expert weights*; the two are not bit-compatible.
+See ``README.md`` in this directory for the official MXFP4 + FP8-compute recipe.
+
 Why this exists: PyTorch 2.12/2.14 gates ``_scaled_mm`` FP4 to B200/B300
 (``ScaledBlas.cpp: _check_mxfp4_support -> dprops->major == 10``), and TransformerEngine
 still rejects RTX 50 NVFP4 (issue #2255). TileLang has the sm_120 block-scaled MMA

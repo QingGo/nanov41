@@ -13,6 +13,29 @@ They are **optional** and **experimental**:
 - The pure-torch **host quantizer/dequantizer** in `nvfp4_gemm.py` works on CPU and is
   covered by CI (`tests/test_host_quant_cpu.py`).
 
+## Format note: NVFP4 vs the official MXFP4
+
+The DeepSeek-V4.1-Flash report uses two different FP4 formats:
+
+| Where | Format | Scale |
+|---|---|---|
+| V4/V4.1 **expert weights** (and indexer QK) | **MXFP4** | E2M1 + power-of-two (**E8M0**) scale, one per **1×32** block |
+| V4.1 **main KV cache** | NVFP4-class | E2M1 + **E4M3** scale, one per **1×16** block |
+
+The kernels in this directory are **NVFP4** (E4M3 scale per 1×16): they match the V4.1 *KV-cache*
+format, **not** the expert-weight MXFP4 format, and they are therefore **not bit-compatible** with
+the official MXFP4 experts. They were built as an sm_120 (RTX 5090) FP4 tensor-core experiment —
+TileLang's sm120 block-scaled GEMM example is NVFP4, and the official MXFP4 GEMM kernels
+(DeepGEMM) only support SM90/SM100. NVFP4's finer scales also give better reconstruction accuracy,
+which is what we wanted for a from-scratch QAT probe.
+
+For the **official training recipe** (FP4 weight QAT storage, dequantised back to FP8 for compute
+and backward, FP32 master + STE — V4 report §5.2.1), the weight *storage* side is MXFP4-compatible:
+`tile_kernels.quant.per_token_cast(..., "e2m1", num_per_channels=32, round_sf=True)` produces
+MXFP4-style words, and the compute path is FP8. That recipe lives in the internal W2 notes; this
+public package only ships the NVFP4 tensor-core probe and the fused quantizer/cast kernels.
+
+
 ## Files
 
 | File | Contents | Needs |

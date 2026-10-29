@@ -7,6 +7,9 @@ Adapted from the DeepSeek-V4.1-Flash inference reference
 only the group size (32 -> 16) and the output scale packing (E4M3 bytes -> uint32 words
 -> ``blockscaled_chunk_kmajor`` swizzle) change.
 
+Format note: like ``nvfp4_gemm``, this produces **NVFP4** (E4M3 scales per 1x16), not the
+official **MXFP4** expert-weight format (E8M0 scales per 1x32); see ``README.md``.
+
 Why: the PyTorch quantizer (``nvfp4_gemm.quantize_nvfp4``) launches ~8-10 separate CUDA
 kernels and materialises several 100 MB temporaries; for a [129280, 512] weight it costs
 ~9.4 ms on an RTX 5090, which wipes out the FP4 GEMM win (kernel-only GEMM is 1.66 ms).
