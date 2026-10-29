@@ -19,10 +19,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install CPU PyTorch
+      - name: Install CPU PyTorch (pinned)
+        # Pin one torch CPU build for the whole matrix: the floating tag resolved to
+        # different torch versions for 3.10 vs 3.12 and made the slow kernel-parity
+        # subset flaky between runs (same commit passed/failed). 2.14.1 is the newest
+        # CPU wheel available for both 3.10 and 3.12.
         run: |
           python -m pip install --upgrade pip
-          python -m pip install --index-url https://download.pytorch.org/whl/cpu torch
+          python -m pip install --index-url https://download.pytorch.org/whl/cpu "torch==2.14.1"
 
       - name: Install project (CPU core) + pytest
         run: python -m pip install -r requirements.txt pytest
@@ -36,16 +40,28 @@ jobs:
       - name: Tests (fast subset)
         run: python -m pytest -q -m "not slow"
 
-      - name: Tests (slow kernel-parity subset)
-        # On failure, surface the pytest tail as an error annotation: job logs need admin
-        # rights via the API, while check-run annotations are public.
+      # Run the two slow kernel-parity scripts as separate steps: a failure then names the
+      # script, and the pytest tail is surfaced as public check-run annotations (job logs
+      # need admin rights via the API).
+      - name: Slow parity — fast_mhc
         run: |
           set +e
-          python -m pytest -q -m slow 2>&1 | tee /tmp/slow.log
+          python -m pytest -q "tests/test_kernel_parity.py::test_kernel_parity[fast_mhc]" 2>&1 | tee /tmp/slow_mhc.log
           rc=${PIPESTATUS[0]}
           if [ "$rc" -ne 0 ]; then
-            echo "::error::slow kernel-parity subset failed (rc=$rc); last 80 lines:"
-            tail -n 80 /tmp/slow.log | sed 's/^/::error::/'
+            echo "::error::fast_mhc parity failed (rc=$rc); last 80 lines:"
+            tail -n 80 /tmp/slow_mhc.log | sed 's/^/::error::/'
+          fi
+          exit "$rc"
+
+      - name: Slow parity — moe_stacked_model
+        run: |
+          set +e
+          python -m pytest -q "tests/test_kernel_parity.py::test_kernel_parity[moe_stacked_model]" 2>&1 | tee /tmp/slow_stacked.log
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::moe_stacked_model parity failed (rc=$rc); last 80 lines:"
+            tail -n 80 /tmp/slow_stacked.log | sed 's/^/::error::/'
           fi
           exit "$rc"
 
