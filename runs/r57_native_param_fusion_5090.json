@@ -1,0 +1,52 @@
+{
+  "title": "R57: native parameter fusion vs cat-fusion vs baseline (b=16, R50-best graph)",
+  "date": "2026-10-30",
+  "device": "NVIDIA GeForce RTX 5090 (sm_120)",
+  "torch": "2.14.1+cu130",
+  "fusions": {
+    "cat": "torch.cat([wq_a,wkv]) / cat([w1,w3]) per forward (R56 path)",
+    "native": "single Parameter wqkv [qrank+head_dim, dim] and w13 [2*inter, dim], sliced in forward"
+  },
+  "step_ms": {
+    "baseline": [
+      61.46,
+      61.45,
+      61.48
+    ],
+    "cat": [
+      61.07,
+      60.95,
+      60.94
+    ],
+    "native": [
+      60.92,
+      60.89,
+      60.95
+    ]
+  },
+  "mean_ms": {
+    "baseline": 61.46333333333333,
+    "cat": 60.986666666666665,
+    "native": 60.92
+  },
+  "gain_vs_baseline_ms": {
+    "cat": -0.47666666666666657,
+    "native": -0.5433333333333294
+  },
+  "gain_native_vs_cat_ms": -0.06666666666666288,
+  "loss_step1": {
+    "baseline": 11.844802,
+    "cat": 11.843962,
+    "native": 11.843962,
+    "native_equals_cat": true
+  },
+  "raw_bf16_mfu_pct": {
+    "baseline": 53.94,
+    "native": 54.42
+  },
+  "notes": [
+    "Native mode removes 24 cat kernels/step + their autograd nodes; same math as the cat path (loss bitwise identical to cat).",
+    "All fusions remain opt-in and non-bitwise vs the default two-GEMM path (step-1 loss rel 7.1e-5).",
+    "Absolute ms differ between hosts (this host was ~3% slower than the R56 host); compare within this session only."
+  ]
+}

@@ -14,10 +14,18 @@ Two independent fusions that reduce small-GEMM count without changing the math:
    into one GEMM (SwiGLU still uses `fused_swiglu.swiglu_fused` when available, else torch).
    Only the `shared_experts` instance is patched (routed experts go through the grouped kernels).
 
-Measured on RTX 5090 (b=16, R50-best graph, 2026-10-30): step 59.38 -> 59.00 ms
-(-0.39 ms / -0.66%) with both fusions on; step-1 loss differs by 7.1e-5 relative
-(cuBLAS tiling changes fp32 accumulation order), so the default stays OFF and this is
-an opt-in, parity-tolerant path. See runs/r56_projection_fusion_5090.json.
+3. `NANOV41_PROJ_FUSE_NATIVE=1` — instead of `torch.cat`-ing the weights at every forward, replace
+   the two parameters with one native Parameter (`wqkv`, `w13`) and slice it in forward. Removes
+   24 cat kernels/step and their autograd nodes; same math as (1)+(2). Also non-bitwise vs the
+   two-GEMM path.
+
+Measured on RTX 5090 (b=16, R50-best graph, 2026-10-30): the cat-based fusions give
+59.38 -> 59.00 ms (-0.39 ms / -0.66%); native Parameters remove another 24 cat kernels and
+give 61.46 -> 60.92 ms in a second same-session sweep (-0.54 ms / -0.88% vs baseline, and
+0.07 ms better than the cat variant). Step-1 loss differs from the default two-GEMM path by
+7.1e-5 relative (cuBLAS tiling changes fp32 accumulation order) but native == cat bitwise, so
+the default stays OFF and this is an opt-in, parity-tolerant path. See
+runs/r56_projection_fusion_5090.json and runs/r57_native_param_fusion_5090.json.
 
 Install after the model is built:
     import nanov41.fast_proj_fuse as fpf
@@ -45,8 +53,10 @@ def _attn_forward(self, x: torch.Tensor, start_pos: int):
     freqs_cis = self.freqs_cis[start_pos : start_pos + seqlen]
     qrank = self.q_lora_rank
 
-    # fused (wq_a, wkv): same input x -> one GEMM; cat-backward fuses dX/dW too
-    w = torch.cat([self.wq_a.weight, self.wkv.weight], dim=0)
+    # fused (wq_a, wkv): same input x -> one GEMM; cat-backward fuses dX/dW too.
+    # native mode stores one [qrank+head_dim, dim] Parameter and slices it (no cat kernel).
+    w = self.wqkv if getattr(self, "wqkv", None) is not None else torch.cat(
+        [self.wq_a.weight, self.wkv.weight], dim=0)
     y = F.linear(x, w)
     qr = self.q_norm(y[..., :qrank])
     q = self.wq_b(qr).unflatten(-1, (self.n_local_heads, self.head_dim))
@@ -98,7 +108,10 @@ def _shared_forward(self, x: torch.Tensor, weights: torch.Tensor | None = None):
     if weights is not None or not x.is_cuda or _ORIG_EXPERT_FORWARD is None:
         return _ORIG_EXPERT_FORWARD(self, x, weights)
     limit = float(getattr(self, "swiglu_limit", 0.0) or 0.0)
-    w = torch.cat([self.w1.weight, self.w3.weight], dim=0)
+    if getattr(self, "w13", None) is not None:
+        w = self.w13
+    else:
+        w = torch.cat([self.w1.weight, self.w3.weight], dim=0)
     y = F.linear(x, w)
     gate, up = y.chunk(2, dim=-1)
     try:
@@ -116,11 +129,36 @@ def _shared_forward(self, x: torch.Tensor, weights: torch.Tensor | None = None):
 
 
 # --------------------------------------------------------------------------- install
+def _make_native(model, M) -> dict:
+    """Replace the paired parameters with one native Parameter (runs after model build)."""
+    import torch.nn as nn
+
+    n_attn = 0
+    for mod in model.modules():
+        if isinstance(mod, M.Attention) and getattr(mod, "wqkv", None) is None:
+            w = torch.cat([mod.wq_a.weight.detach(), mod.wkv.weight.detach()], dim=0).contiguous()
+            mod.wqkv = nn.Parameter(w.clone())
+            mod.wq_a = None
+            mod.wkv = None
+            n_attn += 1
+    n_exp = 0
+    for mod in model.modules():
+        if hasattr(mod, "shared_experts") and getattr(mod.shared_experts, "w13", None) is None:
+            e = mod.shared_experts
+            w = torch.cat([e.w1.weight.detach(), e.w3.weight.detach()], dim=0).contiguous()
+            e.w13 = nn.Parameter(w.clone())
+            e.w1 = None
+            e.w3 = None
+            n_exp += 1
+    return {"native_attn": n_attn, "native_shared": n_exp}
+
+
 def install(model, M) -> dict:
     """Patch the built model in place; returns which fusions were enabled."""
     global _MOD, _ORIG_EXPERT_FORWARD
     _MOD = M
     enabled = {}
+    native = os.environ.get("NANOV41_PROJ_FUSE_NATIVE", "0").lower() not in ("0", "false", "no", "off")
 
     if os.environ.get("NANOV41_ATTN_PROJ_FUSED", "0").lower() not in ("0", "false", "no", "off"):
         M.Attention.forward = _attn_forward
@@ -136,4 +174,14 @@ def install(model, M) -> dict:
                 mod.shared_experts.forward = types.MethodType(_shared_forward, mod.shared_experts)
                 n += 1
         enabled["shared_expert"] = n
+    if native:
+        # native mode needs both fusions installed first (forward already handles the params)
+        M.Attention.forward = _attn_forward
+        M.Attention._window_kv_fused = _window_kv_fused
+        _ORIG_EXPERT_FORWARD = M.Expert.forward
+        for mod in model.modules():
+            if hasattr(mod, "shared_experts"):
+                mod.shared_experts.forward = types.MethodType(_shared_forward, mod.shared_experts)
+        enabled.update(_make_native(model, M))
+        enabled["native"] = True
     return enabled

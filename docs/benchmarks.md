@@ -115,6 +115,11 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   env-gated path (`NANOV41_ATTN_PROJ_FUSED`, `NANOV41_SHARED_EXPERT_FUSED`) and the default remains
   parity-exact. Evidence:
   [`runs/r56_projection_fusion_5090.json`](../runs/r56_projection_fusion_5090.json).
+  A native-Parameter variant (one `wqkv`/`w13`, no per-forward `cat`) removes another 24 kernels:
+  in a second same-session sweep 61.46 → 60.99 (cat) → **60.92 ms (native)**, i.e. −0.54 ms
+  (−0.88%) vs baseline and −0.07 ms vs the cat variant, with native loss bitwise equal to cat
+  (still 7.1e-5 off the default path). Evidence:
+  [`runs/r57_native_param_fusion_5090.json`](../runs/r57_native_param_fusion_5090.json).
 - **Residual-tail census (measured 2026-10-30, b=16, R50-best graph):** the 57.63 ms device
   time splits into head 13.93, MoE 9.88, mHC 9.48, attention v2 kernel 5.70, small cutlass
   GEMMs 6.47, elementwise/copy/sort 5.80, RMS/rope 1.52 and ~4.85 ms unattributed (plus 3.29 ms
