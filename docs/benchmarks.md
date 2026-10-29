@@ -107,6 +107,14 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   DeepGEMM's Mega MoE (FP8 activations × FP4 weights, UE8M0/32 SF, SM100 tcgen05) serves as
   the layout/fusion reference. Evidence:
   [`runs/r52_grouped_probe_5090.json`](../runs/r52_grouped_probe_5090.json).
+- **Projection fusion (measured 2026-10-30, b=16):** fusing the attention `wq_a`+`wkv` projections
+  and the shared-expert `w1`+`w3` projections (same input → one GEMM; cat-backward also merges the
+  dX/dW GEMMs) gives **59.38 → 59.00 ms (−0.39 ms, −0.66%)**, i.e. 55.86→56.20% raw and
+  36.20→36.44% discounted MFU. The fused path is not bitwise identical (step-1 loss rel diff
+  7.1e-5 because cuBLAS tiling changes the fp32 accumulation order), so it stays an **opt-in**
+  env-gated path (`NANOV41_ATTN_PROJ_FUSED`, `NANOV41_SHARED_EXPERT_FUSED`) and the default remains
+  parity-exact. Evidence:
+  [`runs/r56_projection_fusion_5090.json`](../runs/r56_projection_fusion_5090.json).
 - **Residual-tail census (measured 2026-10-30, b=16, R50-best graph):** the 57.63 ms device
   time splits into head 13.93, MoE 9.88, mHC 9.48, attention v2 kernel 5.70, small cutlass
   GEMMs 6.47, elementwise/copy/sort 5.80, RMS/rope 1.52 and ~4.85 ms unattributed (plus 3.29 ms

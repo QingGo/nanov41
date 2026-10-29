@@ -1,0 +1,60 @@
+{
+  "title": "R56: attention/shared-expert projection fusion A/B on RTX 5090 (b=16)",
+  "date": "2026-10-30",
+  "device": "NVIDIA GeForce RTX 5090 (sm_120)",
+  "torch": "2.14.1+cu130",
+  "config": "d12 seq=1024, R50-best fused paths + graph replay + AdamW outside graph",
+  "fusions": {
+    "attn_proj": "Attention.forward: cat(wq_a, wkv) -> one GEMM; cat-backward also fuses dX and dW",
+    "shared_expert": "shared Expert: cat(w1, w3) -> one GEMM (SwiGLU unchanged)"
+  },
+  "measurements_ms": {
+    "baseline": [
+      59.33,
+      59.35,
+      59.39,
+      59.4,
+      59.43
+    ],
+    "attn_proj_only": [
+      59.34
+    ],
+    "shared_expert_only": [
+      59.47
+    ],
+    "both": [
+      58.97,
+      59.0,
+      59.01,
+      59.0
+    ]
+  },
+  "step_ms_baseline_mean": 59.38,
+  "step_ms_both_mean": 59.0,
+  "delta_ms": -0.39,
+  "delta_pct": -0.66,
+  "raw_bf16_mfu_pct": {
+    "baseline": 55.86,
+    "both": 56.2
+  },
+  "discounted_mfu_pct": {
+    "baseline": 36.2,
+    "both": 36.44
+  },
+  "loss_step1": {
+    "baseline": 11.844802,
+    "both": 11.843962,
+    "rel_diff": 7.1e-05
+  },
+  "kernel_count_and_device": {
+    "both": {
+      "kernels_per_replay": 3235,
+      "device_ms": 56.78
+    }
+  },
+  "notes": [
+    "Fusion is not bitwise identical to the two-GEMM path (cuBLAS tiling for N=160/768 vs N=96/64/384 changes fp32 accumulation order): step-1 loss rel diff 7.1e-5 for both fusions.",
+    "Default stays OFF (parity-preserving); env-gated: NANOV41_ATTN_PROJ_FUSED=1, NANOV41_SHARED_EXPERT_FUSED=1.",
+    "Individually the fusions were flat (59.34 / 59.47) but the combination is consistently -0.39 ms; keep the two knobs together when using it."
+  ]
+}

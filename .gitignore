@@ -72,6 +72,7 @@ infra-refs/
 !/runs/r52_grouped_probe_5090.json
 !/runs/r54_precision_mix_5090.json
 !/runs/r55_tail_census_5090.json
+!/runs/r56_projection_fusion_5090.json
 
 # ========== internal / one-off material: default ignored, whitelist only ==========
 # Development docs: milestones, experiment notes, ops runbooks are internal by default.
