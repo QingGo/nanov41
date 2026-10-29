@@ -120,6 +120,13 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   (−0.88%) vs baseline and −0.07 ms vs the cat variant, with native loss bitwise equal to cat
   (still 7.1e-5 off the default path). Evidence:
   [`runs/r57_native_param_fusion_5090.json`](../runs/r57_native_param_fusion_5090.json).
+- **Tile-knob sweep (measured 2026-10-30, b=16, native-fusion config):** 15 variants across the
+  head-v3 K1/K2/K3 and mHC PMPF/MHC knobs — **none beats the defaults** (baseline 60.39–60.42 ms;
+  best alternatives within 0.02 ms, worst 62.78 ms). Same session, native fusion is 60.85/60.91 →
+  **60.41/60.41 ms (−0.76%)**. The tile/fusion space is now exhausted; the 35.83 ms discounted-60%
+  wall is 1.69× away and needs a different platform (grouped FP8/FP4 kernels exist on H800/B200,
+  not sm_120) or an algorithmic change. Evidence:
+  [`runs/r58_tile_sweep_5090.json`](../runs/r58_tile_sweep_5090.json).
 - **Residual-tail census (measured 2026-10-30, b=16, R50-best graph):** the 57.63 ms device
   time splits into head 13.93, MoE 9.88, mHC 9.48, attention v2 kernel 5.70, small cutlass
   GEMMs 6.47, elementwise/copy/sort 5.80, RMS/rope 1.52 and ~4.85 ms unattributed (plus 3.29 ms

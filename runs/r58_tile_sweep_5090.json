@@ -1,0 +1,100 @@
+{
+  "title": "R58: head-v3 / mHC tile-knob sweep on the native-fusion config (b=16, 5090)",
+  "date": "2026-10-30",
+  "device": "NVIDIA GeForce RTX 5090 (sm_120)",
+  "torch": "2.14.1+cu130",
+  "config": "d12 seq=1024, R50-best graph + NANOV41_PROJ_FUSE_NATIVE=1",
+  "sweep": {
+    "base": {
+      "ms": 60.42,
+      "tflops": 114.94,
+      "mfu_pct": 54.86
+    },
+    "base_end": {
+      "ms": 60.41,
+      "tflops": 114.97,
+      "mfu_pct": 54.88
+    },
+    "base_rep": {
+      "ms": 60.39,
+      "tflops": 115.0,
+      "mfu_pct": 54.89
+    },
+    "k1_bn256": {
+      "ms": 62.72,
+      "tflops": 110.73,
+      "mfu_pct": 52.85
+    },
+    "k1_s3": {
+      "ms": 60.42,
+      "tflops": 114.95,
+      "mfu_pct": 54.87
+    },
+    "k1_s5": {
+      "ms": 60.49,
+      "tflops": 114.82,
+      "mfu_pct": 54.81
+    },
+    "k1_w16": {
+      "ms": 61.71,
+      "tflops": 112.54,
+      "mfu_pct": 53.72
+    },
+    "k2_split4": {
+      "ms": 61.72,
+      "tflops": 112.52,
+      "mfu_pct": 53.71
+    },
+    "k2_w16": {
+      "ms": 60.88,
+      "tflops": 114.09,
+      "mfu_pct": 54.46
+    },
+    "k3_bt32": {
+      "ms": 61.31,
+      "tflops": 113.29,
+      "mfu_pct": 54.07
+    },
+    "k3_w16": {
+      "ms": 61.81,
+      "tflops": 112.36,
+      "mfu_pct": 53.63
+    },
+    "mhc_bd384": {
+      "ms": 60.41,
+      "tflops": 114.96,
+      "mfu_pct": 54.88
+    },
+    "mhc_rows2": {
+      "ms": 60.42,
+      "tflops": 114.96,
+      "mfu_pct": 54.87
+    },
+    "pmpf_bk64": {
+      "ms": 60.78,
+      "tflops": 114.27,
+      "mfu_pct": 54.54
+    },
+    "pmpf_bm32": {
+      "ms": 61.31,
+      "tflops": 113.27,
+      "mfu_pct": 54.07
+    },
+    "pmpf_s3": {
+      "ms": 60.42,
+      "tflops": 114.95,
+      "mfu_pct": 54.87
+    },
+    "pmpfb_bm32": {
+      "ms": 62.78,
+      "tflops": 110.63,
+      "mfu_pct": 52.8
+    }
+  },
+  "baseline_mean_ms": 60.406666666666666,
+  "conclusion": [
+    "15 head-v3 K1/K2/K3 and mHC PMPF/MHC knob variants: none beats the defaults (base 60.39-60.42 ms; best alternatives within 0.02 ms; worst 62.78 ms). The tile-knob space is exhausted.",
+    "Same-session native-fusion effect: 60.85/60.91 ms (no fusion) -> 60.41/60.41 ms (-0.46 ms / -0.76%); profile: device 57.17 ms, 3163 kernels/replay.",
+    "Status vs goal: discounted MFU 60% wall = 35.83 ms; current 60.41 ms = 1.69x away. Realistic component-floor estimate on sm_120 lands at ~42-46 ms (~48-53% discounted); 60% needs either a platform with grouped FP8/FP4 kernels (H800/B200) or an algorithmic change, not more tile/fusion tweaks."
+  ]
+}
