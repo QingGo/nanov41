@@ -160,6 +160,17 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
 
 ## 4. sm_120 NVFP4 / FP8 experiments (optional, experimental)
 
+**Grouped FP8 GEMM prototype (measured 2026-10-30, RTX 5090, torch 2.12.1+cu130):** a single
+Triton grouped kernel (`C[e] = A[e] @ B[e]`, one program per expert/tile) was benchmarked on the
+nano MoE shapes (E=16, K=384 for fwd, K=2304 for dW). It is **2.8–6.5× faster than `torch.bmm`**
+on these batched shapes, and the e4m3 variant is **1.27–1.70× faster than the bf16 variant**
+(best dW13 tile 128×128×64: **358.8 TFLOPS** vs 210.6 TFLOPS bf16). The catch is accuracy: with
+per-expert scales the FP8 result is ~3.7e-2 max-relative from the bf16 reference, so a
+per-token/block scale strategy (or a training-tolerance test) is needed before integration.
+This makes the production MoE dW segment (4.93 ms/step) the next target, starting with a bf16
+grouped rewrite. Evidence:
+[`runs/r59_grouped_fp8_proto_5090.json`](../runs/r59_grouped_fp8_proto_5090.json).
+
 [`experiments/tl_kernels/`](../experiments/tl_kernels/) contains optional TileLang kernels for
 NVFP4 block-scaled GEMM and fused FP8 casts on sm_120 (RTX 5090). They are **not** used by
 `parity.py` / `train.py` and are not covered by the performance CI. Correctness tests for the

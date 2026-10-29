@@ -1,0 +1,165 @@
+{
+  "title": "R59: grouped FP8 GEMM prototype for MoE fwd/dW on RTX 5090 (sm_120)",
+  "date": "2026-10-30",
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.12.1+cu130",
+  "kernel": "one Triton grouped kernel per expert: C[e,m,n] = A[e,m,:] @ B[e,:,n]; bf16 or e4m3 operands; per-tensor / per-expert / per-token A scales",
+  "shapes": {
+    "fwd": "E=16, M=2304, K=384, N=384 (nano tokens/expert)",
+    "dw13": "E=16, M=384, K=2304, N=768 (dW1/dW3)",
+    "dw2": "E=16, M=384, K=2304, N=384 (dW2)"
+  },
+  "results": {
+    "fwd": {
+      "shape": {
+        "E": 16,
+        "M": 2304,
+        "K": 384,
+        "N": 384
+      },
+      "bf16_bmm_ms": 0.11414192151278257,
+      "bf16_bmm_tflops": 95.24665279778475,
+      "triton_bf16_ms": 0.05414264276623726,
+      "triton_bf16_tflops": 200.79618231674922,
+      "triton_bf16_rel": 0.0,
+      "scale_mode": 2,
+      "triton_fp8_ms": 0.041336920112371445,
+      "triton_fp8_tflops": 263.0006284562623,
+      "triton_fp8_speedup_vs_bmm": 2.7612584876303305,
+      "triton_fp8_rel_vs_bf16_ref": 0.03741496428847313
+    },
+    "dw13": {
+      "shape": {
+        "E": 16,
+        "M": 384,
+        "K": 2304,
+        "N": 768
+      },
+      "bf16_bmm_ms": 0.5104605620726943,
+      "bf16_bmm_tflops": 42.59540021605735,
+      "triton_bf16_ms": 0.10340766049921513,
+      "triton_bf16_tflops": 210.2675162655385,
+      "triton_bf16_rel": 0.0,
+      "scale_mode": 1,
+      "triton_fp8_ms": 0.07804737892001867,
+      "triton_fp8_tflops": 278.59067449634733,
+      "triton_fp8_speedup_vs_bmm": 6.540393401241618,
+      "triton_fp8_rel_vs_bf16_ref": 0.038257576525211334
+    },
+    "dw2": {
+      "shape": {
+        "E": 16,
+        "M": 384,
+        "K": 2304,
+        "N": 384
+      },
+      "bf16_bmm_ms": 0.25644353590905666,
+      "bf16_bmm_tflops": 42.393877971856696,
+      "triton_bf16_ms": 0.06016093771904707,
+      "triton_bf16_tflops": 180.70921731258218,
+      "triton_bf16_rel": 0.0,
+      "scale_mode": 1,
+      "triton_fp8_ms": 0.046669901348650455,
+      "triton_fp8_tflops": 232.94748122098554,
+      "triton_fp8_speedup_vs_bmm": 5.494837754065066,
+      "triton_fp8_rel_vs_bf16_ref": 0.03734756261110306
+    },
+    "dw13_tiles": {
+      "64x64x64": {
+        "shape": {
+          "E": 16,
+          "M": 384,
+          "K": 2304,
+          "N": 768
+        },
+        "bf16_bmm_ms": 0.5123705789446831,
+        "bf16_bmm_tflops": 42.436612931179766,
+        "triton_bf16_ms": 0.10321996174752712,
+        "triton_bf16_tflops": 210.64987399611115,
+        "triton_bf16_rel": 0.0,
+        "scale_mode": 1,
+        "triton_fp8_ms": 0.07842401973903179,
+        "triton_fp8_tflops": 277.2527091617357,
+        "triton_fp8_speedup_vs_bmm": 6.533337370995218,
+        "triton_fp8_rel_vs_bf16_ref": 0.03694968670606613
+      },
+      "128x128x64": {
+        "shape": {
+          "E": 16,
+          "M": 384,
+          "K": 2304,
+          "N": 768
+        },
+        "bf16_bmm_ms": 0.5120146414265037,
+        "bf16_bmm_tflops": 42.46611361624725,
+        "triton_bf16_ms": 0.12563562020659447,
+        "triton_bf16_tflops": 173.06614079864843,
+        "triton_bf16_rel": 0.0,
+        "scale_mode": 1,
+        "triton_fp8_ms": 0.060719563625752926,
+        "triton_fp8_tflops": 358.0933497812235,
+        "triton_fp8_speedup_vs_bmm": 8.432449293975878,
+        "triton_fp8_rel_vs_bf16_ref": 0.03694968670606613
+      },
+      "64x128x64": {
+        "shape": {
+          "E": 16,
+          "M": 384,
+          "K": 2304,
+          "N": 768
+        },
+        "bf16_bmm_ms": 0.5120020173490047,
+        "bf16_bmm_tflops": 42.467160673663436,
+        "triton_bf16_ms": 0.11130005586892366,
+        "triton_bf16_tflops": 195.35724188320907,
+        "triton_bf16_rel": 0.0,
+        "scale_mode": 1,
+        "triton_fp8_ms": 0.0628295773640275,
+        "triton_fp8_tflops": 346.06745498257817,
+        "triton_fp8_speedup_vs_bmm": 8.149060344342644,
+        "triton_fp8_rel_vs_bf16_ref": 0.03694968670606613
+      },
+      "128x64x64": {
+        "shape": {
+          "E": 16,
+          "M": 384,
+          "K": 2304,
+          "N": 768
+        },
+        "bf16_bmm_ms": 0.5133683793246746,
+        "bf16_bmm_tflops": 42.35413167558707,
+        "triton_bf16_ms": 0.11150409933179617,
+        "triton_bf16_tflops": 194.99975396689075,
+        "triton_bf16_rel": 0.0,
+        "scale_mode": 1,
+        "triton_fp8_ms": 0.07188474293798208,
+        "triton_fp8_tflops": 302.4740862572022,
+        "triton_fp8_speedup_vs_bmm": 7.141548517013945,
+        "triton_fp8_rel_vs_bf16_ref": 0.03694968670606613
+      },
+      "128x128x128": {
+        "shape": {
+          "E": 16,
+          "M": 384,
+          "K": 2304,
+          "N": 768
+        },
+        "bf16_bmm_ms": 0.5125588411465287,
+        "bf16_bmm_tflops": 42.42102601793596,
+        "triton_bf16_error": "OutOfResources: out of resource: shared memory, Required: 131072, Hardware limit: 101376. Reducing block sizes or `num_stages` may help.",
+        "scale_mode": 1,
+        "triton_fp8_ms": 0.10463126003742218,
+        "triton_fp8_tflops": 207.80856436425736,
+        "triton_fp8_speedup_vs_bmm": 4.898716129034555,
+        "triton_fp8_rel_vs_bf16_ref": 0.03694968670606613
+      }
+    }
+  },
+  "conclusions": [
+    "Own Triton grouped kernel vs torch.bmm: 2.8-6.5x faster at these shapes (bmm is a poor fit).",
+    "FP8 vs our Triton bf16: 1.27-1.33x at the default 64x64x64 tile and 1.70x at the best dw13 tile 128x128x64 (358.1 TF fp8 vs 173.1 TF bf16); fp8 358.8 TF at 128x128x64.",
+    "FP8 accuracy with per-expert scales is ~3.7e-2 max relative vs bf16 reference (e4m3 activation/gradient quantization) - too high for a naive swap; needs a per-token/block scale strategy or a training-tolerance test before integration.",
+    "Production MoE dW segment is dw13 2.97 + dw 1.23 + dw_reduce 0.73 = 4.93 ms/step (~0.2475 ms/layer for dw13); this prototype's bf16 kernel is 0.104 ms/layer at the same shape, so even a bf16 grouped rewrite is worth trying before FP8.",
+    "Next: integrate a bf16 grouped dW kernel with the production padded/NOPAD layout, A/B end-to-end; then add FP8 with a tolerance/training test."
+  ]
+}
