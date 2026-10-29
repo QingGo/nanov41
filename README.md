@@ -115,6 +115,24 @@ Benchmark numbers on an RTX 5090 — W1 step breakdown, W2 best training steps (
 re-validated NVFP4/FP8 experiment numbers — are in [`docs/benchmarks.md`](docs/benchmarks.md)
 (raw evidence in [`runs/`](runs/)).
 
+## Development checks (what CI runs)
+
+CI runs on Python 3.10 and 3.12 with a pinned CPU wheel (`torch==2.14.1`); run the same
+checks locally before pushing:
+
+```bash
+python3 parity.py --dtype float32
+python3 tools/make_patched_ref.py --check
+python3 -m pytest -q -m "not slow"                      # fast subset (~40 s)
+python3 -m pytest -q -m slow                            # kernel-parity slow subset (~2 min)
+python3 -m pytest experiments/tl_kernels/tests -q       # optional-kernel CPU tests
+```
+
+Some kernel-parity gates compare aten op counts, which are torch-version dependent (the
+op decomposition changed between 2.14.1 and 2.15.0); CI therefore pins one torch version
+for the whole matrix. If you suspect a version-sensitive failure, reproduce with the
+pinned wheel in a venv, e.g. `uv venv --python 3.10 && uv pip install torch==2.14.1 pytest`.
+
 ## W2 training-step results (best measured, RTX 5090)
 
 After W1, the training path was optimized outside this repository (fused kernels, grouped MoE,
