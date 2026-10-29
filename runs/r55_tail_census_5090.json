@@ -1,0 +1,93 @@
+{
+  "title": "R55: residual-tail census + replacement candidates on RTX 5090 (b=16, R50-best config)",
+  "date": "2026-10-30",
+  "device": "NVIDIA GeForce RTX 5090 (sm_120)",
+  "torch": "2.14.1+cu130",
+  "config": "d12 seq=1024 fp8 head v3 + all R50 fused paths, graph replay + AdamW outside graph",
+  "step_ms": 60.92,
+  "device_ms": 57.63,
+  "gap_ms": 3.29,
+  "kernels_per_replay": 3235,
+  "device_breakdown_ms": {
+    "head_K1_K3_K2": {
+      "total": 13.93,
+      "parts": [
+        5.19,
+        4.6,
+        4.13
+      ]
+    },
+    "moe": {
+      "total": 9.88,
+      "parts": {
+        "_dw13_nopad": 2.97,
+        "_swiglu_fwd_nopad": 1.63,
+        "_aggemm_tb": 1.54,
+        "_dw": 1.23,
+        "_swiglu_bwd_tb": 1.12,
+        "_aggemm": 0.75,
+        "_moe_dws": 0.46,
+        "_moe_tail_fwd": 0.18
+      }
+    },
+    "mhc": {
+      "total": 9.48,
+      "parts": {
+        "_pm_pre_bwd": 2.98,
+        "_pm_pre_fwd": 2.59,
+        "_post_bwd": 1.28,
+        "_mixes_pre_bwd": 0.91,
+        "_post_fwd": 0.71,
+        "_split_sinkhorn_bwd": 0.45,
+        "_mixes_pre_fwd": 0.4,
+        "sinkhorn_fwd_est": 0.16
+      }
+    },
+    "attention_v2_kernel": 5.7,
+    "small_cutlass_gemms": 6.47,
+    "elementwise_copy_sort_fill": 5.8,
+    "rms_rope": 1.52,
+    "misc_unattributed": 4.85
+  },
+  "candidate_evaluations": {
+    "official_tilekernels_mhc": {
+      "mhc_pre_big_fuse_fwd_ms": 2.537,
+      "our_hc_mixes_plus_hc_pre_fwd_ms": 1.017,
+      "official_mhc_post_fwd_ms": 0.109,
+      "our_triton_hc_post_ms": 0.055,
+      "verdict": "official is slower on 5090; keep our Triton mHC path"
+    },
+    "official_sparse_attn_fwd": {
+      "official_ms_per_layer": 0.243,
+      "old_sparse_attn_fast_ms_per_layer": 0.999,
+      "ratio": 4.11,
+      "verdict": "fwd-only kernel with no training backward; the 4.1x is vs the old sparse_attn_fast function, not the production tl_sparse_attn_v2 kernel (v2 fwd+bwd totals 5.70 ms/step for 12 layers), so no drop-in win; deferred"
+    },
+    "optimizer_modes": {
+      "baseline_ms": 60.95,
+      "skip_opt_graph_only_ms": 57.39,
+      "opt_in_graph_ms": 61.05,
+      "verdict": "optimizer+launch = 3.56 ms; capturing AdamW in the graph loses 0.1 ms and breaks parity - keep outside"
+    },
+    "env_ab": {
+      "FAST_SHARED_EXPERT=1_ms": 60.95,
+      "mhc_fast_nx_ms": 60.96,
+      "verdict": "no change (noise); defaults already best"
+    },
+    "head_v3_tile_sweep": {
+      "default_ms": 60.98,
+      "K3_BV=128_ms": 209.29,
+      "K1_BM=32_ms": 63.64,
+      "K2_BM=128_ms": 68.94,
+      "K3_BT=128": "crash",
+      "verdict": "default tiles are best; head epilogue is a small (-0.5~-1 ms) remaining item"
+    }
+  },
+  "next_targets_ranked": [
+    "small cutlass GEMMs 6.47 ms + elementwise/copy/sort 5.80 ms: attention-projection fusion and pointwise fusions",
+    "mHC 9.48 ms: _pm_pre fwd/bwd (5.57) + _post (1.99) single-pass redesign (bandwidth 3x)",
+    "MoE dW segment (~4.2 ms incl _dw_reduce): grouped FP8 wgrad (sm120 TileLang)",
+    "attention v2 kernel 5.70 ms: backward path / band-window waste",
+    "head 13.93 -> ideal 11.65 ms: K1 epilogue"
+  ]
+}

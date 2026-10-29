@@ -107,6 +107,15 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   DeepGEMM's Mega MoE (FP8 activations × FP4 weights, UE8M0/32 SF, SM100 tcgen05) serves as
   the layout/fusion reference. Evidence:
   [`runs/r52_grouped_probe_5090.json`](../runs/r52_grouped_probe_5090.json).
+- **Residual-tail census (measured 2026-10-30, b=16, R50-best graph):** the 57.63 ms device
+  time splits into head 13.93, MoE 9.88, mHC 9.48, attention v2 kernel 5.70, small cutlass
+  GEMMs 6.47, elementwise/copy/sort 5.80, RMS/rope 1.52 and ~4.85 ms unattributed (plus 3.29 ms
+  optimizer/host gap). Candidate replacements were tested: the official TileKernels mHC is
+  **slower** than our Triton path on 5090 (2.54 vs 1.02 ms mixes+pre fwd), the official
+  sparse-attention kernel is forward-only (no training backward) and only beats the old
+  fast_attn helper rather than the production v2 kernel, optimizer-in-graph is neutral, and a
+  head-tile sweep confirms the defaults. Evidence:
+  [`runs/r55_tail_census_5090.json`](../runs/r55_tail_census_5090.json).
 - **Precision-mix / batch decision gate (measured 2026-10-30, b=16, same session):** the FP8
   head mix gives **61.12 ms / 54.24% raw bf16-MFU / 35.18% discounted MFU**; reverting the head
   to bf16 gives **86.32 ms / 38.41%** — only +3.2pp discounted, because the bf16 head path runs
