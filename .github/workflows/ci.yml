@@ -37,7 +37,17 @@ jobs:
         run: python -m pytest -q -m "not slow"
 
       - name: Tests (slow kernel-parity subset)
-        run: python -m pytest -q -m slow
+        # On failure, surface the pytest tail as an error annotation: job logs need admin
+        # rights via the API, while check-run annotations are public.
+        run: |
+          set +e
+          python -m pytest -q -m slow 2>&1 | tee /tmp/slow.log
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" -ne 0 ]; then
+            echo "::error::slow kernel-parity subset failed (rc=$rc); last 80 lines:"
+            tail -n 80 /tmp/slow.log | sed 's/^/::error::/'
+          fi
+          exit "$rc"
 
       - name: Experiments CPU tests (optional kernels)
         run: python -m pytest experiments/tl_kernels/tests -q
