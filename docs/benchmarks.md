@@ -72,6 +72,18 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
 | R50 — best at b=8, seq=1024 | 103.13 | 34.87 | 99.58 | 47.53% |
 
 - **60% bf16 wall at b=16: 55.25 ms** (125.7 TFLOP/s); R50 best is **5.2 ms** away.
+- **Where the remaining 5.18 ms is (component budget, R50 best 60.43 ms → target 55.25 ms):**
+  the FP8 head+CE is already at ~**349 TF ≈ 83% of the 419 TF FP8 peak** (≤2.35 ms of theoretical
+  room); the non-head work is **2.063 TFLOP bf16 in 46.4 ms = 44.4 TF = 21.2% of bf16 peak**, so
+  60% only needs the non-head to improve **~13% (to 50 TF)**. The slack is in the non-GEMM parts:
+  MoE ~9.0 ms (78–84% of bf16 peak, room only via FP8 wgrad), attention ~6–10 ms (memory-bound,
+  ~19% peak), mHC ~8.4 ms (bandwidth-bound, ~1% peak) and a ~21 ms residual tail (optimizer 2.7 ms,
+  attention projections/rope/indexer, embedding/norm/gate/copies, plus the 2.1 ms host/launch gap).
+  A linear fit of the measured b=8 (34.87 ms) and b=16 (60.43 ms) steps gives
+  `step ≈ 9.31 + 3.195·b`; extrapolated, **b=24 ≈ 57.8%, b=32 ≈ 59.4%, b=48 ≈ 61.1%** if the
+  32 GB fits, so a batch-size test is the cheapest route to ~60%, while the kernel route needs
+  mHC redesign + grouped FP8 MoE wgrad + head/attention fusions. Precision-MFU 60%
+  (35.83 ms) would require ~1.9× the non-head throughput and is not a short-term target.
 - **Discounted MFU (precision-fair):** weight operations by 1 / 0.5 / 0.25 for bf16 / fp8 / fp4
   and divide by the fixed 209.5 TF bf16 peak — no per-run peak swapping. R50 best (fp8 head +
   bf16 rest) = **35.58%** discounted MFU; its 60% wall is **35.83 ms**. What-if the MoE also ran
