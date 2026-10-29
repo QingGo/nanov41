@@ -8,6 +8,8 @@ the public repository — see `.gitignore`.
 |---|---|---|
 | `make_patched_ref.py` | Generates `nanov41/_ref_patched_model.py` from `ref/model.py`; `--check` verifies the checked-in file is up to date (run by CI) | Python, no GPU |
 | `ab_bench.py` | Interleaved A/B benchmark of head × MoE implementations (median of rounds, robust against host CPU contention) | CUDA |
+| `mfu_accounting.py` | Precision-discounted FLOP/MFU accounting (bf16/fp8/fp4 = 1/0.5/0.25, fixed bf16 denominator); R50 presets | Python, no GPU |
+| `v41_scaling_check.py` | Compares nano-v41 activated-parameter / decode-FLOPs scaling with the DeepSeek-V4.1-Flash report numbers | Python, no GPU |
 
 Notes:
 

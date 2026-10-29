@@ -8,3 +8,4 @@ milestone reports, experiment logs and ops runbooks live in `docs/internal/` and
 |---|---|
 | [`architecture.md`](architecture.md) | Model architecture as expressed by the official code, config invariants, and the five patches used by the training port |
 | [`benchmarks.md`](benchmarks.md) | Curated W1 benchmark numbers (CPU/Mac parity + RTX 5090 throughput) with pointers to raw JSON evidence |
+| [`v41-scaling-check.md`](v41-scaling-check.md) | Scaling sanity check against DeepSeek-V4.1-Flash decode FLOPs, plus the precision-discount convention used for MFU |

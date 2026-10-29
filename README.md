@@ -134,9 +134,17 @@ CUDA-graph capture) and measured with the internal graph-training driver. Best m
 - **bf16-MFU** is the cross-round comparable metric: `TFLOP/s ÷ 209.5 TF` (bf16 peak, fp32
   accumulate, 5090 vendor spec). At b=16 the 60% wall is **55.25 ms**, so the R50 best is
   **5.2 ms** away (114.9 vs 125.7 TFLOP/s).
-- **Precision-MFU** under the current mixed precision (fp8 head + bf16 MoE) is ≈35.6% against a
-  weighted precision peak of 322.97 TF. Since the denominator scales with precision, bf16-MFU is
-  the headline metric rather than precision-MFU.
+- **Discounted MFU (V4.1-Flash report convention):** weight bf16 / fp8 / fp4 operations by
+  **1 / 0.5 / 0.25** (report Figure 2) and divide by the fixed 209.5 TF bf16 peak — no per-run
+  peak swapping. R50 best (fp8 head + bf16 rest) = **35.6%** discounted MFU; its 60% wall is
+  35.83 ms (all-fp8 MoE what-if: 29.56 ms). The raw-FLOPs bf16-MFU above is the cross-round
+  throughput metric and is not comparable across precision mixes. See
+  [`docs/v41-scaling-check.md`](docs/v41-scaling-check.md) and
+  [`tools/mfu_accounting.py`](tools/mfu_accounting.py).
+- **Scaling check vs V4.1-Flash:** d12 matches the full model at **226.5×** down-scaling in both
+  activated parameters (16B vs 70.65M) and raw decode FLOPs (32 GFLOP vs 141.3 MFLOP); total
+  backbone params (552B, 2854×) are not a compute metric because the vocab/head are not scaled
+  and the expert activation rate differs (2/16 vs 6/384). Details in the same doc.
 - **MoE fp8 v1 did not pay off**: 60.88–60.94 ms vs 60.94 ms bf16. The MoE grouped GEMMs have
   K=384 (only 6 k-steps), so they are launch/latency-bound, and per-tile activation quantization
   inside the kernel eats the dot-product savings. The next direction (planned, **not yet

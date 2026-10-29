@@ -58,23 +58,29 @@ under [`runs/`](../runs/); this section states the measurement protocol and the 
 (graph replay + optimizer); before timing, 3 training steps are compared against eager and the
 parameter parity is reported as `parity_param_rel` (all runs below: **0.0**). Tokens/step =
 16,384 at b=16×seq=1024 (8,192 at b=8). FLOPs/token = 423.9 MFLOP (3× forward FlopCounter).
-Convention: **bf16-MFU = TFLOP/s ÷ 209.5 TF**; precision-MFU mixes the precision-specific peaks
-(see note) and is *not* comparable across precision mixes.
+Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, precision-inflated);
+**discounted MFU = Σ α·FLOPs ÷ (t · 209.5 TF)** with α = 1 / 0.5 / 0.25 for bf16 / fp8 / fp4
+(the DeepSeek-V4.1-Flash report's Figure 2 convention) and a **single fixed denominator**.
 
-| Run (b=16, seq=1024) | eager step (ms) | graph step (ms) | graph TFLOP/s | bf16-MFU | precision-MFU |
-|---|---:|---:|---:|---:|---:|
-| R42 — first graph-trained best | 122.90 | 92.08 | 75.43 | 36.0% | — |
-| R48 — best | 110.38 | 60.92 | 114.01 | 54.42% | — |
-| R49 — best (re-measured as R50 base) | 102.34 | 60.94 | 113.96 | 54.40% | 35.3% |
-| **R50 — best (+ MoE NOPAD)** | — | **60.43–60.48** | **114.83–114.93** | **54.81–54.86%** | **35.6%** |
-| R50 — MoE fp8 v1 | — | 60.88–60.94 | 114.07–113.96 | 54.40–54.45% | ≈35.3% |
-| R50 — best at b=8, seq=1024 | 103.13 | 34.87 | 99.58 | 47.53% | — |
+| Run (b=16, seq=1024) | eager step (ms) | graph step (ms) | graph TFLOP/s | raw bf16-MFU |
+|---|---:|---:|---:|---:|
+| R42 — first graph-trained best | 122.90 | 92.08 | 75.43 | 36.0% |
+| R48 — best | 110.38 | 60.92 | 114.01 | 54.42% |
+| R49 — best (re-measured as R50 base) | 102.34 | 60.94 | 113.96 | 54.40% |
+| **R50 — best (+ MoE NOPAD)** | — | **60.43–60.48** | **114.83–114.93** | **54.81–54.86%** |
+| R50 — MoE fp8 v1 | — | 60.88–60.94 | 114.07–113.96 | 54.40–54.45% |
+| R50 — best at b=8, seq=1024 | 103.13 | 34.87 | 99.58 | 47.53% |
 
 - **60% bf16 wall at b=16: 55.25 ms** (125.7 TFLOP/s); R50 best is **5.2 ms** away.
-- Precision-MFU denominator: weighted precision peak **322.97 TF** for the current mix
-  (fp8 head + bf16 MoE). If the MoE also ran fp8 the weighted peak would be ≈391.6 TF and the
-  precision-60% wall would tighten to ≈29.56 ms — i.e. converting precision does not make
-  precision-MFU look better by itself; its only justification is being faster at equal MFU.
+- **Discounted MFU (precision-fair):** weight operations by 1 / 0.5 / 0.25 for bf16 / fp8 / fp4
+  and divide by the fixed 209.5 TF bf16 peak — no per-run peak swapping. R50 best (fp8 head +
+  bf16 rest) = **35.58%** discounted MFU; its 60% wall is **35.83 ms**. What-if the MoE also ran
+  fp8 at the same 60.43 ms: discounted MFU 29.35%, 60% wall 29.56 ms — i.e. precision only helps
+  when it is actually faster at equal effective work. Tools: `tools/mfu_accounting.py`.
+- **Scaling check:** d12 matches V4.1-Flash **226.5×** down-scaling in both activated parameters
+  (16B vs 70.65M) and raw decode FLOPs (32 GFLOP vs 141.3 MFLOP); total backbone params (552B,
+  2854×) are **not** a compute-scaling metric. See
+  [`v41-scaling-check.md`](v41-scaling-check.md).
 - **Negative result — MoE fp8 v1**: kernel-level wins (`_aggemm_tb` −25%, `_swiglu_fwd` −5.4%)
   were cancelled by the added per-layer weight/activation quantization (~0.45 ms) and the
   latency-bound K=384 grouped GEMMs. End-to-end step was unchanged (60.88–60.94 vs 60.94 ms).
