@@ -20,6 +20,7 @@ steps (internal graph-training driver, r42/r48/r49/r50), and the 2026-10-28 GPU 
 | `r50_best_b8.json` | W2 best at b=8 | b=8, seq=1024 | 34.87 ms/step, 99.58 TFLOP/s, 47.53% bf16-MFU |
 | `r50_fp8.json` | MoE fp8 v1 (negative result) | b=16, seq=1024 | 60.94 ms/step, 54.40% — no gain vs bf16 |
 | `r51_fp4_expert_microbench_5090.json` | R51: MXFP4-QAT expert weights + FP8 compute / FP8 wgrad microbench | d12 expert shapes + full V4.1 expert shapes | nano shapes: FP8 not faster (0.0103 vs 0.0083 ms graph-replay wgrad); full V4.1 shapes: FP8 1.76–2.43× faster; 30-step QAT loss 0.2499→0.1486 vs bf16 →0.1412 |
+| `r52_grouped_probe_5090.json` | R52 Step-0: grouped/batched execution probe (grouped vs low precision) | 1 layer × 16 experts, nano + full V4.1 shapes | nano: eager 36–45 TF → graph/bmm 83–105 TF (2.0–2.3×); full-scale: no gain (already 206 TF); `torch._scaled_grouped_mm` FP8 refuses sm_120 |
 
 Interpretation and caveats: [`../docs/benchmarks.md`](../docs/benchmarks.md). Other JSON files
 that may exist in this directory locally are experiment output and are not part of the repository.

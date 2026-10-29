@@ -1,0 +1,61 @@
+{
+  "title": "R52 Step-0: grouped/batched execution probe on RTX 5090 (does grouping unlock low precision?)",
+  "date": "2026-10-29",
+  "device": "NVIDIA GeForce RTX 5090 (sm_120, 170 SMs), 32GB",
+  "torch": "2.12.1+cu130 (image python)",
+  "nano_1_layer_16experts": {
+    "fwd": {
+      "eager_loop_ms": 0.6439708918333054,
+      "batched_bmm_ms": 0.27514785528182983,
+      "graph_loop_ms": 0.3217172995209694,
+      "bmm_speedup": 2.340453975822183,
+      "graph_speedup": 2.0016669690817532,
+      "eager_tflops": 45.019160983295585,
+      "bmm_tflops": 105.36527431153304,
+      "graph_tflops": 90.11336751603677
+    },
+    "wgrad": {
+      "eager_loop_ms": 0.8096032589673996,
+      "batched_bmm_ms": 1.1035101115703583,
+      "graph_loop_ms": 0.34942131489515305,
+      "bmm_speedup": 0.733661840049012,
+      "graph_speedup": 2.31698303582404,
+      "eager_tflops": 35.80893348302021,
+      "bmm_tflops": 26.271648029345286,
+      "graph_tflops": 82.96869141110928
+    }
+  },
+  "fullv41_1_layer_16experts": {
+    "fwd": {
+      "eager_loop_ms": 11.23703196644783,
+      "batched_bmm_ms": 11.861280649900436,
+      "graph_loop_ms": 11.242210268974304,
+      "bmm_speedup": 0.9473708866792688,
+      "graph_speedup": 0.9995393875045404,
+      "eager_tflops": 206.3963461850999,
+      "bmm_tflops": 195.5338894927394,
+      "graph_tflops": 206.3012774490298
+    },
+    "wgrad": {
+      "eager_loop_ms": 11.274428814649582,
+      "batched_bmm_ms": 11.896057948470116,
+      "graph_loop_ms": 11.220526918768883,
+      "bmm_speedup": 0.9477449474007918,
+      "graph_speedup": 1.0048038649406505,
+      "eager_tflops": 205.71173741648084,
+      "bmm_tflops": 194.96225975750812,
+      "graph_tflops": 206.6999488197362
+    }
+  },
+  "torch_grouped_fp8": {
+    "api_present": true,
+    "supported_on_sm120": false,
+    "error": "ValueError: torch._scaled_grouped_mm is only supported on CUDA devices with compute capability = [9.0, 10.0], or ROCm MI300+"
+  },
+  "conclusion": [
+    "At nano d12 shapes (1 layer x 16 experts, dim=inter=384, T=2048) eager per-expert bf16 loops run at 36-45 TFLOPS; wrapping the same loop in a CUDA graph (launch-free) or batched bmm raises it to 83-105 TFLOPS (2.0-2.3x). Grouping fixes occupancy/launch, not per-tile efficiency: it is 2.3x, not 5x.",
+    "At full V4.1 expert shapes the eager loop is already 206 TFLOPS and grouping adds nothing (0.95-1.00x), so grouped execution only matters for the small nano shapes.",
+    "torch._scaled_grouped_mm (the official grouped FP8 path) refuses sm_120 outright: 'only supported on CUDA devices with compute capability = [9.0, 10.0]'. DeepGEMM's grouped/Mega MoE kernels are SM90/SM100-only as well, so a 5090 grouped FP8/FP4 kernel has to be written in TileLang/Triton; the official Mega MoE (FP8 activations x FP4 weights, SM100 tcgen05) is a design reference for layout/fusion, not a drop-in.",
+    "Combined estimate: grouped(+graph) bf16 on nano MoE GEMMs is the first 2x; FP8 on top needs the custom grouped kernel before its extra peak can show."
+  ]
+}

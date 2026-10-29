@@ -86,6 +86,15 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   scale decreased loss 0.2499→0.1486 vs bf16 →0.1412 (+5.2% final loss), i.e. QAT trains but
   the throughput win only appears at target scale. Evidence:
   [`runs/r51_fp4_expert_microbench_5090.json`](../runs/r51_fp4_expert_microbench_5090.json).
+- **Grouped/CUDA-graph execution is the bigger nano-scale lever (R52 Step-0, 2026-10-29):** a
+  one-layer, 16-expert bf16 microbench runs at 36–45 TFLOPS as an eager per-expert loop, and at
+  **83–105 TFLOPS (2.0–2.3×)** once the same work is CUDA-graph-captured or batched; at full
+  V4.1 expert shapes the loop is already at 206 TFLOPS and grouping adds nothing. The official
+  grouped FP8 path (`torch._scaled_grouped_mm`) and DeepGEMM's grouped/Mega MoE kernels are
+  gated to SM90/SM100, so a 5090 grouped FP8/FP4 kernel must be written in TileLang/Triton;
+  DeepGEMM's Mega MoE (FP8 activations × FP4 weights, UE8M0/32 SF, SM100 tcgen05) serves as
+  the layout/fusion reference. Evidence:
+  [`runs/r52_grouped_probe_5090.json`](../runs/r52_grouped_probe_5090.json).
 - **Scaling check:** d12 matches V4.1-Flash **226.5×** down-scaling in both activated parameters
   (16B vs 70.65M) and raw decode FLOPs (32 GFLOP vs 141.3 MFLOP); total backbone params (552B,
   2854×) are **not** a compute-scaling metric. See
