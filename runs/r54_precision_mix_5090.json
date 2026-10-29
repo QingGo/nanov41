@@ -1,0 +1,66 @@
+{
+  "title": "R54 decision gate: precision mix (FP8 vs bf16 head) x batch size on RTX 5090",
+  "date": "2026-10-30",
+  "device": "NVIDIA GeForce RTX 5090 (sm_120)",
+  "torch": "2.14.1+cu130",
+  "driver": "internal graph-training driver (tools/bench_graph_train.py), same machine/session",
+  "protocol": "d12, seq=1024, graph replay + AdamW outside graph, 3-step parameter parity (all runs: 0.0), median of 20 replays; FLOPs/token = 423.9 MFLOP (3x forward).",
+  "results": {
+    "fp8_head_b16": {
+      "ms": 61.12,
+      "tflops": 113.63,
+      "raw_bf16_mfu_pct": 54.24,
+      "discounted_mfu_pct": 35.17,
+      "peak_mem_gib": 13.24
+    },
+    "bf16_head_b16": {
+      "ms": 86.32,
+      "tflops": 80.46,
+      "raw_bf16_mfu_pct": 38.41,
+      "discounted_mfu_pct": 38.41,
+      "peak_mem_gib": 13.43
+    },
+    "bf16_head_b24": {
+      "ms": 125.83,
+      "tflops": 82.79,
+      "raw_bf16_mfu_pct": 39.52
+    },
+    "bf16_head_b32": {
+      "ms": 165.74,
+      "tflops": 83.81,
+      "raw_bf16_mfu_pct": 40.0
+    },
+    "bf16_head_b48": {
+      "ms": 248.0,
+      "tflops": 84.01,
+      "raw_bf16_mfu_pct": 40.1
+    },
+    "fp8_head_b24_b48": {
+      "note": "invalid as fp8: fused_ce_head_v3 asserts TP*V < 2**31 (TP*V = 3.18e9 at b=24), install() silently fell back to the bf16 head; measured 126.18/165.60/247.82 ms = the bf16 numbers within 0.4%."
+    }
+  },
+  "component_census_b16_fp8_head": {
+    "step_ms": 61.03,
+    "device_ms": 57.63,
+    "gap_ms": 3.4,
+    "kernels_per_replay": 3235,
+    "head_K1_K2_K3_ms": [
+      5.18,
+      4.12,
+      4.59
+    ],
+    "head_total_ms": 13.88,
+    "attention_kernel_kernel_ms": 5.71,
+    "moe_group_ms": 9.94,
+    "mhc_group_ms": 9.31,
+    "residual_tail_ms": 18.79,
+    "note": "device = 57.63 ms; residual tail (projections/gate/shared expert/norm/rope/copies/sort/fill) is derived by subtraction of the named groups."
+  },
+  "conclusions": [
+    "R50's fp8-head mix reproduces at b=16 (61.12 ms here vs 60.43 ms best on another host; same-session comparisons are the valid ones).",
+    "Reverting the FP8 head to bf16 gives 86.32 ms (+25.2 ms) and 38.41% discounted MFU - only +3.2pp over the current mix's 35.18% - because the bf16 head path runs at ~60% of bf16 peak, not at peak. It is not a cheap hedge for the discounted-MFU target.",
+    "Batch scaling cannot reach 60% either: b>=24 FP8 silently falls back (int32 TP*V limit), and the all-bf16 b=16/24/32/48 points fit ~5.0 ms per 1k tokens, i.e. ~41% discounted asymptote. This is consistent with the earlier marginal analysis (~42% asymptote for the current mix).",
+    "Discounted 60% = 35.83 ms at b=16; from 61.03 ms it needs -25.2 ms and therefore a component-level program (head -2.2, MoE -3.5~-4.5 via grouped FP8, attention -2.5~-4, mHC -4.5~-5.5, tail/other -6~-9, gap -1) - only if every floor lands (34-41 ms => 58-69%).",
+    "Fix applied: fused_ce_head_v3 now warns once when it silently falls back to the bf16 head, and its docstring documents the TP*V < 2**31 limit."
+  ]
+}

@@ -107,6 +107,15 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   DeepGEMM's Mega MoE (FP8 activations × FP4 weights, UE8M0/32 SF, SM100 tcgen05) serves as
   the layout/fusion reference. Evidence:
   [`runs/r52_grouped_probe_5090.json`](../runs/r52_grouped_probe_5090.json).
+- **Precision-mix / batch decision gate (measured 2026-10-30, b=16, same session):** the FP8
+  head mix gives **61.12 ms / 54.24% raw bf16-MFU / 35.18% discounted MFU**; reverting the head
+  to bf16 gives **86.32 ms / 38.41%** — only +3.2pp discounted, because the bf16 head path runs
+  at ~60% of bf16 peak, so "go all-bf16" is not a cheap hedge. Batch scaling cannot reach 60%
+  either: the FP8 head v3 has an int32 offset limit (`TP·V < 2³¹` cap; ≤16,610 tokens at
+  V=129,280), so b≥24 silently fell back to the bf16 head, and the all-bf16 b=16→48 points fit
+  ~5.0 ms per 1k tokens ⇒ ~41% discounted asymptote. Reaching discounted 60% (35.83 ms) needs
+  component-level work (head, MoE, attention, mHC, tail), which is the current W2 line. Evidence:
+  [`runs/r54_precision_mix_5090.json`](../runs/r54_precision_mix_5090.json).
 - **Scaling check:** d12 matches V4.1-Flash **226.5×** down-scaling in both activated parameters
   (16B vs 70.65M) and raw decode FLOPs (32 GFLOP vs 141.3 MFLOP); total backbone params (552B,
   2854×) are **not** a compute-scaling metric. See

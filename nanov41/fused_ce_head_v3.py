@@ -35,6 +35,14 @@ exp 后 p 差 3.5×。改成存**概率域** exp(l − tilemax)：
     smem：  5090 每 CTA 只有 99 KB（不是 227 KB）⇒ stages*(A+B) ≤ 96 KB；num_warps=16 + 196 KB 累加器会
             spill 到 289 ms。K1 取 BM=64（acc 32 KB ⇒ 2 CTA/SM）比 BM=128 快 1.1 ms。
 
+## 限制：int32 偏移 ⇒ TP·V < 2³¹
+
+K1 的 P（TP×V, e4m3）与 TM/TS 用 **int32** 偏移索引，`_check_shapes` 断言 `TP*V < 2**31`。
+V=129,280 时上限 **TP ≤ 16,610**（即 b=16×seq=1024 是当前测到的最大 token/step）。
+更大的 batch 会触发断言：`install()` 默认**静默回退**到 bf16 head（`NANOV41_HEAD_FP8=0` 路径），
+表现为 fp8 与 bf16 的 step 时间几乎相同；设 `NANOV41_V3_STRICT=1` 可让异常直接抛出。回退时现在会打印一次
+warning。若要让大 batch 继续走 fp8 head，需要把 P/offset 改成 int64 或按 token 分块处理。
+
 ## 数值口径（本机 CPU 仿真 /tmp/sim_v2v3.py，T=256 V=129280 d=384 BN=128）
 
 两条路都跑在**同一组 fp8 量化操作数**上，差别只有"logits 怎么存 / d 怎么算"：
@@ -463,9 +471,13 @@ def install() -> None:
                 and available()):
             try:
                 return fused_head_ce_v3(hidden, weight, ids, ignore_index)
-            except Exception:  # noqa: BLE001
+            except Exception as exc:  # noqa: BLE001
                 if os.environ.get("NANOV41_V3_STRICT"):
                     raise
+                if not getattr(_patched, "_warned_fallback", False):
+                    _patched._warned_fallback = True
+                    print(f"[nanov41] fused_ce_head_v3 fell back to the bf16 head: "
+                          f"{type(exc).__name__}: {exc}", file=sys.stderr, flush=True)
         return cur(hidden, weight, ids, chunk, ignore_index, z_loss)
 
     _patched._nanov41_v3 = True
