@@ -127,6 +127,15 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   wall is 1.69× away and needs a different platform (grouped FP8/FP4 kernels exist on H800/B200,
   not sm_120) or an algorithmic change. Evidence:
   [`runs/r58_tile_sweep_5090.json`](../runs/r58_tile_sweep_5090.json).
+- **Head+CE cost decomposition (measured 2026-10-30):** isolated b=16 head+CE is **40.65 ms** on the
+  bf16 fused path (chunk 8192; ideal 3-GEMM 23.29 ms at 209.5 TF) vs **14.95 ms** for FP8 v3. The
+  bf16 profile is GEMMs 28.5 ms (dX-side GEMM 15.0 vs 7.77 ideal) + bf16 softmax 6.58 ms + CE
+  kernels 4.6 ms, which is why the all-bf16 step takes 86.32 ms — keeping the FP8 head is the
+  **throughput** choice (60.41 ms). Proxy caveat: because a bf16 FLOP counts 1 and an fp8 FLOP 0.5
+  in the discounted convention, the slower all-bf16 step still scores a higher discounted MFU
+  (38.41% vs 35.59%); that earlier "all-bf16 for discounted MFU" route is **superseded** by the
+  throughput-first objective, and discounted MFU is disclosed only as a precision-fair proxy.
+  Evidence: [`runs/r60_head_isolation_5090.json`](../runs/r60_head_isolation_5090.json).
 - **Residual-tail census (measured 2026-10-30, b=16, R50-best graph):** the 57.63 ms device
   time splits into head 13.93, MoE 9.88, mHC 9.48, attention v2 kernel 5.70, small cutlass
   GEMMs 6.47, elementwise/copy/sort 5.80, RMS/rope 1.52 and ~4.85 ms unattributed (plus 3.29 ms

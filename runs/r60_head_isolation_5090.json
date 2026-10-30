@@ -1,0 +1,70 @@
+{
+  "title": "R60: isolated bf16 vs FP8 head+CE cost (discounted-60% route correction)",
+  "date": "2026-10-30",
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.12.1+cu130",
+  "shape": {
+    "b": 16,
+    "s": 1024,
+    "V": 129280,
+    "D": 384
+  },
+  "ideal_bf16_head_ce_ms": 23.294303532601432,
+  "measurements": {
+    "ideal_bf16_b16": {
+      "tflop": 4.88015659008,
+      "ms_at_209.5tf": 23.294303532601432
+    },
+    "bf16_chunk2048_b16": {
+      "ms": 45.31358927488327,
+      "b": 16,
+      "mode": "bf16",
+      "chunk": 2048,
+      "loss": 11.769806861877441
+    },
+    "bf16_chunk8192_b16": {
+      "ms": 40.64986668527126,
+      "b": 16,
+      "mode": "bf16",
+      "chunk": 8192,
+      "loss": 11.769805908203125
+    },
+    "fp8_v3_b16": {
+      "ms": 14.950629323720932,
+      "b": 16,
+      "mode": "v3",
+      "chunk": null,
+      "loss": 11.769808769226074
+    },
+    "bf16_chunk2048_b32": {
+      "ms": 90.75284749269485,
+      "b": 32,
+      "mode": "bf16",
+      "chunk": 2048,
+      "loss": 11.769765853881836
+    },
+    "fp8_v3_b32": {
+      "ms": 91.03912953287363,
+      "b": 32,
+      "mode": "v3",
+      "chunk": null,
+      "loss": 11.769765853881836
+    }
+  },
+  "profile_bf16_head_ms": {
+    "gemm_128x256_tn": 15.0,
+    "gemm_64x128_nn": 6.93,
+    "gemm_64x256_nt": 6.59,
+    "cunn_softmax_bf16": 6.58,
+    "ce_fwd_kernel": 2.56,
+    "misc_elementwise": 1.34,
+    "total": 38.999,
+    "fwd_gemm_only": 7.589
+  },
+  "conclusions": [
+    "Isolated b=16 head+CE: bf16 fused path 40.65 ms (chunk 8192) / 45.31 (chunk 2048) vs ideal 3-GEMM 23.29 ms and FP8 v3 14.95 ms.",
+    "The bf16 head profile shows where the gap is: the three GEMMs take 28.5 ms (the dX-side 128x256 GEMM alone is 15.0 ms vs 7.77 ideal), and the bf16 softmax + CE kernels add ~9.1 ms (softmax 6.58 + ce_fwd 2.56 + misc).",
+    "Discounted-MFU consequence: a bf16 FLOP counts 1, fp8 0.5, so the fp8 head is only a win if it is >=2x faster than the (optimized) bf16 head. Current all-bf16 step is 86.32 ms with 38.41% discounted MFU, already above the 35.59% of the fp8-head mix - the route to 60% is to optimize the bf16 head and the non-head blocks, then use b=24/32.",
+    "FP8 v3 at b=32 silently falls back to bf16 (int32 TP*V limit, already warned in v0.2.12)."
+  ]
+}
