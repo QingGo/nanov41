@@ -20,7 +20,7 @@ Components preserved by the port:
 | Component | Notes |
 |---|---|
 | Hyper-Connections (HC) | `hc_mult` residual copies + Sinkhorn `comb`; numerically sensitive (see limitations) |
-| Engram | n-gram hash memory; **disabled** in nano configs (`engram_layer_ids=[]`) because it needs the DeepSeek tokenizer |
+| Engram | n-gram hash memory; **required in the OPD student** (policy in `engram-integration-plan.md`, sizing in `engram-design.md`); training path in `nanov41/nano_engram.py` / `train.py --engram`; still disabled in the scratch configs until the P1 GPU items land |
 | MoE | sqrtsoftplus gate, shared expert, SwiGLU clamps, `norm_topk_prob`, `route_scale=1.5` |
 | Attention | MLA-style latent attention with grouped low-rank output projection + compression/ indexer paths |
 | MTP / DSpark heads | stubbed out of scope for v0 (`n_mtp_layers=0`, `dspark_block_size=0`) |
@@ -48,7 +48,10 @@ These must hold for the reference code to behave correctly:
    **first layer of the group**.
 3. That first layer must be listed in both `kv_source_layers` and `index_source_layers`.
 4. A `ratio-1` group is the CED decoder: every token gets a global KV projection.
-5. `index_source_layers ⊆ kv_source_layers` (only KV owners can build index keys).
+5. `index_source_layers ⊇ kv_source_layers`：超出的层是 **Reindex 模式**（复用最近 main KV 与 indexer
+   K，只重算 indexer Q/Top-K）；index source 必须位于 `compress_ratios[l] > 0` 的层，且每层 key 缓存
+   尺寸由该层 ratio 决定（同一 ratio 组内共享）。官方 config 即 `index_source ⊃ kv_source`
+   （Reindex 层 24/28/32/36）。
 6. `n_heads % o_groups == 0` and `(n_heads * head_dim) % o_groups == 0`.
 
 ## 4. Training port: five documented patches

@@ -4,6 +4,12 @@ All numbers below were produced by this repository's own scripts. Raw JSON evide
 GPU runs is checked in under [`runs/`](../runs/). Absolute throughput is sensitive to
 torch/CUDA/driver versions and host CPU contention — compare within a run, not across machines.
 
+> **Target update (2026-10-31):** the project goal is **60% precision-discounted MFU**, not 60%
+> raw bf16-MFU. R50 best is **35.58% discounted**; 60% discounted at the R50 mix is **35.83 ms**,
+> so the gap is **1.69×**. The 55.25 ms raw-60% wall below is a diagnostic, not the target. R58’s
+> component floor is **42–46 ms (~48–53% discounted)**; 60% on sm_120 needs a different platform
+> or an algorithmic change. See [`optimization-playbook.md`](optimization-playbook.md).
+
 ## 1. CPU / Apple MPS parity and smoke tests
 
 Measured 2026-10-27 on macOS arm64: Python 3.13.2, torch 2.9.0, 4 CPU threads, MPS available,
@@ -71,19 +77,20 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
 | R50 — MoE fp8 v1 | — | 60.88–60.94 | 114.07–113.96 | 54.40–54.45% |
 | R50 — best at b=8, seq=1024 | 103.13 | 34.87 | 99.58 | 47.53% |
 
-- **60% bf16 wall at b=16: 55.25 ms** (125.7 TFLOP/s); R50 best is **5.2 ms** away.
-- **Where the remaining 5.18 ms is (component budget, R50 best 60.43 ms → target 55.25 ms):**
-  the FP8 head+CE is already at ~**349 TF ≈ 83% of the 419 TF FP8 peak** (≤2.35 ms of theoretical
-  room); the non-head work is **2.063 TFLOP bf16 in 46.4 ms = 44.4 TF = 21.2% of bf16 peak**, so
-  60% only needs the non-head to improve **~13% (to 50 TF)**. The slack is in the non-GEMM parts:
+- **Raw-60% diagnostic (not the project target): bf16 wall at b=16 is 55.25 ms**
+  (125.7 TFLOP/s); R50 best is **5.2 ms** away. The project target is 60% **discounted** (35.83 ms).
+- **Where the 5.18 ms is (raw-60 diagnostic, not the project target):** the FP8 head+CE is
+  already at ~**349 TF ≈ 83% of the 419 TF FP8 peak** (≤2.35 ms of theoretical room); the non-head
+  work is **2.063 TFLOP bf16 in 46.4 ms = 44.4 TF = 21.2% of bf16 peak**, so the *raw* 60% wall
+  only needs the non-head to improve **~13% (to 50 TF)**. The slack is in the non-GEMM parts:
   MoE ~9.0 ms (78–84% of bf16 peak, room only via FP8 wgrad), attention ~6–10 ms (memory-bound,
   ~19% peak), mHC ~8.4 ms (bandwidth-bound, ~1% peak) and a ~21 ms residual tail (optimizer 2.7 ms,
   attention projections/rope/indexer, embedding/norm/gate/copies, plus the 2.1 ms host/launch gap).
   A linear fit of the measured b=8 (34.87 ms) and b=16 (60.43 ms) steps gives
-  `step ≈ 9.31 + 3.195·b`; extrapolated, **b=24 ≈ 57.8%, b=32 ≈ 59.4%, b=48 ≈ 61.1%** if the
-  32 GB fits, so a batch-size test is the cheapest route to ~60%, while the kernel route needs
-  mHC redesign + grouped FP8 MoE wgrad + head/attention fusions. Precision-MFU 60%
-  (35.83 ms) would require ~1.9× the non-head throughput and is not a short-term target.
+  `step ≈ 9.31 + 3.195·b`; extrapolated raw values are **b=24 ≈ 57.8%, b=32 ≈ 59.4%,
+  b=48 ≈ 61.1%** if the 32 GB fits, but these are raw-MFU projections, not the discounted target.
+  The **project target is 60% discounted (35.83 ms)**, which requires ~1.69× overall (and ~1.9×
+  non-head) and is not reachable on sm_120 with tile/fusion alone.
 - **Discounted MFU (precision-fair):** weight operations by 1 / 0.5 / 0.25 for bf16 / fp8 / fp4
   and divide by the fixed 209.5 TF bf16 peak — no per-run peak swapping. R50 best (fp8 head +
   bf16 rest) = **35.58%** discounted MFU; its 60% wall is **35.83 ms**. What-if the MoE also ran
@@ -124,17 +131,16 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   head-v3 K1/K2/K3 and mHC PMPF/MHC knobs — **none beats the defaults** (baseline 60.39–60.42 ms;
   best alternatives within 0.02 ms, worst 62.78 ms). Same session, native fusion is 60.85/60.91 →
   **60.41/60.41 ms (−0.76%)**. The tile/fusion space is now exhausted; the 35.83 ms discounted-60%
-  wall is 1.69× away and needs a different platform (grouped FP8/FP4 kernels exist on H800/B200,
-  not sm_120) or an algorithmic change. Evidence:
+  wall is the project target, 1.69× away, and needs a different platform (grouped FP8/FP4 kernels
+  exist on H800/B200, not sm_120) or an algorithmic change. Evidence:
   [`runs/r58_tile_sweep_5090.json`](../runs/r58_tile_sweep_5090.json).
 - **Head+CE cost decomposition (measured 2026-10-30):** isolated b=16 head+CE is **40.65 ms** on the
   bf16 fused path (chunk 8192; ideal 3-GEMM 23.29 ms at 209.5 TF) vs **14.95 ms** for FP8 v3. The
   bf16 profile is GEMMs 28.5 ms (dX-side GEMM 15.0 vs 7.77 ideal) + bf16 softmax 6.58 ms + CE
   kernels 4.6 ms, which is why the all-bf16 step takes 86.32 ms — keeping the FP8 head is the
-  **throughput** choice (60.41 ms). Proxy caveat: because a bf16 FLOP counts 1 and an fp8 FLOP 0.5
-  in the discounted convention, the slower all-bf16 step still scores a higher discounted MFU
-  (38.41% vs 35.59%); that earlier "all-bf16 for discounted MFU" route is **superseded** by the
-  throughput-first objective, and discounted MFU is disclosed only as a precision-fair proxy.
+  **throughput** choice (60.41 ms). For the current 60% discounted target, all-bf16 is **not** a cheap hedge: it would need
+  55.25 ms at 60% discounted vs 86.32 ms measured. The slower all-bf16 step scores a higher
+  discounted MFU (38.41% vs 35.59%) but is still far from 60%; raw throughput is a diagnostic.
   Evidence: [`runs/r60_head_isolation_5090.json`](../runs/r60_head_isolation_5090.json).
 - **Residual-tail census (measured 2026-10-30, b=16, R50-best graph):** the 57.63 ms device
   time splits into head 13.93, MoE 9.88, mHC 9.48, attention v2 kernel 5.70, small cutlass
@@ -151,8 +157,9 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
   at ~60% of bf16 peak, so "go all-bf16" is not a cheap hedge. Batch scaling cannot reach 60%
   either: the FP8 head v3 has an int32 offset limit (`TP·V < 2³¹` cap; ≤16,610 tokens at
   V=129,280), so b≥24 silently fell back to the bf16 head, and the all-bf16 b=16→48 points fit
-  ~5.0 ms per 1k tokens ⇒ ~41% discounted asymptote. Reaching discounted 60% (35.83 ms) needs
-  component-level work (head, MoE, attention, mHC, tail), which is the current W2 line. Evidence:
+  ~5.0 ms per 1k tokens ⇒ ~41% discounted asymptote. Reaching the project target of discounted 60% (35.83 ms) needs component-level work
+  (head, MoE, attention, mHC, tail) **plus** either a platform with grouped FP8/FP4 or an
+  algorithmic change; R58’s component floor is 42–46 ms (48–53%). Evidence:
   [`runs/r54_precision_mix_5090.json`](../runs/r54_precision_mix_5090.json).
 - **Scaling check:** d12 matches V4.1-Flash **226.5×** down-scaling in both activated parameters
   (16B vs 70.65M) and raw decode FLOPs (32 GFLOP vs 141.3 MFLOP); total backbone params (552B,
@@ -166,6 +173,57 @@ Conventions: **raw bf16-MFU = TFLOP/s ÷ 209.5 TF** (cross-round throughput, pre
 - **Reproducing**: the driver is internal, so these numbers cannot be reproduced from this
   checkout; the JSON files under `runs/` are the primary evidence. Absolute timings are single
   session and host-CPU sensitive (see the re-run caveat in §2).
+
+### R69 — MFU push (measured 2026-11-05; torch 2.12.1 → 2.14.1+cu130, tilelang 0.1.15)
+
+Five opt-in flags were accepted after same-session interleaved A/B; every run keeps the 3-step
+eager-vs-graph parameter parity at **0.0**. Numbers below are this session's; the host moved ~3%
+between rounds, so same-round deltas are the authoritative metric (evidence:
+[`runs/r69_mfu_5090.json`](../runs/r69_mfu_5090.json)).
+
+| Config (b=16, seq=1024) | graph step (ms) | tok/s | raw bf16-MFU | Δ same-round |
+|---|---:|---:|---:|---:|
+| R50-env baseline (this session) | 59.90 / 61.64 | 273.5k / 265.8k | 55.3% / 53.8% | — |
+| + mHC V4 split (`NANOV41_MHC_V4=1 V4_MODE=split`) | 59.03 | 277.5k | 56.2% | **−1.44%** |
+| + MoE fast layout (`MOE_LAYOUT=fast`) | 59.61 | 274.9k | 55.6% | −0.49% |
+| + attention bf16 compress-dkv (`ATTN_DKV_BF16=1`) | 58.17 | 281.7k | 57.0% | −0.77% on top of the two above |
+| + MoE DWS inline (`MOE_DWS_INLINE=1`) | 57.19 | 286.5k | 58.0% | **−1.63%** |
+| + MoE fwd/bwd BK=64 (`MOE_TILE=64,64,64,4,3`) | 57.61 | 284.4k | 57.5% | −0.91% |
+| **accepted R69 env** (all five, measured on a slower-host round) | **58.78** | **278.7k** | **56.4%** | **−4.64% vs same-round base** |
+| R69 env + 4× gradient accumulation | 229.19 / 4 micro-batches | **285.9k** | **57.9%** | −2.41%/token |
+
+- **Estimates on the faster host state** (component-stacked, from same-round deltas): R69 env
+  ≈ **56.7 ms / 289.2k tok/s / 58.5% raw MFU**; with 4× accumulation ≈ **55.3 ms / 296.2k tok/s /
+  59.9% raw MFU**. Measured absolute best in the session: **58.14 ms / 281.8k tok/s / 57.0%**.
+- **Rejected**: the earlier MoE R65 bundle (+2.40%; its FUSED_DY part is +0.89% on W2), projection
+  fusion (+0.45%; R56/R57's earlier −0.7% does not reproduce on this base), attention v2 `G=4`
+  (+0.13%), `V3_PMPFB_BK=64` (+0.10%), optimizer-inside-graph (−0.39% but 3-step parity 1.62),
+  CE chunk 4096/16384 (no change).
+- **Optimizer is 4.39 ms/step (7.5%)**: `--skip-opt` measures 53.75 ms vs 58.14 ms. 4× gradient
+  accumulation amortizes it (parity 0.0 vs eager accumulation; effective batch becomes 4×16K).
+- **Kernel census** (device 56.27 ms/replay, 2857 kernels): head K1/K2/K3 13.77 ms (already ≈83% of
+  the fp8 peak), attention TileLang 5.31 ms (47 launches), MoE ~9.5 ms, mHC ~6.8 ms, small cutlass
+  GEMMs ~6.6 ms, elementwise/copy/sort ~4.4 ms (incl. 100 vectorized `add` kernels 2.13 ms of
+  gradient accumulation and 0.83 ms CUB radix sorts). The remaining slack is bandwidth-bound.
+- **torch 2.14.1 upgrade (same host/GPU, follow-up 2026-11-05):** the image's torch was 2.12.1;
+  installing the R50/R63 known-good stack (torch 2.14.1+cu130 + triton 3.8.0, tilelang 0.1.15 reused
+  from the base env via `venv --system-site-packages`, `tools/setup_torch214.sh`) is a **device-side
+  win**: same-host 2×2 with 2 interleaved rounds — base config 61.46 → 61.13 ms (**−0.54%**), R69
+  config 58.67 → **57.54 ms (−1.93%)**, eager host cost unchanged (113.4 vs 113.2 ms). The R69 flag
+  effect grows from −4.53% (2.12) to −5.87% (2.14). With 4× accumulation the new best is
+  **55.83 ms per 16K tokens = 293.5k tok/s / 59.4% raw bf16-MFU** (vs 57.06 ms on 2.12.1, −2.15%);
+  3-step parity stays **0.0** and the GPU kernel tests (`test_fast_attn_v3`, `test_moe_fast_layout`)
+  pass under the new stack. torch 2.14 also has `set_override_stale_capture_stream` (the harness
+  prints `override API: True`), so future harness versions can capture after the eager baseline
+  again; the current capture-first grad-mode recipe keeps working unchanged. Evidence:
+  [`runs/r69_mfu_5090.json`](../runs/r69_mfu_5090.json) `torch214_upgrade`.
+- **Shape sweep at 16K tokens/step**: b64×256 59.10 (best, −1.43%), b32×512 59.52 (−0.73%),
+  b16×1024 59.96, b8×2048 60.75, b4×4096 61.25, b32×1024 OOM (graph pool + 32K activations > 32 GB).
+- **Capture recipe on torch 2.12**: the graph must be captured **before any eager backward**, with
+  `torch.autograd.grad` ("grad mode") warm-up+capture on one side stream — 2.12 lacks
+  `set_override_stale_capture_stream`, and a prior `.backward()` makes the full-model capture fail
+  with `cudaErrorStreamCaptureImplicit`. The harness (`tools/bench_graph_train.py`) now does this and
+  also supports `--accum K`.
 
 ## 4. sm_120 NVFP4 / FP8 experiments (optional, experimental)
 

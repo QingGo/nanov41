@@ -12,6 +12,12 @@ official implementation on the same weights — on a laptop CPU — before doing
 > **W2 best measured (RTX 5090):** 60.43 ms/step at b=16×1024 = 114.9 TFLOP/s =
 > **54.9% bf16-MFU** (3-step parameter parity 0.0; graph replay + optimizer). See
 > [W2 training-step results](#w2-training-step-results-best-measured-rtx-5090).
+>
+> **Project target:** **60% precision-discounted MFU** (V4.1 convention, fixed 209.5 TF bf16
+> denominator). R50 is 35.6% discounted; 60% discounted wall is 35.83 ms (1.69× away). Raw
+> bf16-MFU is a diagnostic only. See
+> [docs/optimization-playbook.md](docs/optimization-playbook.md) for the gap analysis and
+> optimization loop.
 
 ## What is in the box
 
@@ -24,10 +30,17 @@ official implementation on the same weights — on a laptop CPU — before doing
 | `nanov41/model.py` | `NanoV41` (forward / logits / loss / generate), `init_random_weights`, `build_pristine` |
 | `parity.py` | W1 gate: T1 full-sequence vs incremental prefill, T2 patched vs official, T3 backward, T1b indexer tie probe |
 | `train.py` | Speedrun-style training loop skeleton (AdamW + cosine + clip, synthetic learnable data) |
+| `nanov41/nano_engram.py` | Training-capable Engram (mandatory in the OPD student): dtype-following table, deterministic sorted segment-sum row gradients, sparse Adam, reference-hash install, d12/d16/d20 presets |
+| `nanov41/chunk_graph.py` (R68) + internal `tools/bench_graph_train.py` (R69) | Engram integrated into the chunked/per-step CUDA-graph training stacks: hash ids recomputed in-graph, sparse table leaf grads captured and reduced outside; R68 parity bitwise; graph-step overhead +4.86 % (R68) and +2.32–2.56 % (R69 default/final tuned); gate fused with Inductor/Triton (d12/d20) and official DeepSeek TileKernels TileLang kernels (native d16) plus a vendored 128-tile/1-warp fork for native d12/d20 without padding |
+| `tools/engram_hash_parity.py` | P0 Engram gate: official/preset prime-bucket rows and deterministic in-range hash ids |
+| P2 A/B (0.6 B tokens, five arms) | Default Engram geometry wins: T0 phase-1 mix BPB **1.4474 (−1.87 % vs d12)**; thin −0.95 %; thick regresses; d12e32 +0.23 % worse; **P2b seeds 1235/1236 replicate the sign** (−3.71 %, −2.26 % phase-1); report [`docs/p2-ab-report.md`](docs/p2-ab-report.md), raw `runs/p2/summary.json`, `runs/p2b/summary.json` |
+| `nanov41/eval/` + `tools/eval_t0.py` | T0 eval harness: pre-tokenized multi-domain held-out shards → per-domain/per-token-type **bits-per-byte** (+ reserved CORE-lite `--tier t1` hook) |
+| `tools/fetch_eval_data.py` | Fetches held-out raw text for the T0 domains from Marin-referenced public sources (DCLM holdout shard, ProofPile-2 test, codeparrot validation, WikiText-103 test, StackExchange, COIG zh) with a provenance sidecar |
+| `tools/make_eval_slices.py` | Builds eval shards from JSONL (plain text or agent trajectories rendered with the pinned `chat_template.jinja`) and the exact per-token UTF-8 byte table; eval itself needs no tokenizer |
 | `bench_mfu.py` | Per-component MFU / time breakdown (needs CUDA; benchmarked on RTX 5090) |
 | `tools/ab_bench.py` | Interleaved A/B benchmark of head × MoE implementations (needs CUDA) |
 | `experiments/tl_kernels/` | Optional sm_120 (RTX 5090) NVFP4/FP8 kernels (TileLang): host quantizer, FP4 GEMM, fused FP8 cast — not needed for parity/training |
-| `docs/` | [Architecture notes](docs/architecture.md), [benchmarks](docs/benchmarks.md) |
+| `docs/` | [Architecture notes](docs/architecture.md), [benchmarks](docs/benchmarks.md), [optimization playbook](docs/optimization-playbook.md), [vs nanoGPT](docs/compare-nanogpt.md), [vs nanochat](docs/compare-nanochat.md), [Engram plan](docs/engram-integration-plan.md), [Engram design](docs/engram-design.md), [P2 A/B report](docs/p2-ab-report.md), [KV-cache generation](docs/generation-kv.md), [vLLM conversion](docs/vllm-conversion.md), [eval NLL fast path](docs/eval-harness.md#nll-fast-path-native-inference-kernels-2026-11-07), [native inference kernels](docs/inference-kernels.md), [status snapshot](docs/status-2026-11-07.md), [product vs nanochat](docs/product-vs-nanochat.md), [OPD strategy](docs/opd-strategy.md), [kernel status](docs/kernel-optimization-status.md), [capacity vs compute](docs/capacity-vs-compute-codesign.md), [tokenizer contract](docs/tokenizer-contract.md), [eval proxies](docs/eval-proxies.md), [eval harness](docs/eval-harness.md) |
 | `runs/` | Curated benchmark evidence (RTX 5090 JSON) |
 | `tests/` | CPU tests: parity smoke, config counts, generated-file check, kernel-parity regressions |
 
@@ -177,7 +190,7 @@ CUDA-graph capture) and measured with the internal graph-training driver. Best m
 
 ## Known limitations (W2+)
 
-- **Engram is disabled** in all configs (it needs the DeepSeek tokenizer to build the compressed
+- **Engram is disabled** in the tokenizer-free scratch configs (it needs the DeepSeek tokenizer to build the compressed
   token map); the vision encoder and the DSpark/MTP losses are out of scope for v0.
 - **Quantization is a no-op** (`act_quant` / `fp4_act_quant`): training runs bf16.
 - **Indexer tie-breaking:** the official indexer ReLUs its scores, so random-init models can have
@@ -219,9 +232,9 @@ under their own upstream terms.
 ├── parity.py           W1 parity harness (T1/T2/T3 + tie probe)
 ├── train.py            speedrun-style training skeleton
 ├── bench_mfu.py        per-component MFU breakdown (needs CUDA)
-├── docs/               architecture notes and benchmarks
+├── docs/               architecture, benchmarks, optimization playbook
 ├── experiments/        optional sm_120 NVFP4/FP8 kernels (TileLang; needs CUDA)
 ├── runs/               curated benchmark evidence (JSON)
 ├── tests/              CPU tests (CI), incl. kernel-parity regressions
-└── tools/              make_patched_ref.py, ab_bench.py (needs CUDA)
+└── tools/              make_patched_ref.py, ab_bench.py (needs CUDA), make_eval_slices.py, eval_t0.py
 ```

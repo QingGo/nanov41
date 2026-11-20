@@ -1,0 +1,277 @@
+{
+  "schema": "nanov41-v41-aligned/1",
+  "source": "arXiv:2609.19969 + ref/config.json (see docs/v41-aligned-spec.md)",
+  "official": {
+    "backbone_params": 552000000000.0,
+    "engram_params": 196000000000.0,
+    "dim": 5120,
+    "layers": 40,
+    "n_heads": 64,
+    "head_dim": 512,
+    "rope_head_dim": 64,
+    "q_lora_rank": 1280,
+    "o_groups": 8,
+    "o_lora_rank": 1024,
+    "window_size": 128,
+    "experts": 384,
+    "activated_experts": 6,
+    "moe_inter_dim": 2304,
+    "index_n_heads": 32,
+    "index_head_dim": 128,
+    "index_topk": 512,
+    "base_lr": 0.00026,
+    "eng_layers": [
+      1,
+      14
+    ],
+    "eng_ngram": 4,
+    "eng_heads": 8,
+    "eng_dim_total": 2048,
+    "eng_rows_per_head": 16000000.0,
+    "engram_ngram": 4,
+    "seq_len": 65536
+  },
+  "scale": {
+    "dim": 512,
+    "layers": 12,
+    "seq_len": 8192,
+    "down_scale": 10.0
+  },
+  "ced": {
+    "encoder_layers": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "decoder_layers": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "decoder_global_kv_from_layer": 5,
+    "prefill_skips_decoder_global_kv": true
+  },
+  "layer_modes": [
+    "swa",
+    "full",
+    "reuse",
+    "reuse",
+    "reuse",
+    "reuse",
+    "full",
+    "reuse",
+    "reuse",
+    "reuse",
+    "reindex",
+    "reuse"
+  ],
+  "engine_mode_sources": {
+    "kv_source_layers": [
+      1,
+      6
+    ],
+    "index_source_layers": [
+      1,
+      6,
+      10
+    ],
+    "reindex_layers": [
+      10
+    ]
+  },
+  "hierarchical_indexer": {
+    "enabled": true,
+    "stage": "post_training",
+    "candidate_source_layer": 6,
+    "candidate_topk_blocks": 128,
+    "candidate_block_size": 8,
+    "note": "official 2048 blocks x 8 pos for 64K context; scaled to seq/4 candidates; candidate_source_layer is the first decoder Full layer (set engine candidate_source_layer<0 during pretraining)"
+  },
+  "engram": {
+    "engram_layer_ids": [
+      1,
+      4
+    ],
+    "engram_max_ngram_size": 4,
+    "engram_n_heads": 8,
+    "engram_head_dim": 32,
+    "engram_vocab_size": 142935,
+    "engram_num_embeddings": [
+      3434346,
+      3442190
+    ],
+    "engram_params": 220049152,
+    "achieved_ratio": 0.3549998477713487
+  },
+  "optimizer": {
+    "muon": {
+      "params": "backbone linear matrices + engram projections",
+      "headwise": [
+        "Q",
+        "K"
+      ],
+      "momentum": 0.95,
+      "weight_decay": 0.1,
+      "update_rms_rescale": 0.18,
+      "lr": 0.0008221921916437786
+    },
+    "adamw": {
+      "params": "norms (wd), biases/scalings (no wd)",
+      "betas": [
+        0.9,
+        0.95
+      ],
+      "eps": 1e-20,
+      "weight_decay": 0.1,
+      "lr": 0.0008221921916437786
+    },
+    "sinkhorn": {
+      "params": "engram tables + token embedding + head",
+      "momentum": 0.95,
+      "gamma": 0.18,
+      "K": 11,
+      "tau": 0.001,
+      "eps": 1e-20,
+      "weight_decay": 0.0,
+      "lr": 0.0008221921916437786,
+      "engram_lr_scale": 5.0,
+      "engram_lr": 0.0041109609582188926
+    }
+  },
+  "precision": {
+    "pretrain": {
+      "linear": "fp8",
+      "engram_embedding": "fp8",
+      "norms_attention_scores": "bf16"
+    },
+    "post_training": {
+      "main_kv": "fp4_mxfp4_qat",
+      "indexer_qk": "fp4_qat",
+      "swa_kv": "fp8"
+    }
+  },
+  "lr_rule": {
+    "base": 0.00026,
+    "muP": "eta*(dim_official/dim)^0.5",
+    "value": 0.0008221921916437786,
+    "warmup_steps": 2000,
+    "schedule": "constant -> cosine 28T-40T (official, scaled)",
+    "final_frac": 0.1
+  },
+  "batch_rule": {
+    "official": 100600000.0,
+    "nano": "2^19 tokens (Power-Lines scalable)",
+    "tokens_per_step": 524288,
+    "grad_accum_required": true
+  },
+  "misc": {
+    "aux_free_bias_speed": 0.001,
+    "sequence_balance_loss": 0.0001,
+    "sample_level_attention_mask": true,
+    "mtp": "omitted (V4.1)",
+    "dspark": "post_pretrain_stage",
+    "vision": "deferred"
+  },
+  "accounting": {
+    "backbone_params": 752239752,
+    "backbone_non_embedding": 619857032,
+    "embed_plus_head": 132382720,
+    "experts_total": 603979776,
+    "inactive_expert_params": 594542592,
+    "active_params": 91505800,
+    "engram_params": 220049152,
+    "total_with_engram": 972288904,
+    "activation_fraction": 0.015625,
+    "fwd_flops_per_token_est": 183011600.0,
+    "engram_backbone_ratio": 0.2925252905273211,
+    "engram_nonembed_ratio": 0.3549998477713487
+  },
+  "engine_config": {
+    "dtype": "bf16",
+    "expert_dtype": null,
+    "score_func": "sqrtsoftplus",
+    "gate_temp": 1.0,
+    "norm_topk_prob": true,
+    "route_scale": 1.5,
+    "swiglu_limit": 10.0,
+    "norm_eps": 1e-20,
+    "hc_mult": 4,
+    "hc_eps": 1e-06,
+    "compress_rope_theta": 160000.0,
+    "rope_theta": 10000.0,
+    "rope_factor": 16,
+    "beta_fast": 32,
+    "beta_slow": 1,
+    "original_seq_len": 0,
+    "candidate_source_layer": -1,
+    "candidate_topk_blocks": 0,
+    "candidate_block_size": 0,
+    "vision_n_layers": 0,
+    "n_mtp_layers": 0,
+    "dspark_block_size": 0,
+    "dspark_target_layer_ids": [],
+    "engram_pad_id": 2,
+    "engram_compressed_vocab_size": 99092,
+    "vocab_size": 129280,
+    "dim": 512,
+    "moe_inter_dim": 256,
+    "n_layers": 12,
+    "n_heads": 8,
+    "n_routed_experts": 128,
+    "n_shared_experts": 1,
+    "n_activated_experts": 2,
+    "q_lora_rank": 128,
+    "head_dim": 64,
+    "rope_head_dim": 16,
+    "o_groups": 8,
+    "o_lora_rank": 128,
+    "window_size": 128,
+    "compress_ratios": [
+      0,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "kv_source_layers": [
+      1,
+      6
+    ],
+    "index_source_layers": [
+      1,
+      6,
+      10
+    ],
+    "index_n_heads": 4,
+    "index_head_dim": 16,
+    "index_topk": 64,
+    "hc_sinkhorn_iters": 20,
+    "max_batch_size": 8,
+    "max_seq_len": 8192,
+    "engram_vocab_size": 142935,
+    "engram_num_embeddings": [
+      3434346,
+      3442190
+    ],
+    "engram_max_ngram_size": 4,
+    "engram_n_heads": 8,
+    "engram_head_dim": 32,
+    "engram_layer_ids": [
+      1,
+      4
+    ]
+  }
+}

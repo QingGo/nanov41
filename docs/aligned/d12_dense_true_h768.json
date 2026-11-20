@@ -1,0 +1,135 @@
+{
+  "schema": "nanov41-dense-twin/2",
+  "source": "dense-vs-MoE study, arXiv:2507.17702 (Efficiency Leverage)",
+  "design_doc": "docs/dense-vs-moe-design.md",
+  "base": "docs/aligned/d12_aligned.json (R90 aligned d12, dim 512, 12 layers, seq 8192)",
+  "kind": "dense",
+  "engine_config": {
+    "dtype": "bf16",
+    "expert_dtype": null,
+    "score_func": "sqrtsoftplus",
+    "gate_temp": 1.0,
+    "norm_topk_prob": true,
+    "route_scale": 1.5,
+    "swiglu_limit": 10.0,
+    "norm_eps": 1e-20,
+    "hc_mult": 4,
+    "hc_eps": 1e-06,
+    "compress_rope_theta": 160000.0,
+    "rope_theta": 10000.0,
+    "rope_factor": 16,
+    "beta_fast": 32,
+    "beta_slow": 1,
+    "original_seq_len": 0,
+    "candidate_source_layer": -1,
+    "candidate_topk_blocks": 0,
+    "candidate_block_size": 0,
+    "vision_n_layers": 0,
+    "n_mtp_layers": 0,
+    "dspark_block_size": 0,
+    "dspark_target_layer_ids": [],
+    "vocab_size": 129280,
+    "dim": 512,
+    "moe_inter_dim": 768,
+    "n_layers": 12,
+    "n_heads": 8,
+    "n_routed_experts": 1,
+    "n_shared_experts": 1,
+    "n_activated_experts": 1,
+    "q_lora_rank": 128,
+    "head_dim": 64,
+    "rope_head_dim": 16,
+    "o_groups": 8,
+    "o_lora_rank": 128,
+    "window_size": 128,
+    "compress_ratios": [
+      0,
+      2,
+      2,
+      2,
+      2,
+      2,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "kv_source_layers": [
+      1,
+      6
+    ],
+    "index_source_layers": [
+      1,
+      6
+    ],
+    "index_n_heads": 4,
+    "index_head_dim": 16,
+    "index_topk": 64,
+    "hc_sinkhorn_iters": 20,
+    "max_batch_size": 8,
+    "max_seq_len": 8192,
+    "engram_vocab_size": 142935,
+    "engram_num_embeddings": [
+      3434346,
+      3442190
+    ],
+    "engram_max_ngram_size": 4,
+    "engram_n_heads": 8,
+    "engram_head_dim": 32,
+    "engram_layer_ids": [
+      1,
+      4
+    ],
+    "engram_compressed_vocab_size": 99092,
+    "engram_pad_id": 2,
+    "ffn_impl": "dense",
+    "dense_inter_dim": 768
+  },
+  "engram": {
+    "engram_layer_ids": [
+      1,
+      4
+    ],
+    "engram_max_ngram_size": 4,
+    "engram_n_heads": 8,
+    "engram_head_dim": 32,
+    "engram_vocab_size": 142935,
+    "engram_num_embeddings": [
+      3434346,
+      3442190
+    ],
+    "engram_params": 220049152,
+    "achieved_ratio": 8.696151310849583
+  },
+  "accounting": {
+    "backbone_params": 157686920,
+    "backbone_non_embedding": 25304200,
+    "embed_plus_head": 132382720,
+    "experts_total": 0,
+    "inactive_expert_params": 0,
+    "active_params": 91495560,
+    "activation_fraction": 1.0,
+    "fwd_flops_per_token_est": 182991120,
+    "ffn_impl": "dense",
+    "dense_inter_dim": 768,
+    "ffn_params": 14155776,
+    "engram_params": 220049152,
+    "total_with_engram": 381668232,
+    "engram_wkv_params": 3932160
+  },
+  "ffn": {
+    "kind": "dense",
+    "dense_inter_dim": 768,
+    "note": "plain SwiGLU FFN; no router/gate; h=768 is FLOPs-equal, h=33024 is capacity-equal to aligned d12"
+  },
+  "run_recipe": {
+    "engram": "auto (= ON, production 220.05M table; use engram=none only as a control)",
+    "optimizer": "adamw 2.6e-3 for the 200M-token screen; v41 for longer runs",
+    "seq": 8192,
+    "vocab": 129280,
+    "data": "/root/autodl-tmp/nanochat/p2_climbmix_129k",
+    "p0_panel": "/root/autodl-tmp/nanochat/p0_eval"
+  }
+}
