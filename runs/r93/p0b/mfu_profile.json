@@ -1,0 +1,116 @@
+{
+  "title": "R93 P0b dense d24_c1 MFU decomposition",
+  "status": "partial: b1 graph replay measured; b2 + profile-loop unmeasured (instance shut down, 0 free cards)",
+  "device": "RTX 5090 32GB (31.36 GiB usable), peak 209.5 TF bf16",
+  "torch": "2.14.1+cu130",
+  "config": {
+    "name": "d24_c1",
+    "shape": "dim=1024 n_layers=24 dense_h=2304 vocab=41280 seq=8192 micro_b=1",
+    "engram": "2 layers, 220.05M table, C40=32410 (K40k tokenizer)",
+    "accounting_fwd_flops_per_token": 575953504,
+    "real_fwd_incl_engram_wkv": 591682144,
+    "env": "tools/r90_env5090.sh + tools/r90_env_dense5090.sh (attn v3 TL, mHC v4 split level3, fp8-v2 head+CE, fp8 linear v2 wo_b, EW fusion, fused grad); v41 optimizer outside graph",
+    "bench": "tools/r93_mfu_bench.py (copy of tools/bench_graph_train.py + --config-json/--fwd-flops)"
+  },
+  "measured_b1_replay": {
+    "replay_ms_per_micro": 181.76,
+    "tokens_per_micro": 8192,
+    "tok_s": 45070,
+    "achieved_tflops": 77.87,
+    "raw_mfu_pct": 37.17,
+    "mfu_pct_real_fwd_adjusted": 38.17,
+    "kernels_per_replay": 6439,
+    "mem_after_capture": {
+      "allocated_gib": 3.45,
+      "reserved_gib": 26.13,
+      "peak_allocated_gib": 25.16,
+      "peak_reserved_gib": 27.4
+    },
+    "bench_args": "--b 1 --seq 8192 --steps 3 --bench 20 --graph-only --skip-opt --profile 3, CE_CHUNK=8192"
+  },
+  "measured_train_loop": {
+    "steps": 286,
+    "tokens_per_step": 2097152,
+    "train_seconds": 13528.7,
+    "ms_per_micro": 182.4,
+    "tok_s": 44334,
+    "raw_mfu_pct": 36.56,
+    "mfu_pct_real_fwd_adjusted": 37.56,
+    "peak_reserved_gib": 27.777,
+    "peak_allocated_gib": 23.98
+  },
+  "out_of_graph_gap": {
+    "ms_per_micro": 0.6,
+    "pct_of_step": 0.3,
+    "train_minus_replay_mfu_pp": 0.6,
+    "conclusion": "negligible at accum=256; all headroom is inside the graph"
+  },
+  "buckets_b1_per_replay": [
+    {"bucket": "bf16_GEMMs", "ms": 68.7, "share_pct": 37.8, "note": "19 cutlass/nvjet kernels; ~87% of peak if ~12.5 TFLOP attributed to them"},
+    {"bucket": "elementwise_copy_norm", "ms": 68.0, "share_pct": 37.5, "note": "fp32 MulFunctor 17.40ms x476; direct-copy 5.66 x414; bf16-copy 4.49 x481; clamp 4.40 x100; compare 4.22 x72; silu+bwd 5.1; adds 3.7; reductions 3.1; memcpy 2.1; memsets 0.6"},
+    {"bucket": "mHC_triton", "ms": 21.5, "share_pct": 11.8, "note": "_post_bwd_dual 8.56x45, _mixes_pre_bwd 5.51x48, _post_fwd 4.11x48, _mixes_pre_fwd 2.41x48, _split_sinkhorn_bwd 0.93x48"},
+    {"bucket": "attention_v3_tilelang", "ms": 9.8, "share_pct": 5.4, "note": "kernel_kernel 7.84x48, _dkv_win_tri 1.94x23"},
+    {"bucket": "head_CE_fp8v2", "ms": 2.5, "share_pct": 1.4, "note": "_ce_bwd_fp8 0.63, _ce_fwd 0.43, nvjet head gemm 1.20"},
+    {"bucket": "long_tail", "ms": 1.25, "share_pct": 0.7, "note": ">80 kernel names"}
+  ],
+  "static_attribution_of_fp32_mul_17p4ms_x476": [
+    {"rank": 1, "candidate": "unfused RMSNorm fp32 path", "file": "nanov41/_ref_patched_model.py:314-322 (RMSNorm.forward); calls at :986, :993 + q_norm/kv_norm in Attention and compressor/indexer norms", "expected_calls_per_layer": "4-5 norms x 3-5 fp32 muls = ~15-25 Mul kernels/layer -> 360-600/step", "fix": "nanov41/fused_rmsnorm.py (R45, exists) via NANOV41_RMS_FUSED=1 (NOT enabled in tools/r90_env5090.sh)", "numerics": "fp32 internals, R45 replay-bitwise parity; R83 negative result was for fp8-cast producer fusion variant, not this kernel", "expected_save_ms": "6-10"},
+    {"rank": 2, "candidate": "dense SwiGLU fp32 segment (gate/up .float(), clamp, silu(gate)*up, .to(dtype))", "file": "nanov41/_ref_patched_model.py:862-878 (Expert.forward; DenseFFN wraps it at :888-892)", "expected_calls_per_layer": "1 fwd + 2 bwd fp32 muls + 2 clamp + casts = ~6-8 kernels/layer", "fix": "nanov41/fused_swiglu.py (R45, exists) via NANOV41_SWIGLU_FUSED=1 (patches Expert.forward for weights=None -> DenseFFN path; NOT enabled in r90_env5090.sh)", "expected_save_ms": "3-7"},
+    {"rank": 3, "candidate": "hc_split_sinkhorn wrapper fp32 scaling", "file": "nanov41/tl_sinkhorn.py:57-67 (m.float(), 3x m*scale+base for pre/post/comb, 2 calls/layer)", "expected_calls_per_layer": "~6 small fp32 muls/layer on [8192,48] tensors", "fix": "fold into TileLang sinkhorn kernel (low priority)", "expected_save_ms": "0.5-1"},
+    {"rank": 4, "candidate": "indexer fp32 score muls", "file": "nanov41/_ref_patched_model.py:585-587 (weights_proj(x)*scale, relu(index_score)*weights.sum(2)) on the 2 index-source layers", "fix": "nanov41/fused_indexer.py (R47, exists) NANOV41_IDX_FUSED=1 (not enabled)", "expected_save_ms": "1-2"},
+    {"rank": 5, "candidate": "RoPE torch path (apply_rotary_emb, not fused)", "file": "official ref model apply_rotary_emb; NANOV41_ROPE_FUSED not set", "expected_save_ms": "0.1-0.3", "note": "R77/R85 measured ~0 (0.07 ms) at d12"},
+    {"rank": 6, "candidate": "compare_scalar<float> 4.22ms x72 (3/layer) - NOT attributed", "fix": "run bench --profile-eager 3 (python stack + shapes) to identify", "expected_save_ms": "0-4"}
+  ],
+  "b2_8192_verdict": {
+    "measured": false,
+    "training_attempt_traceback_site": "nanov41/_ref_patched_model.py:864 gate=self.w1(x).float() (mid-FFN forward, capture warm-up)",
+    "measured_shortfall": "~30.5 GiB allocated + 144-256 MiB pending allocation at 31.36 GiB; the 144 MiB request equals a [16384,2304] fp32 FFN buffer",
+    "ce_chunk_2048_512": "did not fix (per Lead); static: CE workspace at chunk 8192 is only ~0.7-1.3 GiB and is not resident at the OOM site",
+    "estimated_b2_demand_gib": "~40+ (b1 activations ~21.5 GiB roughly doubles)",
+    "gap_gib": "~8-10",
+    "levers_05_to_15_gib_plus": [
+      "FFN activation recompute (store input only) - largest, ~18 GiB at b2",
+      "bf16 FFN intermediates (gate/up bf16) - ~9 GiB at b2",
+      "Muon momentum bf16 (NANOV41_MUON_MOMENTUM_BF16) / optimizer state reduction",
+      "CE_CHUNK 128-512 (<1.5 GiB, insufficient alone)",
+      "graph-pool trim follows from bf16/recompute"
+    ],
+    "expected_gain_if_landed": "+3-5 pp train MFU (production MoE R79: b1->b2 31.0%->36.8%, +5.8 pp; dense GEMMs already ~87% efficient -> lower gain)",
+    "confidence": "medium (extrapolated)"
+  },
+  "mfu_targets": {
+    "current_train_raw_mfu_pct": 36.56,
+    "current_train_real_fwd_adjusted_pct": 37.56,
+    "current_replay_raw_mfu_pct": 37.17,
+    "mfu_42_requires_step_ms": 160.8,
+    "mfu_42_requires_non_gemm_saving_ms": 21.0,
+    "mfu_45_requires_step_ms": 150.1,
+    "mfu_45_requires_non_gemm_saving_ms": 31.7,
+    "non_gemm_replay_ms": 103.0,
+    "verdict_42pct": "believable 1-2 days: b2 +1-2 existing R45 fused kernels (RMS_FUSED/SWIGLU_FUSED); confidence medium-high for 40-42%",
+    "verdict_45pct": "believable 3-5 days, not 1-2: requires b2 AND ~2x reduction of elementwise/copy bucket AND small GEMM gain; confidence medium (~50-60%) that it is reachable at all; low that it is 1-2 days"
+  },
+  "next_experiments": [
+    {"rank": 1, "action": "NANOV41_RMS_FUSED=1 A/B on b1 graph bench + profile", "expected_pp": "+1.5-2.5", "gpu_min": 10, "effort": "cheap"},
+    {"rank": 2, "action": "NANOV41_SWIGLU_FUSED=1 A/B", "expected_pp": "+1-2", "gpu_min": 10},
+    {"rank": 3, "action": "both together (expect +2.5-4 pp)", "expected_pp": "+2.5-4", "gpu_min": 20},
+    {"rank": 4, "action": "b2 memory unlock (FFN activation recompute or bf16 intermediates) + b2 replay/probe", "expected_pp": "+3-5", "effort": "1-2 days"},
+    {"rank": 5, "action": "bench --profile-eager 3 for exact shape/stack attribution", "gpu_min": 10, "note": "decisive before more fusion work"},
+    {"rank": 6, "action": "sinkhorn wrapper fusion + clamp/compare fusions", "expected_pp": "+0.3-0.8", "effort": "1-2 days"},
+    {"rank": 7, "action": "extend fp8 linear v2 scope from wo_b to dense-FFN GEMMs (wgrad bf16)", "expected_pp": "+2.5-4", "effort": "2-5 days"},
+    {"rank": 8, "action": "GEMM tile tuning for small-N low-rank GEMMs", "expected_pp": "+1-2", "effort": "2-3 days"}
+  ],
+  "unmeasured": [
+    "b2x8192 graph-only replay at CE_CHUNK 2048/1024/512 + peak memory / OOM offset",
+    "p2_train --profile-loop 5 segment attribution (expected: confirms out-of-graph gap 0.3%)",
+    "b1 CE_CHUNK 8192 vs 2048 replay A/B",
+    "bench --profile-eager stack/shape attribution of the fp32 Mul / copies / compare kernels"
+  ],
+  "artifacts": {
+    "bench_wrapper": "tools/r93_mfu_bench.py",
+    "config": "docs/r93/configs/d24_c1_dense40k.json",
+    "instance_logs": "/root/r93_mfu_b1_8192.log, /root/r93_mfu_chain*.log (instance shut down; re-run to regenerate)",
+    "p0b_run_report": "runs/r93/p0b/report.md",
+    "p0b_summary": "runs/r93/p0b/summary.json"
+  }
+}

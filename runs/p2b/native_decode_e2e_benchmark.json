@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-07",
+  "gpu": "RTX 4090 24GB",
+  "model": "random d12 (same shapes: 12 layers, 2 Engram layers, 16 experts top-2), bf16",
+  "protocol": "batch1, prompt 5 tokens, 16 decode tokens, greedy, warmup 3; mean over one timed run",
+  "results": {
+    "reference": {"tok_s": 12.81, "ms_per_token": 78.05},
+    "native engram+moe": {"tok_s": 14.09, "ms_per_token": 70.99, "speedup_vs_ref": 1.10},
+    "native + fused mHC": {"tok_s": 20.88, "ms_per_token": 47.88, "speedup_vs_ref": 1.63, "speedup_vs_native": 1.48}
+  },
+  "mhc_parity_random_model": {"max_abs_logit_diff": 0.2705, "mean_abs_logit_diff": 0.0093,
+    "note": "fused mHC is opt-in; validate on the real checkpoint before using for accuracy-sensitive runs"},
+  "not_yet": ["paged KV/continuous batching", "CUDA graph for decode", "real-checkpoint e2e benchmark", "end-to-end public tok/s claim"]
+}

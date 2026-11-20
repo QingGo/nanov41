@@ -1,0 +1,14 @@
+{
+ "fast_z2": {
+  "tok_s": 62644.9,
+  "raw_mfu": 0.5166665716983292,
+  "final_loss": 7.352473,
+  "peak_reserved_gib": null
+ },
+ "fast_0": {
+  "tok_s": 62931.6,
+  "raw_mfu": 0.5190312531718058,
+  "final_loss": 7.247878,
+  "peak_reserved_gib": null
+ }
+}

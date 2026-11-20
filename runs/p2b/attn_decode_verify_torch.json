@@ -1,0 +1,197 @@
+{
+  "schema": "nanov41-attn-decode-verify/1",
+  "date": "2026-11-07",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "steps": 12,
+  "triton": false,
+  "prompt": "The capital of France is",
+  "parity": {
+    "steps_compared": 12,
+    "logit_max_abs": 0.0,
+    "logit_mean_abs": 0.0,
+    "argmax_agreement": 1.0,
+    "per_step": [
+      {
+        "step": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 260,
+        "argmax_patched": 260,
+        "same_argmax": true
+      },
+      {
+        "step": 1,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 892,
+        "argmax_patched": 892,
+        "same_argmax": true
+      },
+      {
+        "step": 2,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 294,
+        "argmax_patched": 294,
+        "same_argmax": true
+      },
+      {
+        "step": 3,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 270,
+        "argmax_patched": 270,
+        "same_argmax": true
+      },
+      {
+        "step": 4,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 2058,
+        "argmax_patched": 2058,
+        "same_argmax": true
+      },
+      {
+        "step": 5,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 734,
+        "argmax_patched": 734,
+        "same_argmax": true
+      },
+      {
+        "step": 6,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 8536,
+        "argmax_patched": 8536,
+        "same_argmax": true
+      },
+      {
+        "step": 7,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 16,
+        "argmax_patched": 16,
+        "same_argmax": true
+      },
+      {
+        "step": 8,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 455,
+        "argmax_patched": 455,
+        "same_argmax": true
+      },
+      {
+        "step": 9,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 3924,
+        "argmax_patched": 3924,
+        "same_argmax": true
+      },
+      {
+        "step": 10,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 344,
+        "argmax_patched": 344,
+        "same_argmax": true
+      },
+      {
+        "step": 11,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 260,
+        "argmax_patched": 260,
+        "same_argmax": true
+      }
+    ]
+  },
+  "greedy": {
+    "ref_tokens": [
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260
+    ],
+    "patched_tokens": [
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260
+    ],
+    "token_agreement": 1.0,
+    "ref_text": " a part of the world's economy. The country is a",
+    "patched_text": " a part of the world's economy. The country is a"
+  },
+  "timing": {
+    "reference": {
+      "best": {
+        "decode_s": 0.9286364074796438,
+        "steps": 11,
+        "tok_s": 11.845324942465306
+      },
+      "reps": [
+        {
+          "decode_s": 1.0977033246308565,
+          "steps": 11,
+          "tok_s": 10.020922550907969
+        },
+        {
+          "decode_s": 1.0034877639263868,
+          "steps": 11,
+          "tok_s": 10.96176794120524
+        },
+        {
+          "decode_s": 0.9286364074796438,
+          "steps": 11,
+          "tok_s": 11.845324942465306
+        }
+      ]
+    },
+    "attn_decode": {
+      "best": {
+        "decode_s": 0.9162042755633593,
+        "steps": 11,
+        "tok_s": 12.006056174793855
+      },
+      "reps": [
+        {
+          "decode_s": 0.9285386987030506,
+          "steps": 11,
+          "tok_s": 11.84657140877855
+        },
+        {
+          "decode_s": 0.9162042755633593,
+          "steps": 11,
+          "tok_s": 12.006056174793855
+        },
+        {
+          "decode_s": 0.9190070610493422,
+          "steps": 11,
+          "tok_s": 11.969440134050725
+        }
+      ]
+    },
+    "speedup": 1.0135691703781236
+  }
+}

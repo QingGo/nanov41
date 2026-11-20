@@ -1,0 +1,415 @@
+{
+ "mode": "full",
+ "seq": 16384,
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "triton": "3.7.1",
+ "phases": {
+  "fwd": {
+   "median_ms": 96.89,
+   "all_ms": [
+    98.02,
+    104.16,
+    96.89,
+    93.71,
+    93.67
+   ]
+  },
+  "fwd_bwd": {
+   "median_ms": 157.01,
+   "all_ms": [
+    158.07,
+    156.3,
+    157.01,
+    155.57,
+    157.53
+   ]
+  },
+  "full_step": {
+   "median_ms": 167.22,
+   "all_ms": [
+    162.68,
+    167.87,
+    161.19,
+    168.78,
+    167.22
+   ]
+  },
+  "opt_step_fused": {
+   "median_ms": 2.73,
+   "all_ms": [
+    2.75,
+    2.73,
+    2.71,
+    2.72,
+    2.74
+   ]
+  },
+  "opt_step_foreach": {
+   "median_ms": 18.05,
+   "all_ms": [
+    18.02,
+    18.05,
+    17.95,
+    18.05,
+    18.05
+   ]
+  },
+  "full_step_foreach_opt": {
+   "median_ms": 180.9,
+   "all_ms": [
+    197.77,
+    172.33,
+    187.43,
+    174.36
+   ]
+  }
+ },
+ "triton_kernel_launch_us": 8.98,
+ "aten_pointwise_launch_us": 5.39,
+ "optimizer_state_gib": 0.909,
+ "profile_full_step": {
+  "wall_ms": 162.79,
+  "device_kernel_ms": 346.5,
+  "gap_ms": -183.71,
+  "gap_pct": -112.9,
+  "cpu_self_ms": 206.39,
+  "kernel_launches": 20008,
+  "cpu_ops": 34445,
+  "us_per_launch_gap": -9.2,
+  "device_by_component": {
+   "other": {
+    "ms": 174.83,
+    "launches": 8513
+   },
+   "copy/elew": {
+    "ms": 65.41,
+    "launches": 8397
+   },
+   "moe": {
+    "ms": 56.38,
+    "launches": 1401
+   },
+   "mhc": {
+    "ms": 10.77,
+    "launches": 192
+   },
+   "head_ce": {
+    "ms": 9.43,
+    "launches": 369
+   },
+   "indexer": {
+    "ms": 8.34,
+    "launches": 290
+   },
+   "optimizer": {
+    "ms": 7.34,
+    "launches": 7
+   },
+   "norm": {
+    "ms": 5.12,
+    "launches": 259
+   },
+   "gate": {
+    "ms": 4.67,
+    "launches": 532
+   },
+   "attention": {
+    "ms": 4.22,
+    "launches": 48
+   }
+  },
+  "cpu_by_component_ms": {
+   "other": 133.05,
+   "copy/elew": 27.06,
+   "moe": 18.74,
+   "norm": 12.77,
+   "mhc": 5.51,
+   "gate": 3.56,
+   "optimizer": 2.68,
+   "attention": 1.64,
+   "indexer": 1.24,
+   "head_ce": 0.14
+  },
+  "sync_ops": {
+   "cudaLaunchKernel": {
+    "count": 5052,
+    "cpu_ms": 25.48
+   },
+   "aten::item": {
+    "count": 1,
+    "cpu_ms": 0.01
+   },
+   "aten::_local_scalar_dense": {
+    "count": 1,
+    "cpu_ms": 0.0
+   },
+   "cudaMemcpyAsync": {
+    "count": 300,
+    "cpu_ms": 2.98
+   },
+   "cudaLaunchKernelExC": {
+    "count": 123,
+    "cpu_ms": 0.84
+   },
+   "cudaDeviceSynchronize": {
+    "count": 2,
+    "cpu_ms": 1.44
+   }
+  },
+  "top_cpu_ops": [
+   {
+    "name": "cudaLaunchKernel",
+    "count": 5052,
+    "self_cpu_ms": 25.48
+   },
+   {
+    "name": "aten::mm",
+    "count": 327,
+    "self_cpu_ms": 8.79
+   },
+   {
+    "name": "_RMSNormFnBackward",
+    "count": 51,
+    "self_cpu_ms": 7.36
+   },
+   {
+    "name": "aten::empty",
+    "count": 1722,
+    "self_cpu_ms": 6.96
+   },
+   {
+    "name": "aten::copy_",
+    "count": 984,
+    "self_cpu_ms": 5.38
+   },
+   {
+    "name": "_RMSNormFn",
+    "count": 53,
+    "self_cpu_ms": 4.65
+   },
+   {
+    "name": "aten::empty_strided",
+    "count": 874,
+    "self_cpu_ms": 4.2
+   },
+   {
+    "name": "_GroupedMoEv2NoPadBackward",
+    "count": 12,
+    "self_cpu_ms": 4.1
+   },
+   {
+    "name": "Activity Buffer Request",
+    "count": 2,
+    "self_cpu_ms": 4.03
+   },
+   {
+    "name": "_RopeTailFnBackward",
+    "count": 36,
+    "self_cpu_ms": 3.99
+   },
+   {
+    "name": "aten::bmm",
+    "count": 162,
+    "self_cpu_ms": 3.94
+   },
+   {
+    "name": "_RopeTailFn",
+    "count": 36,
+    "self_cpu_ms": 3.81
+   },
+   {
+    "name": "cuLaunchKernelEx",
+    "count": 605,
+    "self_cpu_ms": 3.59
+   },
+   {
+    "name": "aten::view",
+    "count": 2052,
+    "self_cpu_ms": 3.56
+   },
+   {
+    "name": "aten::add",
+    "count": 420,
+    "self_cpu_ms": 3.47
+   },
+   {
+    "name": "autograd::engine::evaluate_function: ViewBackward0",
+    "count": 603,
+    "self_cpu_ms": 3.18
+   }
+  ]
+ },
+ "profile_no_optimizer": {
+  "wall_ms": 175.14,
+  "device_kernel_ms": 336.62,
+  "gap_ms": -161.48,
+  "gap_pct": -92.2,
+  "cpu_self_ms": 192.98,
+  "kernel_launches": 19391,
+  "cpu_ops": 34433,
+  "us_per_launch_gap": -8.3,
+  "device_by_component": {
+   "other": {
+    "ms": 174.78,
+    "launches": 7907
+   },
+   "copy/elew": {
+    "ms": 63.22,
+    "launches": 8392
+   },
+   "moe": {
+    "ms": 55.71,
+    "launches": 1401
+   },
+   "mhc": {
+    "ms": 10.77,
+    "launches": 192
+   },
+   "head_ce": {
+    "ms": 9.44,
+    "launches": 369
+   },
+   "indexer": {
+    "ms": 8.23,
+    "launches": 290
+   },
+   "norm": {
+    "ms": 5.11,
+    "launches": 259
+   },
+   "gate": {
+    "ms": 4.67,
+    "launches": 532
+   },
+   "attention": {
+    "ms": 4.23,
+    "launches": 48
+   },
+   "optimizer": {
+    "ms": 0.46,
+    "launches": 1
+   }
+  },
+  "cpu_by_component_ms": {
+   "other": 122.94,
+   "copy/elew": 26.86,
+   "moe": 19.04,
+   "norm": 12.2,
+   "mhc": 5.51,
+   "gate": 3.61,
+   "attention": 1.64,
+   "indexer": 0.87,
+   "optimizer": 0.2,
+   "head_ce": 0.13
+  },
+  "sync_ops": {
+   "cudaLaunchKernel": {
+    "count": 5047,
+    "cpu_ms": 25.18
+   },
+   "aten::item": {
+    "count": 1,
+    "cpu_ms": 0.0
+   },
+   "aten::_local_scalar_dense": {
+    "count": 1,
+    "cpu_ms": 0.0
+   },
+   "cudaMemcpyAsync": {
+    "count": 300,
+    "cpu_ms": 2.96
+   },
+   "cudaLaunchKernelExC": {
+    "count": 123,
+    "cpu_ms": 0.83
+   },
+   "cudaDeviceSynchronize": {
+    "count": 2,
+    "cpu_ms": 0.02
+   }
+  },
+  "top_cpu_ops": [
+   {
+    "name": "cudaLaunchKernel",
+    "count": 5047,
+    "self_cpu_ms": 25.18
+   },
+   {
+    "name": "aten::mm",
+    "count": 327,
+    "self_cpu_ms": 8.77
+   },
+   {
+    "name": "_RMSNormFnBackward",
+    "count": 51,
+    "self_cpu_ms": 7.32
+   },
+   {
+    "name": "aten::empty",
+    "count": 1722,
+    "self_cpu_ms": 6.84
+   },
+   {
+    "name": "aten::copy_",
+    "count": 984,
+    "self_cpu_ms": 5.37
+   },
+   {
+    "name": "aten::empty_strided",
+    "count": 874,
+    "self_cpu_ms": 4.17
+   },
+   {
+    "name": "_RMSNormFn",
+    "count": 53,
+    "self_cpu_ms": 4.16
+   },
+   {
+    "name": "_GroupedMoEv2NoPadBackward",
+    "count": 12,
+    "self_cpu_ms": 4.08
+   },
+   {
+    "name": "_RopeTailFnBackward",
+    "count": 36,
+    "self_cpu_ms": 3.98
+   },
+   {
+    "name": "aten::bmm",
+    "count": 162,
+    "self_cpu_ms": 3.92
+   },
+   {
+    "name": "_RopeTailFn",
+    "count": 36,
+    "self_cpu_ms": 3.78
+   },
+   {
+    "name": "cuLaunchKernelEx",
+    "count": 605,
+    "self_cpu_ms": 3.56
+   },
+   {
+    "name": "aten::view",
+    "count": 2052,
+    "self_cpu_ms": 3.46
+   },
+   {
+    "name": "aten::add",
+    "count": 420,
+    "self_cpu_ms": 3.44
+   },
+   {
+    "name": "aten::topk",
+    "count": 76,
+    "self_cpu_ms": 3.19
+   },
+   {
+    "name": "autograd::engine::evaluate_function: ViewBackward0",
+    "count": 603,
+    "self_cpu_ms": 3.11
+   }
+  ]
+ }
+}

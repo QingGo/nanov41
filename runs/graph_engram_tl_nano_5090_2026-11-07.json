@@ -1,0 +1,27 @@
+{
+  "schema": "nanov41-engram-tl-nano/1",
+  "date": "2026-11-07",
+  "instance": "205a42a6aa (bj-B1, RTX 5090), /root/t141 torch 2.14.1+cu130 triton 3.8.0 tilelang 0.1.15",
+  "what": "official DeepSeek TileKernels Engram gate kernels adapted with a 128-element tile / 1-warp-per-head backward so the nano dims 384/640 run natively without padding; vendored under nanov41/engram_kernels (MIT).",
+  "changes_vs_upstream": [
+    "fwd: blk_d candidates add 128; vec_size = 8 if blk_d>=256 else 4 (threads=32)",
+    "bwd: warps_per_head = 2 if hidden_size%256==0 else 1 (128 threads); v_copy_vec_size chosen dynamically for the nano hidden sizes; single-warp dldg reduction instead of the hardcoded two-warp sum"
+  ],
+  "validation_vs_engram_gate_ref": [
+    {"dim": 384, "pad": 384, "c": 1.0, "out_rel": 1.66e-3, "grad_x_rel": 1.16e-4, "grad_key_rel": 3.53e-4, "grad_value_rel": 8.48e-6, "grad_wh_rel": 1.68e-4, "grad_we_rel": 1.67e-4},
+    {"dim": 640, "pad": 640, "c": 1.0, "out_rel": 1.63e-3, "grad_x_rel": 1.10e-5, "grad_key_rel": 2.98e-5, "grad_value_rel": 2.30e-6, "grad_wh_rel": 1.86e-4, "grad_we_rel": 6.12e-5},
+    {"dim": 512, "pad": 512, "c": 1.0, "out_rel": 1.61e-3, "grad_x_rel": 1.07e-5, "grad_key_rel": 1.59e-4, "grad_value_rel": 2.23e-5, "grad_wh_rel": 5.19e-5, "grad_we_rel": 8.14e-5}
+  ],
+  "d12_tuned_graph_step_ms": {
+    "shape": "b=16 x seq=1024, graph-only, 2 rounds, final_env + R69 flags",
+    "baseline": [64.63, 64.68],
+    "engram_tilelang_nano_native": [67.55, 67.55],
+    "engram_inductor_fused": [67.25, 67.02],
+    "overhead_pct": {"tilelang_nano": 4.5, "inductor_fused": 3.9},
+    "conclusion": "nano TileLang is statistically tied with the Inductor-fused gate (+4.5% vs +3.9%) and ~8% faster than the padded official path (73.2 ms); it is now the default fused path, Inductor remains available via NANOV41_ENGRAM_TL=0 NANOV41_ENGRAM_COMPILE=1."
+  },
+  "d20_full_graph": {"shape": "b=8 x seq=1024, graph-only", "capture": "PASS", "step_ms": 112.7, "peak_mem_gib": 16.77,
+                     "note": "CE head v3 falls back to bf16 for dim 640; d20 path is validated for capture/kernel correctness, not compared for MFU."},
+  "code": ["nanov41/engram_kernels/ (vendored MIT TileKernels adaptation)", "nanov41/engram_tl.py", "nanov41/nano_engram.py"],
+  "license": "nanov41/engram_kernels/LICENSE (MIT, Copyright (c) 2026 DeepSeek)"
+}

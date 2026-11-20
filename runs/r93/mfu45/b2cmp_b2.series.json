@@ -1,0 +1,234 @@
+{
+ "arm": "b2cmp_b2",
+ "out": "/root/nanov41/runs/r93/mfu45/b2cmp_b2",
+ "config": "d12_aligned",
+ "engram": "d12_aligned",
+ "optimizer": "v41",
+ "resume": false,
+ "start_step": 0,
+ "steps_total": 20,
+ "tokens_per_step": 2097152,
+ "log_every": 1,
+ "env": {
+  "NANOV41_HEAD_FP8": "v2",
+  "NANOV41_CE_CHUNK": "8192",
+  "NANOV41_ATTN_V2": "0",
+  "FAST_ATTN_TL": "1",
+  "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+ },
+ "points": [
+  {
+   "step": 1,
+   "loss": 10.836849,
+   "lr": 0.00145,
+   "tok_s": 64961.2,
+   "mfu_pct": 53.577,
+   "gn": 0.757858,
+   "imb": null,
+   "elapsed_s": 32.28
+  },
+  {
+   "step": 2,
+   "loss": 10.464911,
+   "lr": 0.0029,
+   "tok_s": 65072.9,
+   "mfu_pct": 53.669,
+   "gn": 1.165292,
+   "imb": null,
+   "elapsed_s": 64.46
+  },
+  {
+   "step": 3,
+   "loss": 9.272832,
+   "lr": 0.0029,
+   "tok_s": 65087.0,
+   "mfu_pct": 53.681,
+   "gn": 2.452997,
+   "imb": null,
+   "elapsed_s": 96.66
+  },
+  {
+   "step": 4,
+   "loss": 8.682463,
+   "lr": 0.0029,
+   "tok_s": 65097.9,
+   "mfu_pct": 53.69,
+   "gn": 2.971114,
+   "imb": null,
+   "elapsed_s": 128.86
+  },
+  {
+   "step": 5,
+   "loss": 8.182097,
+   "lr": 0.0029,
+   "tok_s": 65099.8,
+   "mfu_pct": 53.691,
+   "gn": 2.6105,
+   "imb": null,
+   "elapsed_s": 161.07
+  },
+  {
+   "step": 6,
+   "loss": 7.905756,
+   "lr": 0.0029,
+   "tok_s": 65108.6,
+   "mfu_pct": 53.699,
+   "gn": 4.815182,
+   "imb": null,
+   "elapsed_s": 193.26
+  },
+  {
+   "step": 7,
+   "loss": 7.808969,
+   "lr": 0.0029,
+   "tok_s": 65111.4,
+   "mfu_pct": 53.701,
+   "gn": 3.189051,
+   "imb": null,
+   "elapsed_s": 225.46
+  },
+  {
+   "step": 8,
+   "loss": 7.731813,
+   "lr": 0.0029,
+   "tok_s": 65109.8,
+   "mfu_pct": 53.7,
+   "gn": 2.852336,
+   "imb": null,
+   "elapsed_s": 257.68
+  },
+  {
+   "step": 9,
+   "loss": 7.581341,
+   "lr": 0.0029,
+   "tok_s": 65111.0,
+   "mfu_pct": 53.701,
+   "gn": 1.725156,
+   "imb": null,
+   "elapsed_s": 289.88
+  },
+  {
+   "step": 10,
+   "loss": 7.49698,
+   "lr": 0.0029,
+   "tok_s": 65114.8,
+   "mfu_pct": 53.704,
+   "gn": 2.831479,
+   "imb": null,
+   "elapsed_s": 322.07
+  },
+  {
+   "step": 11,
+   "loss": 7.434597,
+   "lr": 0.0029,
+   "tok_s": 65115.1,
+   "mfu_pct": 53.704,
+   "gn": 1.766311,
+   "imb": null,
+   "elapsed_s": 354.28
+  },
+  {
+   "step": 12,
+   "loss": 7.472067,
+   "lr": 0.0029,
+   "tok_s": 65115.8,
+   "mfu_pct": 53.705,
+   "gn": 4.58702,
+   "imb": null,
+   "elapsed_s": 386.48
+  },
+  {
+   "step": 13,
+   "loss": 7.331207,
+   "lr": 0.0029,
+   "tok_s": 65117.3,
+   "mfu_pct": 53.706,
+   "gn": 2.48485,
+   "imb": null,
+   "elapsed_s": 418.67
+  },
+  {
+   "step": 14,
+   "loss": 7.243827,
+   "lr": 0.0029,
+   "tok_s": 65119.5,
+   "mfu_pct": 53.708,
+   "gn": 1.845211,
+   "imb": null,
+   "elapsed_s": 450.87
+  },
+  {
+   "step": 15,
+   "loss": 7.191585,
+   "lr": 0.0029,
+   "tok_s": 65120.5,
+   "mfu_pct": 53.708,
+   "gn": 2.862232,
+   "imb": null,
+   "elapsed_s": 483.06
+  },
+  {
+   "step": 16,
+   "loss": 7.123833,
+   "lr": 0.0029,
+   "tok_s": 65121.4,
+   "mfu_pct": 53.709,
+   "gn": 2.279318,
+   "imb": null,
+   "elapsed_s": 515.26
+  },
+  {
+   "step": 17,
+   "loss": 7.06439,
+   "lr": 0.0029,
+   "tok_s": 65122.2,
+   "mfu_pct": 53.71,
+   "gn": 2.645007,
+   "imb": null,
+   "elapsed_s": 547.46
+  },
+  {
+   "step": 18,
+   "loss": 7.017305,
+   "lr": 0.0029,
+   "tok_s": 65123.1,
+   "mfu_pct": 53.711,
+   "gn": 2.518954,
+   "imb": null,
+   "elapsed_s": 579.65
+  },
+  {
+   "step": 19,
+   "loss": 6.975156,
+   "lr": 0.0029,
+   "tok_s": 65124.4,
+   "mfu_pct": 53.712,
+   "gn": 2.848832,
+   "imb": null,
+   "elapsed_s": 611.84
+  },
+  {
+   "step": 20,
+   "loss": 6.875691,
+   "lr": 0.001595,
+   "tok_s": 65125.6,
+   "mfu_pct": 53.713,
+   "gn": 2.022798,
+   "imb": null,
+   "elapsed_s": 644.03
+  }
+ ],
+ "gate_load_summary": {},
+ "summary": {
+  "steps": 20,
+  "tokens": 41943040,
+  "train_seconds": 644.1,
+  "tokens_per_sec": 65123.5,
+  "avg_logged_loss": 7.884683418273926,
+  "raw_bf16_mfu": 0.537109135298176,
+  "peak_lr": 0.0029,
+  "last_loss": 6.875691,
+  "last_gn": 2.022798,
+  "last_imb": null
+ }
+}

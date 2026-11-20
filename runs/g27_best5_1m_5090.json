@@ -1,0 +1,63 @@
+{
+ "total": 1048576,
+ "chunk": 16384,
+ "configs": [
+  "base",
+  "best5"
+ ],
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "triton": "3.7.1",
+ "rounds": [
+  {
+   "round": 0,
+   "tag": "base",
+   "ms": 17197.7
+  },
+  {
+   "round": 0,
+   "tag": "best5",
+   "ms": 17275.4
+  },
+  {
+   "round": 1,
+   "tag": "best5",
+   "ms": 17162.3
+  },
+  {
+   "round": 1,
+   "tag": "base",
+   "ms": 17244.3
+  },
+  {
+   "round": 2,
+   "tag": "best5",
+   "ms": 17183.7
+  },
+  {
+   "round": 2,
+   "tag": "base",
+   "ms": 17300.1
+  },
+  {
+   "round": 3,
+   "tag": "base",
+   "ms": 17562.9
+  },
+  {
+   "round": 3,
+   "tag": "best5",
+   "ms": 17453.1
+  }
+ ],
+ "summary": {
+  "base": {
+   "median_ms": 17272.2,
+   "delta_pct": 0.0
+  },
+  "best5": {
+   "median_ms": 17229.6,
+   "delta_pct": -0.25
+  }
+ }
+}

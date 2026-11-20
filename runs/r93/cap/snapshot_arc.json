@@ -1,0 +1,27 @@
+{
+ "ckpt": "/root/autodl-tmp/nanochat/runs/p1/p1_8b.pt",
+ "started": "2026-11-18T15:23:35Z",
+ "model": {
+  "params": 338129200,
+  "flops_per_token": 591716960.0,
+  "config": null
+ },
+ "generation": [],
+ "benchmarks": {
+  "mmlu": {
+   "error": "RuntimeError('skip')"
+  },
+  "arc_easy": {
+   "acc": 0.29333333333333333,
+   "n": 150,
+   "shots": 25
+  },
+  "hellaswag": {
+   "error": "RuntimeError('skip')"
+  },
+  "gsm8k": {
+   "error": "RuntimeError('skip')"
+  }
+ },
+ "finished": "2026-11-18T15:25:15Z"
+}

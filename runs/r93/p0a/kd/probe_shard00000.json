@@ -1,0 +1,69 @@
+{
+ "shard": "train-00000-of-01377.parquet",
+ "file_mb": 416.6,
+ "download": {},
+ "parquet": {
+  "rows": 116,
+  "row_groups": 1,
+  "columns": [
+   "element",
+   "element",
+   "element",
+   "element",
+   "element"
+  ],
+  "compressed_bytes_by_column": {
+   "element": 416561376
+  }
+ },
+ "tables": {
+  "max_pieces": 13
+ },
+ "tokens": 950272,
+ "pieces": 1024473,
+ "inflation": 1.078084,
+ "usable_frac": 0.927557,
+ "timing_s": {
+  "decode_light": 1.69,
+  "expand": 0.03,
+  "project_4k_all": 44.32,
+  "total_loop": 51.02
+ },
+ "fidelity": {
+  "ids_equal": true,
+  "top_ids_equal": true,
+  "lp_mean_abs_diff": 0.06641101837158203,
+  "lp_max_abs_diff": 1.1640625
+ },
+ "project": {
+  "8": {
+   "stored_mass_mean": 0.81864,
+   "rest_mass": 0.18136,
+   "top1_agree": 0.5033,
+   "sentinel_frac": 0.01458
+  },
+  "16": {
+   "stored_mass_mean": 0.88691,
+   "rest_mass": 0.11309,
+   "top1_agree": 0.5033,
+   "sentinel_frac": 0.01959
+  },
+  "24": {
+   "stored_mass_mean": 0.91937,
+   "rest_mass": 0.08063,
+   "top1_agree": 0.5033,
+   "sentinel_frac": 0.02332
+  },
+  "32": {
+   "stored_mass_mean": 0.93947,
+   "rest_mass": 0.06053,
+   "top1_agree": 0.5033,
+   "sentinel_frac": 0.02636
+  }
+ },
+ "peak_rss_mb": 987.0,
+ "assumptions": {
+  "m32_abs": 0.93947
+ },
+ "est_build_s_per_shard_k16": 14.8
+}

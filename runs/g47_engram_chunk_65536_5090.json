@@ -1,0 +1,84 @@
+{
+ "total": 65536,
+ "chunk": 16384,
+ "n_chunks": 4,
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "engram": "d12",
+ "engram_table_params": 128016192,
+ "engram_layers": [
+  1,
+  4
+ ],
+ "engram_table_shapes": [
+  [
+   2000136,
+   32
+  ],
+  [
+   2000370,
+   32
+  ]
+ ],
+ "engram_lr": 0.01,
+ "steps": 2,
+ "ckpt": "none",
+ "head_fp8": "2",
+ "capture_s": 2.5,
+ "capture_stats": {
+  "graphs": 4,
+  "seconds": 2.5,
+  "peak_mem_gib": 13.24
+ },
+ "engram_capture_records": [
+  4,
+  4
+ ],
+ "engram_leaf_grads": [
+  4,
+  4
+ ],
+ "parity": {
+  "weights_bitexact_after_all_steps": true,
+  "first_differing_params": [],
+  "eager_losses": [
+   11.845453,
+   11.84608
+  ],
+  "graph_losses": [
+   11.845453,
+   11.84608
+  ],
+  "losses_bitwise": true
+ },
+ "engram_rows_tracked_after_parity": [
+  461534,
+  461091
+ ],
+ "timing": {
+  "eager": {
+   "step_ms": [
+    544.9,
+    540.2,
+    539.4
+   ],
+   "step_median_ms": 540.2,
+   "tokens_per_s": 121321,
+   "peak_mem_gib": 15.07,
+   "capture_s": 0.0
+  },
+  "graph": {
+   "step_ms": [
+    447.7,
+    447.8,
+    449.1
+   ],
+   "step_median_ms": 447.8,
+   "tokens_per_s": 146341,
+   "peak_mem_gib": 6.44,
+   "capture_s": 2.5
+  }
+ },
+ "delta_pct": -17.1,
+ "speedup": 1.21
+}

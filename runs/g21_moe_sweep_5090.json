@@ -1,0 +1,515 @@
+{
+ "configs": [
+  {
+   "name": "base",
+   "env": {},
+   "rc": 0,
+   "secs": 6.4,
+   "per_layer_ms": 3.585,
+   "wall_median_ms": 43.02,
+   "kernel_ms": 17.03,
+   "gap_ms": 25.99,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.648,
+    "_dw13_nopad_kernel": 2.038,
+    "_swiglu_fwd_nopad_kernel": 1.629,
+    "_aggemm_tb_kernel": 1.491,
+    "void at::native::vectorized_elementwise_kernel": 1.257,
+    "_swiglu_bwd_tb_kernel": 1.146,
+    "_dw_kernel": 0.983,
+    "_aggemm_kernel": 0.754
+   }
+  },
+  {
+   "name": "fused_dx",
+   "env": {
+    "NANOV41_MOE_FUSED_DX": "1"
+   },
+   "rc": 0,
+   "secs": 6.4,
+   "per_layer_ms": 2.184,
+   "wall_median_ms": 26.21,
+   "kernel_ms": 17.28,
+   "gap_ms": 8.93,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.659,
+    "_dw13_nopad_kernel": 2.014,
+    "_aggemm2_t_kernel": 1.961,
+    "_swiglu_fwd_nopad_kernel": 1.631,
+    "_swiglu_bwd_tb_kernel": 1.146,
+    "void at::native::vectorized_elementwise_kernel": 1.056,
+    "_dw_kernel": 0.983,
+    "_aggemm_kernel": 0.754
+   }
+  },
+  {
+   "name": "fused_dxdy",
+   "env": {
+    "NANOV41_MOE_FUSED_DX": "1",
+    "NANOV41_MOE_FUSED_DY": "1"
+   },
+   "rc": 0,
+   "secs": 6.8,
+   "per_layer_ms": 2.886,
+   "wall_median_ms": 34.63,
+   "kernel_ms": 17.24,
+   "gap_ms": 17.39,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.642,
+    "_dw13_nopad_kernel": 2.059,
+    "_aggemm2_t_kernel": 1.958,
+    "_swiglu_fwd_nopad_kernel": 1.634,
+    "_dw_map_kernel": 1.229,
+    "_swiglu_bwd_tb_map_kernel": 1.125,
+    "void at::native::vectorized_elementwise_kernel": 1.007,
+    "_aggemm_kernel": 0.757
+   }
+  },
+  {
+   "name": "fused_dy",
+   "env": {
+    "NANOV41_MOE_FUSED_DY": "1"
+   },
+   "rc": 0,
+   "secs": 5.9,
+   "per_layer_ms": 2.105,
+   "wall_median_ms": 25.26,
+   "kernel_ms": 16.97,
+   "gap_ms": 8.29,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.663,
+    "_dw13_nopad_kernel": 2.019,
+    "_swiglu_fwd_nopad_kernel": 1.635,
+    "_aggemm_tb_kernel": 1.491,
+    "_dw_map_kernel": 1.229,
+    "void at::native::vectorized_elementwise_kernel": 1.21,
+    "_swiglu_bwd_tb_map_kernel": 1.115,
+    "_aggemm_kernel": 0.755
+   }
+  },
+  {
+   "name": "dws_inline",
+   "env": {
+    "NANOV41_MOE_DWS_INLINE": "1"
+   },
+   "rc": 0,
+   "secs": 7.2,
+   "per_layer_ms": 4.095,
+   "wall_median_ms": 49.14,
+   "kernel_ms": 16.46,
+   "gap_ms": 32.68,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.662,
+    "_dw13_nopad_kernel": 2.05,
+    "_swiglu_fwd_nopad_kernel": 1.627,
+    "_aggemm_tb_kernel": 1.493,
+    "void at::native::vectorized_elementwise_kernel": 1.296,
+    "_dw_kernel": 0.986,
+    "_swiglu_bwd_tb_kernel": 0.928,
+    "_aggemm_kernel": 0.757
+   }
+  },
+  {
+   "name": "fused_dxdy_dws",
+   "env": {
+    "NANOV41_MOE_FUSED_DX": "1",
+    "NANOV41_MOE_FUSED_DY": "1",
+    "NANOV41_MOE_DWS_INLINE": "1"
+   },
+   "rc": 0,
+   "secs": 7.2,
+   "per_layer_ms": 3.988,
+   "wall_median_ms": 47.85,
+   "kernel_ms": 16.71,
+   "gap_ms": 31.14,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.656,
+    "_dw13_nopad_kernel": 2.037,
+    "_aggemm2_t_kernel": 1.954,
+    "_swiglu_fwd_nopad_kernel": 1.632,
+    "_dw_map_kernel": 1.238,
+    "void at::native::vectorized_elementwise_kernel": 1.011,
+    "_swiglu_bwd_tb_map_kernel": 0.967,
+    "_aggemm_kernel": 0.758
+   }
+  },
+  {
+   "name": "tile_128_64_128_4_3",
+   "env": {
+    "NANOV41_MOE_TILE": "128,64,128,4,3"
+   },
+   "rc": 1,
+   "secs": 5.4,
+   "stderr_tail": "runtime/jit.py\", line 760, in run\n    launch_metadata = kernel.launch_metadata(grid, stream, *bound_args.values())\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 485, in launch_metadata\n    self._init_handles()\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 459, in _init_handles\n    raise_(OutOfResources(self.metadata.shared, max_shared, \"shared memory\"))\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 451, in raise_\n    raise err\ntriton.runtime.errors.OutOfResources: out of resource: shared memory, Required: 131072, Hardware limit: 101376. Reducing block sizes or `num_stages` may help.\n"
+  },
+  {
+   "name": "tile_64_128_128_4_3",
+   "env": {
+    "NANOV41_MOE_TILE": "64,128,128,4,3"
+   },
+   "rc": 1,
+   "secs": 5.4,
+   "stderr_tail": "runtime/jit.py\", line 760, in run\n    launch_metadata = kernel.launch_metadata(grid, stream, *bound_args.values())\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 485, in launch_metadata\n    self._init_handles()\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 459, in _init_handles\n    raise_(OutOfResources(self.metadata.shared, max_shared, \"shared memory\"))\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 451, in raise_\n    raise err\ntriton.runtime.errors.OutOfResources: out of resource: shared memory, Required: 163840, Hardware limit: 101376. Reducing block sizes or `num_stages` may help.\n"
+  },
+  {
+   "name": "tile_128_128_128_8_3",
+   "env": {
+    "NANOV41_MOE_TILE": "128,128,128,8,3"
+   },
+   "rc": 1,
+   "secs": 5.2,
+   "stderr_tail": "runtime/jit.py\", line 760, in run\n    launch_metadata = kernel.launch_metadata(grid, stream, *bound_args.values())\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 485, in launch_metadata\n    self._init_handles()\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 459, in _init_handles\n    raise_(OutOfResources(self.metadata.shared, max_shared, \"shared memory\"))\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 451, in raise_\n    raise err\ntriton.runtime.errors.OutOfResources: out of resource: shared memory, Required: 196608, Hardware limit: 101376. Reducing block sizes or `num_stages` may help.\n"
+  },
+  {
+   "name": "tile_64_64_64_4_3",
+   "env": {
+    "NANOV41_MOE_TILE": "64,64,64,4,3"
+   },
+   "rc": 0,
+   "secs": 7.8,
+   "per_layer_ms": 2.913,
+   "wall_median_ms": 34.95,
+   "kernel_ms": 16.32,
+   "gap_ms": 18.63,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.669,
+    "_dw13_nopad_kernel": 2.033,
+    "_swiglu_fwd_nopad_kernel": 1.259,
+    "void at::native::vectorized_elementwise_kernel": 1.256,
+    "_aggemm_tb_kernel": 1.225,
+    "_swiglu_bwd_tb_kernel": 1.12,
+    "_dw_kernel": 0.984,
+    "_aggemm_kernel": 0.685
+   }
+  },
+  {
+   "name": "tile_128_64_64_8_3",
+   "env": {
+    "NANOV41_MOE_TILE": "128,64,64,8,3"
+   },
+   "rc": 0,
+   "secs": 8.0,
+   "per_layer_ms": 3.539,
+   "wall_median_ms": 42.47,
+   "kernel_ms": 16.74,
+   "gap_ms": 25.73,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.664,
+    "_dw13_nopad_kernel": 2.033,
+    "_swiglu_fwd_nopad_kernel": 1.604,
+    "void at::native::vectorized_elementwise_kernel": 1.273,
+    "_aggemm_tb_kernel": 1.235,
+    "_swiglu_bwd_tb_kernel": 1.21,
+    "_dw_kernel": 0.987,
+    "_aggemm_kernel": 0.629
+   }
+  },
+  {
+   "name": "tile_64_192_128_8_3",
+   "env": {
+    "NANOV41_MOE_TILE": "64,192,128,8,3"
+   },
+   "rc": 1,
+   "secs": 4.4,
+   "stderr_tail": " context=context, options=options, codegen_fns=codegen_fns,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntriton.compiler.errors.CompilationError: at 15:22:\n                             LIM: tl.constexpr, BM: tl.constexpr, BN: tl.constexpr,\n                             BK: tl.constexpr):\n    \"\"\"\u4e0e `_swiglu_fwd_kernel` \u6570\u5b66\u4e00\u81f4\uff0c\u4f46 A \u4e0d\u518d\u6765\u81ea\u7269\u5316\u7684 x_pad\uff1a\n    \u5bf9 padded \u884c rm\uff0cflat=FLAT[rm] \u7ed9\u51fa (token,slot) \u5e73\u5766\u4e0b\u6807\uff0ctoken=flat//KS \u21d2 \u76f4\u63a5\u4ece\u539f\u59cb X \u53d6\u884c\u3002\n    padding \u884c\u5728 ACT/GATE_C/UP_C \u91cc\u663e\u5f0f\u5199 0\uff08\u4e0b\u6e38 dW \u4f1a\u4e58 0\uff0c\u4f46\u5fc5\u987b\u662f 0 \u800c\u4e0d\u662f\u5783\u573e\uff09\u3002\"\"\"\n    pid_m = tl.program_id(0)\n    pid_n = tl.program_id(1)\n    e = tl.load(TILE_E + pid_m)\n    if e < 0:\n        return\n    rm = pid_m * BM + tl.arange(0, BM)\n    rn = pid_n * BN + tl.arange(0, BN)\n                      ^\narange's range must be a power of 2\n"
+  },
+  {
+   "name": "tile_32_64_128_4_3",
+   "env": {
+    "NANOV41_MOE_TILE": "32,64,128,4,3"
+   },
+   "rc": 0,
+   "secs": 7.4,
+   "per_layer_ms": 3.627,
+   "wall_median_ms": 43.52,
+   "kernel_ms": 18.59,
+   "gap_ms": 24.93,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.637,
+    "_swiglu_fwd_nopad_kernel": 2.548,
+    "_dw13_nopad_kernel": 2.017,
+    "_aggemm_tb_kernel": 1.932,
+    "_swiglu_bwd_tb_kernel": 1.251,
+    "void at::native::vectorized_elementwise_kernel": 1.246,
+    "_dw_kernel": 0.978,
+    "_aggemm_kernel": 0.921
+   }
+  },
+  {
+   "name": "tile_64_64_128_8_3",
+   "env": {
+    "NANOV41_MOE_TILE": "64,64,128,8,3"
+   },
+   "rc": 0,
+   "secs": 7.8,
+   "per_layer_ms": 3.732,
+   "wall_median_ms": 44.79,
+   "kernel_ms": 19.14,
+   "gap_ms": 25.65,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.643,
+    "_swiglu_fwd_nopad_kernel": 2.887,
+    "_dw13_nopad_kernel": 2.008,
+    "_aggemm_tb_kernel": 1.93,
+    "_swiglu_bwd_tb_kernel": 1.377,
+    "void at::native::vectorized_elementwise_kernel": 1.255,
+    "_dw_kernel": 0.984,
+    "_aggemm_kernel": 0.982
+   }
+  },
+  {
+   "name": "dw_128_64_64_4_3",
+   "env": {
+    "NANOV41_MOE_DW_TILE": "128,64,64,4,3"
+   },
+   "rc": 0,
+   "secs": 7.2,
+   "per_layer_ms": 2.935,
+   "wall_median_ms": 35.22,
+   "kernel_ms": 16.41,
+   "gap_ms": 18.81,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.666,
+    "_swiglu_fwd_nopad_kernel": 1.638,
+    "_dw13_nopad_kernel": 1.55,
+    "_aggemm_tb_kernel": 1.493,
+    "void at::native::vectorized_elementwise_kernel": 1.261,
+    "_swiglu_bwd_tb_kernel": 1.133,
+    "_dw_kernel": 0.824,
+    "_aggemm_kernel": 0.757
+   }
+  },
+  {
+   "name": "dw_128_32_64_8_4",
+   "env": {
+    "NANOV41_MOE_DW_TILE": "128,32,64,8,4"
+   },
+   "rc": 0,
+   "secs": 6.7,
+   "per_layer_ms": 2.341,
+   "wall_median_ms": 28.09,
+   "kernel_ms": 16.99,
+   "gap_ms": 11.1,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.661,
+    "_dw13_nopad_kernel": 1.751,
+    "_swiglu_fwd_nopad_kernel": 1.634,
+    "_aggemm_tb_kernel": 1.491,
+    "void at::native::vectorized_elementwise_kernel": 1.257,
+    "_dw_kernel": 1.204,
+    "_swiglu_bwd_tb_kernel": 1.133,
+    "_aggemm_kernel": 0.757
+   }
+  },
+  {
+   "name": "dw_64_32_64_4_3",
+   "env": {
+    "NANOV41_MOE_DW_TILE": "64,32,64,4,3"
+   },
+   "rc": 0,
+   "secs": 6.9,
+   "per_layer_ms": 3.703,
+   "wall_median_ms": 44.43,
+   "kernel_ms": 16.52,
+   "gap_ms": 27.91,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.658,
+    "_swiglu_fwd_nopad_kernel": 1.636,
+    "_dw13_nopad_kernel": 1.587,
+    "_aggemm_tb_kernel": 1.496,
+    "void at::native::vectorized_elementwise_kernel": 1.261,
+    "_swiglu_bwd_tb_kernel": 1.136,
+    "_dw_kernel": 0.903,
+    "_aggemm_kernel": 0.756
+   }
+  },
+  {
+   "name": "dw_128_96_64_4_3",
+   "env": {
+    "NANOV41_MOE_DW_TILE": "128,96,64,4,3"
+   },
+   "rc": 1,
+   "secs": 4.9,
+   "stderr_tail": "iconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 80, in make_ir\n    return ast_to_ttir(self.fn, self, context=context, options=options, codegen_fns=codegen_fns,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntriton.compiler.errors.CompilationError: at 9:22:\ndef _dw_kernel(DW, A, DC, SEG_START, SEG_END, K, N,\n               BM: tl.constexpr, BK: tl.constexpr, BN: tl.constexpr):\n    \"\"\"DW[e,K,N] = A[rows,K]^T @ DC[rows,N]\uff0crows \u2208 expert e\u3002grid=(E, K//BK, N//BN)\u3002\"\"\"\n    pid_e = tl.program_id(0)\n    pid_k = tl.program_id(1)\n    pid_n = tl.program_id(2)\n    start = tl.load(SEG_START + pid_e)\n    end = tl.load(SEG_END + pid_e)\n    rk = pid_k * BK + tl.arange(0, BK)\n                      ^\narange's range must be a power of 2\n"
+  },
+  {
+   "name": "dw_192_32_64_4_3",
+   "env": {
+    "NANOV41_MOE_DW_TILE": "192,32,64,4,3"
+   },
+   "rc": 1,
+   "secs": 4.6,
+   "stderr_tail": ", context=context, options=options, codegen_fns=codegen_fns,\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\ntriton.compiler.errors.CompilationError: at 13:26:\n               BM: tl.constexpr, BK: tl.constexpr, BN: tl.constexpr):\n    \"\"\"DW[e,K,N] = A[rows,K]^T @ DC[rows,N]\uff0crows \u2208 expert e\u3002grid=(E, K//BK, N//BN)\u3002\"\"\"\n    pid_e = tl.program_id(0)\n    pid_k = tl.program_id(1)\n    pid_n = tl.program_id(2)\n    start = tl.load(SEG_START + pid_e)\n    end = tl.load(SEG_END + pid_e)\n    rk = pid_k * BK + tl.arange(0, BK)\n    rn = pid_n * BN + tl.arange(0, BN)\n    acc = tl.zeros((BK, BN), dtype=tl.float32)\n    for r0 in range(0, end - start, BM):\n        rm = start + r0 + tl.arange(0, BM)\n                          ^\narange's range must be a power of 2\n"
+  },
+  {
+   "name": "dw_128_32_128_4_3",
+   "env": {
+    "NANOV41_MOE_DW_TILE": "128,32,128,4,3"
+   },
+   "rc": 0,
+   "secs": 6.8,
+   "per_layer_ms": 3.326,
+   "wall_median_ms": 39.91,
+   "kernel_ms": 17.42,
+   "gap_ms": 22.49,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.663,
+    "_dw13_nopad_kernel": 2.39,
+    "_swiglu_fwd_nopad_kernel": 1.629,
+    "_aggemm_tb_kernel": 1.491,
+    "void at::native::vectorized_elementwise_kernel": 1.255,
+    "_swiglu_bwd_tb_kernel": 1.136,
+    "_dw_kernel": 1.003,
+    "_aggemm_kernel": 0.754
+   }
+  },
+  {
+   "name": "dw_256_32_64_4_3",
+   "env": {
+    "NANOV41_MOE_DW_TILE": "256,32,64,4,3"
+   },
+   "rc": 0,
+   "secs": 7.0,
+   "per_layer_ms": 3.967,
+   "wall_median_ms": 47.61,
+   "kernel_ms": 17.7,
+   "gap_ms": 29.91,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.661,
+    "_dw13_nopad_kernel": 2.382,
+    "_swiglu_fwd_nopad_kernel": 1.634,
+    "_aggemm_tb_kernel": 1.494,
+    "_dw_kernel": 1.287,
+    "void at::native::vectorized_elementwise_kernel": 1.255,
+    "_swiglu_bwd_tb_kernel": 1.138,
+    "_aggemm_kernel": 0.756
+   }
+  },
+  {
+   "name": "bwd_64_128_128_4_3",
+   "env": {
+    "NANOV41_MOE_BWD_TILE": "64,128,128,4,3"
+   },
+   "rc": 0,
+   "secs": 7.6,
+   "per_layer_ms": 3.646,
+   "wall_median_ms": 43.75,
+   "kernel_ms": 17.84,
+   "gap_ms": 25.91,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.656,
+    "_dw13_nopad_kernel": 2.001,
+    "_swiglu_bwd_tb_kernel": 1.783,
+    "_aggemm_tb_kernel": 1.711,
+    "_swiglu_fwd_nopad_kernel": 1.627,
+    "void at::native::vectorized_elementwise_kernel": 1.246,
+    "_dw_kernel": 0.982,
+    "_aggemm_kernel": 0.759
+   }
+  },
+  {
+   "name": "bwd_32_64_128_4_3",
+   "env": {
+    "NANOV41_MOE_BWD_TILE": "32,64,128,4,3"
+   },
+   "rc": 1,
+   "secs": 5.3,
+   "stderr_tail": "oot/miniconda3/lib/python3.12/site-packages/triton/runtime/jit.py\", line 760, in run\n    launch_metadata = kernel.launch_metadata(grid, stream, *bound_args.values())\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 485, in launch_metadata\n    self._init_handles()\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 468, in _init_handles\n    self.module, self.function, self.n_regs, self.n_spills, self.n_max_threads = driver.active.utils.load_binary(\n                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Triton Error [CUDA]: an illegal memory access was encountered\n"
+  },
+  {
+   "name": "bwd_64_64_64_4_3",
+   "env": {
+    "NANOV41_MOE_BWD_TILE": "64,64,64,4,3"
+   },
+   "rc": 0,
+   "secs": 6.4,
+   "per_layer_ms": 3.508,
+   "wall_median_ms": 42.09,
+   "kernel_ms": 16.74,
+   "gap_ms": 25.35,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.663,
+    "_dw13_nopad_kernel": 2.014,
+    "_swiglu_fwd_nopad_kernel": 1.637,
+    "void at::native::vectorized_elementwise_kernel": 1.258,
+    "_aggemm_tb_kernel": 1.225,
+    "_swiglu_bwd_tb_kernel": 1.111,
+    "_dw_kernel": 0.983,
+    "_aggemm_kernel": 0.755
+   }
+  },
+  {
+   "name": "bwd_64_128_64_8_3",
+   "env": {
+    "NANOV41_MOE_BWD_TILE": "64,128,64,8,3"
+   },
+   "rc": 0,
+   "secs": 6.9,
+   "per_layer_ms": 3.887,
+   "wall_median_ms": 46.64,
+   "kernel_ms": 16.8,
+   "gap_ms": 29.84,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.663,
+    "_dw13_nopad_kernel": 2.028,
+    "_swiglu_fwd_nopad_kernel": 1.63,
+    "void at::native::vectorized_elementwise_kernel": 1.248,
+    "_aggemm_tb_kernel": 1.226,
+    "_swiglu_bwd_tb_kernel": 1.204,
+    "_dw_kernel": 0.981,
+    "_aggemm_kernel": 0.755
+   }
+  },
+  {
+   "name": "bwd_32_128_64_4_3",
+   "env": {
+    "NANOV41_MOE_BWD_TILE": "32,128,64,4,3"
+   },
+   "rc": 1,
+   "secs": 5.2,
+   "stderr_tail": "/lib/python3.12/site-packages/triton/runtime/jit.py\", line 760, in run\n    launch_metadata = kernel.launch_metadata(grid, stream, *bound_args.values())\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 485, in launch_metadata\n    self._init_handles()\n  File \"/root/miniconda3/lib/python3.12/site-packages/triton/compiler/compiler.py\", line 468, in _init_handles\n    self.module, self.function, self.n_regs, self.n_spills, self.n_max_threads = driver.active.utils.load_binary(\n                                                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Triton Error [CUDA]: operation not supported on global/shared address space\n"
+  },
+  {
+   "name": "layout_atomic",
+   "env": {
+    "NANOV41_MOE_LAYOUT": "atomic"
+   },
+   "rc": 0,
+   "secs": 6.6,
+   "per_layer_ms": 3.468,
+   "wall_median_ms": 41.62,
+   "kernel_ms": 16.4,
+   "gap_ms": 25.22,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.663,
+    "_dw13_nopad_kernel": 2.021,
+    "_swiglu_fwd_nopad_kernel": 1.645,
+    "_aggemm_tb_kernel": 1.501,
+    "void at::native::vectorized_elementwise_kernel": 1.335,
+    "_swiglu_bwd_tb_kernel": 1.147,
+    "_dw_kernel": 0.981,
+    "_aggemm_kernel": 0.756
+   }
+  },
+  {
+   "name": "base2",
+   "env": {},
+   "rc": 0,
+   "secs": 6.0,
+   "per_layer_ms": 3.617,
+   "wall_median_ms": 43.4,
+   "kernel_ms": 17.04,
+   "gap_ms": 26.36,
+   "top_kernels": {
+    "void cutlass::Kernel2": 3.662,
+    "_dw13_nopad_kernel": 2.041,
+    "_swiglu_fwd_nopad_kernel": 1.63,
+    "_aggemm_tb_kernel": 1.494,
+    "void at::native::vectorized_elementwise_kernel": 1.256,
+    "_swiglu_bwd_tb_kernel": 1.14,
+    "_dw_kernel": 0.982,
+    "_aggemm_kernel": 0.754
+   }
+  }
+ ]
+}

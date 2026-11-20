@@ -1,0 +1,56 @@
+{
+ "total": 65536,
+ "chunk": 16384,
+ "n_chunks": 4,
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "eager_determinism": {
+  "max_rel": 0.28692591,
+  "n_params": 284,
+  "n_bitexact": 22,
+  "n_diff_gt_1e6": 262,
+  "diff_by_subsystem": {
+   "hc": 66,
+   "expert": 66,
+   "attn": 95,
+   "norm": 23,
+   "embed_head": 1,
+   "other": 11
+  },
+  "worst": [
+   {
+    "name": "inner.layers.3.hc_attn_scale",
+    "rel": 0.28692591
+   },
+   {
+    "name": "inner.layers.2.hc_attn_base",
+    "rel": 0.2037141
+   },
+   {
+    "name": "inner.layers.2.hc_ffn_scale",
+    "rel": 0.05530081
+   },
+   {
+    "name": "inner.layers.6.hc_attn_scale",
+    "rel": 0.05417019
+   },
+   {
+    "name": "inner.layers.2.hc_ffn_base",
+    "rel": 0.02442626
+   },
+   {
+    "name": "inner.layers.3.hc_attn_base",
+    "rel": 0.02432253
+   },
+   {
+    "name": "inner.layers.0.attn.kv_norm.weight",
+    "rel": 0.02392578
+   },
+   {
+    "name": "inner.layers.5.hc_attn_scale",
+    "rel": 0.02187059
+   }
+  ]
+ },
+ "eager_loss_max_abs_diff": 0.0
+}

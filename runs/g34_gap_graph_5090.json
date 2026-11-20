@@ -1,0 +1,238 @@
+{
+ "title": "opt-A: launch-gap / CPU-overhead audit + per-chunk CUDA-graph prototype (R66)",
+ "date": "2026-11-04",
+ "device": "NVIDIA GeForce RTX 5090 (32 GB, sm_120)",
+ "torch": "2.12.1+cu130",
+ "triton": "3.7.1",
+ "host_note": "Xeon Platinum 8470Q host, 25-core cgroup quota; eager step is launch/CPU bound (16K full-seq: 100.4 ms device kernels vs 167.2 ms step).",
+ "audit_full_16k": {
+  "phases_ms": {
+   "fwd": 96.89,
+   "fwd_bwd": 157.01,
+   "full_step": 167.22,
+   "opt_step_fused": 2.73,
+   "opt_step_foreach": 18.05,
+   "full_step_foreach_opt": 180.9
+  },
+  "profile_wall_ms": 162.79,
+  "device_kernel_ms_from_g20": 100.4,
+  "gap_ms_from_g20": 62.4,
+  "gap_pct": 38.3,
+  "cuda_launch_kernel_cpu_ms": 25.48,
+  "cuda_launch_count": 5052,
+  "top_cpu_ms": {
+   "cudaLaunchKernel": 25.48,
+   "aten::mm": 8.79,
+   "_RMSNormFnBackward": 7.36,
+   "aten::empty": 6.96,
+   "aten::copy_": 5.38,
+   "aten::empty_strided": 4.2,
+   "_GroupedMoEv2NoPadBackward": 4.1,
+   "_RopeTailFnBackward": 3.99,
+   "aten::bmm": 3.92
+  },
+  "launch_microbench_us": {
+   "triton": 8.98,
+   "aten_pointwise": 5.39
+  },
+  "optimizer_ab_ms": {
+   "fused": 2.73,
+   "foreach": 18.05
+  }
+ },
+ "audit_chunk_262k": {
+  "wall_no_sync_ms": 4375.63,
+  "wall_with_sync_ms": 4442.55,
+  "per_chunk_summary": {
+   "n": 16,
+   "first": 192.9,
+   "mid": 312.8,
+   "last": 298.6,
+   "sum": 4492.0,
+   "median": 295.9
+  },
+  "hot_cpu_per_profiler_window": {
+   "_BlockStateFn": 47.82,
+   "_BlockStateFnBackward": 43.23,
+   "cudaLaunchKernel": 47.61,
+   "cudaStreamSynchronize": 18.5,
+   "aten::empty": 9.54,
+   "aten::copy_": 7.73,
+   "aten::mm": 8.26,
+   "aten::topk": 7.69
+  },
+  "sync_ops": {
+   "cudaStreamSynchronize_calls": 128,
+   "cudaMemcpyAsync_calls": 705
+  }
+ },
+ "graph_prototype": {
+  "protocol": "one CUDA graph per chunk (start_pos baked), all graphs share one graph_pool_handle, replayed in order; optimizer / detach_leaked_buffers / data stay outside the graphs",
+  "262k": {
+   "n_chunks": 16,
+   "capture_s": 13.6,
+   "peak_mem_gib": 11.54,
+   "eager_ms": [
+    3714.4,
+    3727.1,
+    3669.7
+   ],
+   "graph_ms": [
+    3241.4,
+    3243.1,
+    3243.8
+   ],
+   "delta_pct": -12.69
+  },
+  "1m": {
+   "n_chunks": 64,
+   "capture_s": 47.1,
+   "peak_mem_gib": 13.51,
+   "eager_ms": [
+    16105.4,
+    16142.8,
+    16203.6
+   ],
+   "graph_ms": [
+    14769.4,
+    14772.2,
+    14773.0
+   ],
+   "eager_median_ms": 16142.8,
+   "graph_median_ms": 14772.2,
+   "delta_pct": -8.49,
+   "speedup": 1.09
+  }
+ },
+ "parity": {
+  "forward": "per-chunk losses eager vs graph replay are bitwise identical (g30: loss_abs_diff all 0)",
+  "graph_vs_eager_grads": {
+   "max_rel": 0.15014848,
+   "n_params": 284,
+   "n_bitexact": 22,
+   "worst": [
+    {
+     "name": "inner.layers.1.hc_attn_scale",
+     "rel": 0.15014848
+    },
+    {
+     "name": "inner.layers.2.hc_attn_base",
+     "rel": 0.07786602
+    },
+    {
+     "name": "inner.layers.4.hc_attn_base",
+     "rel": 0.04331911
+    },
+    {
+     "name": "inner.layers.0.hc_attn_base",
+     "rel": 0.036497
+    },
+    {
+     "name": "inner.layers.4.hc_ffn_scale",
+     "rel": 0.03437122
+    }
+   ]
+  },
+  "eager_determinism": {
+   "default_262k": {
+    "max_rel": 0.12908874,
+    "n_bitexact": 22,
+    "diff_by_subsystem": null
+   },
+   "1_chunk": {
+    "max_rel": 0.0,
+    "n_bitexact": 284,
+    "diff_by_subsystem": {
+     "hc": 0,
+     "expert": 0,
+     "attn": 0,
+     "norm": 0,
+     "embed_head": 0,
+     "other": 0
+    }
+   },
+   "4_chunks": {
+    "max_rel": 0.28692591,
+    "n_bitexact": 22,
+    "diff_by_subsystem": {
+     "hc": 66,
+     "expert": 66,
+     "attn": 95,
+     "norm": 23,
+     "embed_head": 1,
+     "other": 11
+    }
+   },
+   "4_chunks_clear_state_between": {
+    "max_rel": 0.19397047,
+    "n_bitexact": 22,
+    "diff_by_subsystem": {
+     "hc": 66,
+     "expert": 66,
+     "attn": 95,
+     "norm": 23,
+     "embed_head": 1,
+     "other": 11
+    }
+   },
+   "ckpt_none": {
+    "max_rel": 0.08246467,
+    "n_bitexact": 22,
+    "diff_by_subsystem": null
+   },
+   "ckpt_ffn": {
+    "max_rel": 0.64011961,
+    "n_bitexact": 22,
+    "diff_by_subsystem": null
+   },
+   "bf16_head": {
+    "max_rel": 0.27107278,
+    "n_bitexact": 22,
+    "diff_by_subsystem": null
+   },
+   "exact_indexer": {
+    "max_rel": 0.82026386,
+    "n_bitexact": 22,
+    "diff_by_subsystem": null
+   },
+   "rms_fused_off": {
+    "max_rel": 0.44734567,
+    "n_bitexact": 22,
+    "diff_by_subsystem": {
+     "hc": 66,
+     "expert": 66,
+     "attn": 95,
+     "norm": 23,
+     "embed_head": 1,
+     "other": 11
+    }
+   },
+   "swiglu_fused_off": {
+    "max_rel": 0.1403601,
+    "n_bitexact": 22,
+    "diff_by_subsystem": {
+     "hc": 66,
+     "expert": 66,
+     "attn": 95,
+     "norm": 23,
+     "embed_head": 1,
+     "other": 11
+    }
+   }
+  },
+  "deterministic_algorithms_check": "ok (no nondeterministic op raised)",
+  "finding": "The chunked path's gradients are nondeterministic with >=2 chunks (single chunk is bitwise deterministic, 284/284). Independent of CKPT, head dtype, indexer mode, RMS / swiglu fusion, and of the CUDA graph itself; clearing buffers/shared_attn between chunks does not fix it. The graph-vs-eager difference (0.15) is the same order as eager-vs-eager (0.13), so there is no evidence the graphs are less correct."
+ },
+ "recommendation": {
+  "graph_path": "promising: -8.49% on the 1M chunked step (16.14 -> 14.77 s), one-time 47 s capture, +0.7 GiB; productionisation needs (a) static ids buffer + per-step copy_, (b) logging/optimizer outside graphs (already), (c) capture cache / lazy capture.",
+  "no_graph_path": "shrink `_BlockStateFn` CPU overhead (~45 ms/chunk ~= 2.9 s per 1M step) first; remove per-chunk `float(loss)` host sync in harness (-1.5%); reduce allocation churn (aten::empty ~2600/step); optimizer: keep fused AdamW (2.7 vs 18.1 ms).",
+  "blocking": "fix the cross-chunk gradient nondeterminism (reproducible: tools/g33_graph_parity.py --eager-only --total 65536) before either path can claim reproducibility."
+ },
+ "tools": [
+  "tools/g28_gap_profile.py",
+  "tools/g30_chunk_graph.py",
+  "tools/g32_graph_chunk_train.py",
+  "tools/g33_graph_parity.py",
+  "tools/g31_audit.sh"
+ ]
+}

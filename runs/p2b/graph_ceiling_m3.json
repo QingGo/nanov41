@@ -1,0 +1,104 @@
+{
+  "schema": "nanov41-graph-ceiling/1",
+  "breakdown": {
+    "kernel_busy_us_per_replay": 1279.8,
+    "replay_wall_us": 1315.0,
+    "gap_us_per_replay": 35.2,
+    "by_category_us": {
+      "mhc": 299.7,
+      "elementwise_copy": 291.6,
+      "moe": 252.5,
+      "gemm": 239.5,
+      "attn_decode_kernels": 122.9,
+      "other": 39.1,
+      "reduce": 34.4
+    },
+    "top_kernels": [
+      {
+        "name": "decode_mixes_pre_kernel",
+        "us": 150.19
+      },
+      {
+        "name": "decode_post_mixes_pre_kernel",
+        "us": 149.51
+      },
+      {
+        "name": "linear_decode_kernel",
+        "us": 122.49
+      },
+      {
+        "name": "head_gemv_kernel",
+        "us": 109.13
+      },
+      {
+        "name": "moe_gu_kernel",
+        "us": 108.28
+      },
+      {
+        "name": "moe_gate_kernel",
+        "us": 83.52
+      },
+      {
+        "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1> >(int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1>)",
+        "us": 72.61
+      },
+      {
+        "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1} const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1} const&)::{lambda(int)#1})",
+        "us": 66.48
+      },
+      {
+        "name": "sparse_attn_decode_kernel",
+        "us": 62.89
+      },
+      {
+        "name": "moe_down_partial_kernel",
+        "us": 37.43
+      },
+      {
+        "name": "rope_kernel",
+        "us": 29.14
+      },
+      {
+        "name": "rmsnorm_kernel",
+        "us": 27.8
+      },
+      {
+        "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, float, 4, 4> >(at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::native::sum_functor<float, float, float>::operator()(at::TensorIterator&)::{lambda(float, float)#1}>, unsigned int, float, 4, 4>)",
+        "us": 24.31
+      },
+      {
+        "name": "memcpy32_post",
+        "us": 18.52
+      },
+      {
+        "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> > >(at::TensorIteratorBase&, at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> > const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> > >(at::TensorIteratorBase&, at::native::BinaryFunctor<float, float, float, at::native::binary_internal::MulFunctor<float> > const&)::{lambda(int)#1})",
+        "us": 18.23
+      }
+    ],
+    "kernels": 71
+  },
+  "date": "2026-11-08",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "ctx": 512,
+  "attn": true,
+  "patches": {
+    "engram": 2,
+    "moe": 12,
+    "mhc": 4,
+    "attn": 12,
+    "bf16_head": 1,
+    "mhc_fast": 12,
+    "moe_fast": 12,
+    "rmsnorm_fast": 1,
+    "linear_decode": 1
+  },
+  "eager_ms_per_step": 27.178,
+  "eager_tps": 36.8,
+  "graph_ok": true,
+  "graph_ms_per_step": 1.315,
+  "graph_tps": 760.4,
+  "graph_speedup_vs_eager": 20.67,
+  "graph_error": null,
+  "note": "timing-only: the graph is captured at a fixed start_pos, so position-dependent Python control flow is frozen; a real decode runtime needs tensor-driven position/scalar tables before this can be used for generation"
+}

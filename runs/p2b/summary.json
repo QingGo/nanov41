@@ -1,0 +1,112 @@
+{
+  "schema": "nanov41-p2b-seed/1",
+  "purpose": "seed re-validation of P2 E-none vs E-default at 0.6B tokens",
+  "stack": "fallback e865: torch 2.12.1+cu130, tilelang 0.1.15, final_env + R69 flags; paired within stack (P2 seed1234 was on t141 torch 2.14.1)",
+  "seeds": {
+    "1235": {
+      "none": {
+        "arm": "E-none_s1235",
+        "loss": 4.8636450265583235,
+        "tok_per_s": 238530.0405502107,
+        "macro_bpb": 2.010911727836929,
+        "byte_weighted_bpb": 2.1060944356284304,
+        "phase1_bpb": 1.4797458139323603,
+        "jellyfish_bpb": 1.6275775636441203,
+        "table_params": 0
+      },
+      "default": {
+        "arm": "E-default_s1235",
+        "loss": 4.662225867572584,
+        "tok_per_s": 231329.16836951076,
+        "macro_bpb": 1.922638307592695,
+        "byte_weighted_bpb": 2.0141511008507815,
+        "phase1_bpb": 1.424876333943535,
+        "jellyfish_bpb": 1.558138220287236,
+        "table_params": 128016192
+      },
+      "delta": {
+        "macro_bpb": -0.08827342024423412,
+        "byte_weighted_bpb": -0.09194333477764882,
+        "phase1_bpb": -0.05486947998882519,
+        "jellyfish_bpb": -0.06943934335688429,
+        "loss": -0.2014191589857397
+      },
+      "delta_pct": {
+        "macro_bpb": -4.389721290212323,
+        "byte_weighted_bpb": -4.365584620625718,
+        "phase1_bpb": -3.7080341415538065,
+        "jellyfish_bpb": -4.266422990091523
+      }
+    },
+    "1236": {
+      "none": {
+        "arm": "E-none_s1236",
+        "loss": 4.848081325229845,
+        "tok_per_s": 241739.91297340853,
+        "macro_bpb": 1.9996489431866906,
+        "byte_weighted_bpb": 2.0949939993894,
+        "phase1_bpb": 1.4751332069653649,
+        "jellyfish_bpb": 1.62002311710884,
+        "table_params": 0
+      },
+      "default": {
+        "arm": "E-default_s1236",
+        "loss": 4.720769028914602,
+        "tok_per_s": 230644.4468363189,
+        "macro_bpb": 1.9649356848423547,
+        "byte_weighted_bpb": 2.060402192099909,
+        "phase1_bpb": 1.441867901776736,
+        "jellyfish_bpb": 1.5856549565656233,
+        "table_params": 128016192
+      },
+      "delta": {
+        "macro_bpb": -0.03471325834433592,
+        "byte_weighted_bpb": -0.03459180728949063,
+        "phase1_bpb": -0.03326530518862891,
+        "jellyfish_bpb": -0.034368160543216675,
+        "loss": -0.12731229631524332
+      },
+      "delta_pct": {
+        "macro_bpb": -1.7359676288486892,
+        "byte_weighted_bpb": -1.6511649818363505,
+        "phase1_bpb": -2.255071272991138,
+        "jellyfish_bpb": -2.1214611186877064
+      }
+    }
+  },
+  "base_stack_seed_stats": {
+    "macro_bpb": {
+      "pct_values": [
+        -4.389721290212323,
+        -1.7359676288486892
+      ],
+      "mean_pct": -3.062844459530506,
+      "stdev_pct": 1.8764872095488545
+    },
+    "byte_weighted_bpb": {
+      "pct_values": [
+        -4.365584620625718,
+        -1.6511649818363505
+      ],
+      "mean_pct": -3.0083748012310343,
+      "stdev_pct": 1.9193845335739006
+    },
+    "phase1_bpb": {
+      "pct_values": [
+        -3.7080341415538065,
+        -2.255071272991138
+      ],
+      "mean_pct": -2.9815527072724723,
+      "stdev_pct": 1.027399897172921
+    },
+    "jellyfish_bpb": {
+      "pct_values": [
+        -4.266422990091523,
+        -2.1214611186877064
+      ],
+      "mean_pct": -3.1939420543896144,
+      "stdev_pct": 1.516717084656226
+    }
+  },
+  "note": "P2 seed1234/t141: phase1 delta -1.87%, macro -0.83% (runs/p2/summary.json); direction matches but stack differs. All three seeds have E-default better than E-none."
+}

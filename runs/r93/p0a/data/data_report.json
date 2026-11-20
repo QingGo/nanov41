@@ -1,0 +1,296 @@
+{
+ "task": "task-16 / P0a data: K=40k (official-prefix, V=41,280) ClimbMix corpus + eval panel",
+ "role": "data-ops (head-cache)",
+ "host": "<instance-id> (AutoDL RTX 5090 alias, no-card CPU mode, 0.5-core/2GiB cgroup)",
+ "verdict": "PASS",
+ "verified_utc": "2026-11-15T06:31:15Z",
+ "deliverables": {
+  "corpus": {
+   "path": "/root/autodl-tmp/nanochat/p2_climbmix_40k",
+   "format": "nanov41-p2-corpus/1",
+   "tokens_total": 6070608841,
+   "shards": 107,
+   "docs": 9053184,
+   "bytes_per_token": 4.442641782130927,
+   "bytes_per_token_expected": 4.442,
+   "bytes_per_token_delta_pct": 0.0144,
+   "web_u32_bin_bytes": 24282435364,
+   "web_u32_bin_equals_tokens_x4": true,
+   "eos_id": 1,
+   "vocab_size": 41280,
+   "val_shard_excluded": true,
+   "tokenizer_sha256": "34cdf9c52ebf256af5a0d912949187b3548bb2adf00d2543e3d1267d1f48f19c",
+   "shard_tokens_min": 56364954,
+   "shard_tokens_max": 57221527,
+   "shard_tokens_avg": 56734662,
+   "sampled_max_id": 39999,
+   "sampled_tokens": 8000000,
+   "sampled_eos_rate": 0.001533,
+   "decode_prefix_match": true,
+   "decode_roundtrip_docs_ok": [
+    true,
+    true,
+    true
+   ],
+   "official_129k_crosscheck": {
+    "official_vocab": 129280,
+    "official_pieces_doc0": 209,
+    "k40k_pieces_doc0": 221,
+    "inflation_vs_official": 1.057416,
+    "official_decode_ok": true,
+    "note": "same doc decodes to identical UTF-8 bytes under both tokenizers (lossless bytes); K=40k canonical encode is 5.7% coarser than 129k on this doc"
+   }
+  },
+  "eval_panel": {
+   "path": "/root/autodl-tmp/nanochat/p0_eval_40k",
+   "format": "nanov41-eval-data/1",
+   "domain": "climbmix_val",
+   "window": 2048,
+   "token_bytes_len": 41280,
+   "token_bytes_dtype": "uint8",
+   "token_bytes_sha_match": true,
+   "tokens_total": 56778205,
+   "text_tokens": 56693186,
+   "text_bytes": 252081736,
+   "text_bytes_per_token": 4.44642,
+   "eos_ignored_count": 85019,
+   "max_id": 39999,
+   "prefix_matches_val_shard_docs": true,
+   "byte_accounting_exact": true
+  },
+  "mac_paths": {
+   "report_md": "runs/r93/p0a/data/data_report.md",
+   "report_json": "runs/r93/p0a/data/data_report.json",
+   "verification_json": "runs/r93/p0a/data/verification.json",
+   "download_validation_json": "runs/r93/p0a/data/download_validation.json"
+  }
+ },
+ "instance_final_state": {
+  "raw_dir_deleted_after_verification": true,
+  "raw_dir_bytes_before_delete": 9786774903,
+  "kept": {
+   "p2_climbmix_40k": 24282487014,
+   "p0_eval_40k": 283935211,
+   "climbmix_val_shard_06542": 91699537,
+   "tok40k_tokenizer": 2201199,
+   "dsv41_official_tokenizer": 6367257
+  },
+  "disk_free_gb_after_raw_delete": 26,
+  "disk_total_gb": 49
+ },
+ "verification_checks": {
+  "corpus": {
+   "format_ok": true,
+   "vocab_ok": true,
+   "eos_ok": true,
+   "eos_policy_ok": true,
+   "val_excluded": true,
+   "tokens_sum_ok": true,
+   "file_size_ok": true,
+   "bpt_ok": true,
+   "max_id_ok": true,
+   "decode_prefix_match": true,
+   "decode_roundtrip_ok": true,
+   "tokens_ge_6b": true
+  },
+  "panel": {
+   "format_ok": true,
+   "token_bytes_len_ok": true,
+   "window_ok": true,
+   "max_id_ok": true,
+   "eos_ignore_ok": true,
+   "panel_prefix_match": true,
+   "panel_bytes_ok": true,
+   "panel_text_bpt_total_ok": true
+  },
+  "result": "PASS",
+  "errors": [],
+  "warnings": []
+ },
+ "verification_full_json": {
+  "ts": "2026-11-15T06:31:15Z",
+  "corpus_dir": "/root/autodl-tmp/nanochat/p2_climbmix_40k",
+  "panel_dir": "/root/autodl-tmp/nanochat/p0_eval_40k",
+  "tokenizer": "/root/autodl-tmp/nanochat/tok40k/tokenizer.json",
+  "errors": [],
+  "warnings": [],
+  "tokenizer_check": {
+   "vocab_size": 41280,
+   "eos_id": 1,
+   "vocab_ok": true,
+   "eos_ok": true
+  },
+  "corpus": {
+   "manifest": {
+    "format": "nanov41-p2-corpus/1",
+    "tokens_total": 6070608841,
+    "bytes_per_token": 4.442641782130927,
+    "docs": null,
+    "doc_sep": "eos",
+    "incremental": true
+   },
+   "format_ok": true,
+   "manifest_tokenizer": {
+    "vocab_size": 41280,
+    "eos_id": 1,
+    "eos_token": "<\uff5cend\u2581of\u2581sentence\uff5c>",
+    "sha256": "34cdf9c52ebf256af5a0d912949187b3548bb2adf00d2543e3d1267d1f48f19c"
+   },
+   "vocab_ok": true,
+   "eos_ok": true,
+   "doc_sep": "eos",
+   "eos_policy_ok": true,
+   "n_shards": 107,
+   "shards": [
+    {
+     "name": "shard_00000.parquet",
+     "tokens": 56933914
+    },
+    {
+     "name": "shard_00001.parquet",
+     "tokens": 56868447
+    },
+    {
+     "name": "shard_00002.parquet",
+     "tokens": 56777738
+    },
+    {
+     "name": "shard_00003.parquet",
+     "tokens": 56906908
+    },
+    {
+     "name": "shard_00004.parquet",
+     "tokens": 56497214
+    }
+   ],
+   "shard_tokens_sum": 6070608841,
+   "shard_tokens_min": 56364954,
+   "shard_tokens_max": 57221527,
+   "shard_tokens_avg": 56734662,
+   "val_excluded": true,
+   "tokens_total": 6070608841,
+   "tokens_ge_6b": true,
+   "tokens_sum_ok": true,
+   "file_bytes": 24282435364,
+   "file_size_ok": true,
+   "bytes_per_token": 4.442641782130927,
+   "bpt_expected": 4.442,
+   "bpt_delta_pct": 0.0144,
+   "bpt_ok": true,
+   "docs_manifest": 9053184,
+   "docs_sum": 9053184,
+   "raw_rows_for_included_shards": 9053184,
+   "docs_match_raw": true,
+   "sampled_tokens": 8000000,
+   "sampled_max_id": 39999,
+   "max_id_ok": true,
+   "sampled_eos": 12267,
+   "eos_rate": 0.001533,
+   "decode_prefix_doc0_bytes": 1051,
+   "decode_prefix_len": 1029,
+   "decode_prefix_match": true,
+   "decode_roundtrip_ok": true,
+   "decode_roundtrip_docs": 3,
+   "decode_roundtrip_each": [
+    true,
+    true,
+    true
+   ],
+   "spot_bpt": 4.313897,
+   "official_vocab": 129280,
+   "official_pieces_doc0": 209,
+   "official_decode_ok": true,
+   "k40k_pieces_doc0": 221,
+   "inflation_vs_official": 1.057416,
+   "checks": {
+    "format_ok": true,
+    "vocab_ok": true,
+    "eos_ok": true,
+    "eos_policy_ok": true,
+    "val_excluded": true,
+    "tokens_sum_ok": true,
+    "file_size_ok": true,
+    "bpt_ok": true,
+    "max_id_ok": true,
+    "decode_prefix_match": true,
+    "decode_roundtrip_ok": true,
+    "tokens_ge_6b": true
+   }
+  },
+  "panel": {
+   "format": "nanov41-eval-data/1",
+   "format_ok": true,
+   "tokenizer": {
+    "vocab_size": 41280,
+    "eos_id": 1,
+    "sha256": "34cdf9c52ebf256af5a0d912949187b3548bb2adf00d2543e3d1267d1f48f19c"
+   },
+   "token_bytes_len": 41280,
+   "token_bytes_len_ok": true,
+   "token_bytes_dtype": "uint8",
+   "token_bytes_positive": 41280,
+   "token_bytes_sha_match": true,
+   "domain_kind": "text",
+   "domain_window": 2048,
+   "window_ok": true,
+   "n_tokens": null,
+   "n_shards": 1,
+   "tokens_total": 56778205,
+   "max_id": 39999,
+   "max_id_ok": true,
+   "eos_count": 85019,
+   "eos_ignore_ok": true,
+   "text_bytes_sum": 254377249,
+   "bytes_per_token_panel": 4.480192,
+   "panel_text_tokens": 56693186,
+   "panel_text_bytes": 252081736,
+   "panel_text_bpt_total": 4.44642,
+   "panel_text_bpt_total_ok": true,
+   "panel_prefix_match": true,
+   "panel_prefix_len": 1572,
+   "panel_bytes_ok": true,
+   "panel_bytes_expected": 7482,
+   "panel_bytes_got": 7482,
+   "panel_text_bpt": 4.765605,
+   "panel_text_bpt_ok": false,
+   "checks": {
+    "format_ok": true,
+    "token_bytes_len_ok": true,
+    "window_ok": true,
+    "max_id_ok": true,
+    "eos_ignore_ok": true,
+    "panel_prefix_match": true,
+    "panel_bytes_ok": true,
+    "panel_text_bpt_total_ok": true
+   }
+  },
+  "disk": {
+   "corpus": {
+    "path": "/root/autodl-tmp/nanochat/p2_climbmix_40k",
+    "bytes": 24282487014,
+    "gb": 24.282
+   },
+   "panel": {
+    "path": "/root/autodl-tmp/nanochat/p0_eval_40k",
+    "bytes": 283935211,
+    "gb": 0.284
+   },
+   "raw": {
+    "path": "/root/autodl-tmp/nanochat/climbmix40k_raw",
+    "bytes": 9786774903,
+    "gb": 9.787
+   },
+   "val_shard_dir": {
+    "path": "/root/autodl-tmp/nanochat/climbmix",
+    "bytes": 91699537,
+    "gb": 0.092
+   },
+   "filesystem": {
+    "free_gb": 17.96,
+    "total_gb": 53.69
+   }
+  },
+  "ok": true,
+  "result": "PASS"
+ }
+}

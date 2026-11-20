@@ -1,0 +1,75 @@
+{
+ "meta_status": "building",
+ "pieces": 119854018,
+ "shapes": {
+  "input_ids": [
+   119854018
+  ],
+  "top_ids": [
+   119854018,
+   16
+  ],
+  "top_logprobs": [
+   119854018,
+   16
+  ],
+  "rest_mass": [
+   119854018
+  ]
+ },
+ "dtypes": {
+  "input_ids": "uint16",
+  "top_ids": "uint16",
+  "top_logprobs": "float16",
+  "rest_mass": "float16"
+ },
+ "input_ids_max": 39997,
+ "input_ids_in_range": true,
+ "blocked_frac": 0.0725,
+ "expected_blocked_frac": null,
+ "sentinel_rows_equal_blocked": true,
+ "lp_sum_mean": 1.0,
+ "stored_abs_mass_mean": 0.89146,
+ "rest_mass_mean_array": 0.10854,
+ "rest_vs_stored_consistent": 0.000142,
+ "blocked_rest_mean": 1.0,
+ "meta_top1_agree_next_piece": null,
+ "meta_shards_done": 118,
+ "resumable": null,
+ "files_bytes": {
+  "input_ids.npy": 241756930,
+  "top_ids.npy": 3868108960,
+  "top_logprobs.npy": 3868108960,
+  "rest_mass.npy": 241756930
+ },
+ "bytes_total": 8219731780,
+ "bytes_total_gib": 7.655,
+ "sample": {
+  "input_ids": {
+   "shape": [
+    2090600
+   ],
+   "dtype": "uint16"
+  },
+  "top_ids": {
+   "shape": [
+    2090600,
+    16
+   ],
+   "dtype": "uint16"
+  },
+  "top_logprobs": {
+   "shape": [
+    2090600,
+    16
+   ],
+   "dtype": "float16"
+  },
+  "rest_mass": {
+   "shape": [
+    2090600
+   ],
+   "dtype": "float16"
+  }
+ }
+}

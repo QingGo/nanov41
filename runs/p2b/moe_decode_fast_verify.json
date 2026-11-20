@@ -1,0 +1,317 @@
+{
+  "schema": "nanov41-moe-fast-verify/1",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "patches": {
+    "engram": 0,
+    "moe": 12,
+    "mhc": 0,
+    "attn": 0
+  },
+  "layers": {
+    "0": {
+      "rows": {
+        "1": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              13,
+              7
+            ]
+          ],
+          "idx_fused": [
+            [
+              13,
+              7
+            ]
+          ],
+          "w_max_abs": 5.960464477539063e-08,
+          "out_max_abs": 0.5,
+          "out_mean_abs": 0.0400594100356102,
+          "out_bf16_ulp_class": 64.0
+        },
+        "2": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              6,
+              7
+            ],
+            [
+              15,
+              9
+            ]
+          ],
+          "idx_fused": [
+            [
+              6,
+              7
+            ],
+            [
+              15,
+              9
+            ]
+          ],
+          "w_max_abs": 1.7881393432617188e-07,
+          "out_max_abs": 1.0,
+          "out_mean_abs": 0.0486094169318676,
+          "out_bf16_ulp_class": 128.0
+        },
+        "4": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              7,
+              4
+            ],
+            [
+              7,
+              11
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              13,
+              9
+            ]
+          ],
+          "idx_fused": [
+            [
+              7,
+              4
+            ],
+            [
+              7,
+              11
+            ],
+            [
+              6,
+              2
+            ],
+            [
+              13,
+              9
+            ]
+          ],
+          "w_max_abs": 1.1920928955078125e-07,
+          "out_max_abs": 1.0,
+          "out_mean_abs": 0.0592549666762352,
+          "out_bf16_ulp_class": 128.0
+        }
+      },
+      "timing_us": {
+        "torch_small_m": 593.0,
+        "fused": 109.7
+      }
+    },
+    "5": {
+      "rows": {
+        "1": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              10,
+              12
+            ]
+          ],
+          "idx_fused": [
+            [
+              10,
+              12
+            ]
+          ],
+          "w_max_abs": 0.0,
+          "out_max_abs": 1.0,
+          "out_mean_abs": 0.0784098356962204,
+          "out_bf16_ulp_class": 128.0
+        },
+        "2": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              14,
+              9
+            ],
+            [
+              1,
+              11
+            ]
+          ],
+          "idx_fused": [
+            [
+              14,
+              9
+            ],
+            [
+              1,
+              11
+            ]
+          ],
+          "w_max_abs": 5.960464477539063e-08,
+          "out_max_abs": 0.5,
+          "out_mean_abs": 0.0577290877699852,
+          "out_bf16_ulp_class": 64.0
+        },
+        "4": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              15,
+              14
+            ],
+            [
+              15,
+              12
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              1,
+              6
+            ]
+          ],
+          "idx_fused": [
+            [
+              15,
+              14
+            ],
+            [
+              15,
+              12
+            ],
+            [
+              6,
+              4
+            ],
+            [
+              1,
+              6
+            ]
+          ],
+          "w_max_abs": 1.1920928955078125e-07,
+          "out_max_abs": 1.0,
+          "out_mean_abs": 0.0893198698759079,
+          "out_bf16_ulp_class": 128.0
+        }
+      },
+      "timing_us": {
+        "torch_small_m": 529.1,
+        "fused": 109.7
+      }
+    },
+    "11": {
+      "rows": {
+        "1": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              14,
+              8
+            ]
+          ],
+          "idx_fused": [
+            [
+              14,
+              8
+            ]
+          ],
+          "w_max_abs": 1.1920928955078125e-07,
+          "out_max_abs": 0.5,
+          "out_mean_abs": 0.0852762907743454,
+          "out_bf16_ulp_class": 64.0
+        },
+        "2": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              13,
+              7
+            ],
+            [
+              5,
+              11
+            ]
+          ],
+          "idx_fused": [
+            [
+              13,
+              7
+            ],
+            [
+              5,
+              11
+            ]
+          ],
+          "w_max_abs": 1.1920928955078125e-07,
+          "out_max_abs": 0.5,
+          "out_mean_abs": 0.0488433837890625,
+          "out_bf16_ulp_class": 64.0
+        },
+        "4": {
+          "idx_same": true,
+          "idx_ref": [
+            [
+              4,
+              13
+            ],
+            [
+              12,
+              5
+            ],
+            [
+              1,
+              13
+            ],
+            [
+              3,
+              5
+            ]
+          ],
+          "idx_fused": [
+            [
+              4,
+              13
+            ],
+            [
+              12,
+              5
+            ],
+            [
+              1,
+              13
+            ],
+            [
+              3,
+              5
+            ]
+          ],
+          "w_max_abs": 1.1920928955078125e-07,
+          "out_max_abs": 1.0,
+          "out_mean_abs": 0.06798553466796875,
+          "out_bf16_ulp_class": 128.0
+        }
+      },
+      "timing_us": {
+        "torch_small_m": 527.5,
+        "fused": 110.6
+      }
+    }
+  },
+  "timing_us": {
+    "L0": {
+      "torch_small_m": 593.0,
+      "fused": 109.7
+    },
+    "L5": {
+      "torch_small_m": 529.1,
+      "fused": 109.7
+    },
+    "L11": {
+      "torch_small_m": 527.5,
+      "fused": 110.6
+    }
+  }
+}

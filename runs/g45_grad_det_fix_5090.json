@@ -1,0 +1,595 @@
+{
+ "title": "chunked-BPTT gradient nondeterminism: root cause, fix, and the resulting bitwise CUDA graphs",
+ "date": "2026-11-04",
+ "device": "cuda",
+ "torch": "2.12.1+cu130",
+ "config": "d12 bf16, b=1, chunk=16384, production env (HEAD_FP8=2, IDX_MODE=hsi-auto, CKPT=state CKPT_EVERY=2, ATTN_V2/MHC_V3/MOE_*/RMS/SWIGLU/WOA/ROPE_ATTN fused); tilelang absent on this host, so attention uses the fast_attn torch path (v2 falls back identically)",
+ "root_cause": {
+  "summary": "For every start_pos>0 chunk the rotated-ring window layout was not recognized by fast_attn.detect_layout, so sparse_attn fell back to the reference torch implementation. Its kv gradient goes through index_select backward -> atomic index_add (duplicate window-row targets across queries), which is not bit-reproducible on CUDA. dq and dsink are deterministic; only dkv is not.",
+  "before_same_session": {
+   "4chunk_pass_determinism": {
+    "bitexact": 22,
+    "n_params": 284,
+    "max_abs": 3.4332275390625e-05,
+    "max_rel": 0.17729506,
+    "per_chunk": [
+     {
+      "chunk": 0,
+      "bitexact": 284,
+      "max_abs": 0.0
+     },
+     {
+      "chunk": 1,
+      "bitexact": 22,
+      "max_abs": 3.24249267578125e-05
+     },
+     {
+      "chunk": 2,
+      "bitexact": 22,
+      "max_abs": 3.814697265625e-05
+     },
+     {
+      "chunk": 3,
+      "bitexact": 22,
+      "max_abs": 3.4332275390625e-05
+     }
+    ]
+   },
+   "micro_sparse_attn": [
+    {
+     "layer_call": [
+      1,
+      16384,
+      64
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      16448,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      32832,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      32832,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      32832,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      32832,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      32832,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      49216,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      49216,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      49216,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      49216,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      49216,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    },
+    {
+     "layer_call": [
+      1,
+      16384,
+      96
+     ],
+     "q": [
+      1,
+      16384,
+      8,
+      64
+     ],
+     "kv": [
+      1,
+      49216,
+      64
+     ],
+     "dq_same": true,
+     "dkv_same": false,
+     "dsink_same": true,
+     "fast_calls": 0,
+     "fallback_calls": 1,
+     "layout_fail": 1
+    }
+   ],
+   "localization": {
+    "suspects": [
+     "L11",
+     "L11.attn",
+     "L11.attn.wq_a"
+    ],
+    "stable": [
+     "L11.attn.q_norm",
+     "L11.attn.wq_b",
+     "L11.attn.wo_b",
+     "L11.ffn_norm",
+     "L11.ffn",
+     "L11.ffn.gate",
+     "L11.ffn.shared_experts",
+     "L11.ffn.shared_experts.w1",
+     "L11.ffn.shared_experts.w3",
+     "L11.ffn.shared_experts.w2"
+    ]
+   },
+   "ablations_all_negative": [
+    "CKPT=none/ffn/every1",
+    "HEAD_FP8=bf16",
+    "ATTN_V2=0",
+    "MHC_V3=0",
+    "MOE_* fusions off",
+    "IDX_MODE=prefix-pad/hsi",
+    "cuda sync between chunks",
+    "CUDA_LAUNCH_BLOCKING=1",
+    "empty_cache / NaN-poison between passes"
+   ]
+  },
+  "why_chunk0_was_deterministic": "chunk 0 (start_pos=0) matches fast_attn's standard causal-band layout and already took the fast path; only start_pos>0 chunks fell back to the reference implementation"
+ },
+ "fix": {
+  "code": [
+   "nanov41/chunked_prefill.py: start_pos>0 window KV is returned in absolute position order (de-rotated ring): cat([last win-1 keys, chunk keys]); query i attends to rows i..i+win-1 and topk window part is i+c",
+   "nanov41/fast_attn.py: _band_plan(right=True) + sparse_attn_fast(win_hint, right_band) recognize that layout; _check_right_band validates it once per shape",
+   "chunked_prefill.install() wraps M.sparse_attn and routes the published window width straight to fast_attn (bypassing v2, which only supports the standard band)"
+  ],
+  "knob": "NANOV41_CHUNK_ATTN=fast (default) | ref (old rotated-ring + reference fallback, for A/B)",
+  "layout_note": "window rows are absolute positions start-win+1 ... start+seqlen-1; row r maps to absolute position start-win+1+r"
+ },
+ "after": {
+  "determinism": {
+   "4chunk_ckpt_state_3passes": {
+    "passes": [
+     {
+      "passes": [
+       0,
+       1
+      ],
+      "bitexact": 284,
+      "n_params": 284,
+      "max_abs": 0.0,
+      "max_rel": 0.0
+     },
+     {
+      "passes": [
+       1,
+       2
+      ],
+      "bitexact": 284,
+      "n_params": 284,
+      "max_abs": 0.0,
+      "max_rel": 0.0
+     }
+    ],
+    "per_chunk": [
+     {
+      "chunk": 0,
+      "start_pos": 0,
+      "bitexact": 284,
+      "n_params": 284,
+      "max_abs": 0.0
+     },
+     {
+      "chunk": 1,
+      "start_pos": 16384,
+      "bitexact": 284,
+      "n_params": 284,
+      "max_abs": 0.0
+     },
+     {
+      "chunk": 2,
+      "start_pos": 32768,
+      "bitexact": 284,
+      "n_params": 284,
+      "max_abs": 0.0
+     },
+     {
+      "chunk": 3,
+      "start_pos": 49152,
+      "bitexact": 284,
+      "n_params": 284,
+      "max_abs": 0.0
+     }
+    ]
+   },
+   "262k_16chunks_ckpt_state_2passes": {
+    "passes": [
+     {
+      "passes": [
+       0,
+       1
+      ],
+      "bitexact": 284,
+      "n_params": 284,
+      "max_abs": 0.0
+     }
+    ]
+   },
+   "double_grad_same_graph_ckpt_none": [
+    {
+     "chunk": 0,
+     "start_pos": 0,
+     "bit_identical": 297,
+     "n_targets": 317,
+     "n_diff": 0
+    },
+    {
+     "chunk": 1,
+     "start_pos": 16384,
+     "bit_identical": 297,
+     "n_targets": 317,
+     "n_diff": 0
+    },
+    {
+     "chunk": 2,
+     "start_pos": 32768,
+     "bit_identical": 297,
+     "n_targets": 317,
+     "n_diff": 0
+    },
+    {
+     "chunk": 3,
+     "start_pos": 49152,
+     "bit_identical": 297,
+     "n_targets": 317,
+     "n_diff": 0
+    }
+   ]
+  },
+  "dispatch": [
+   {
+    "chunk": 0,
+    "forward_no_grad_ms": 1438.3,
+    "fast_calls": 12,
+    "fallback_calls": 0,
+    "layout_fail": 0
+   },
+   {
+    "chunk": 1,
+    "forward_no_grad_ms": 111.2,
+    "fast_calls": 12,
+    "fallback_calls": 0,
+    "layout_fail": 0
+   },
+   {
+    "chunk": 2,
+    "forward_no_grad_ms": 84.3,
+    "fast_calls": 12,
+    "fallback_calls": 0,
+    "layout_fail": 0
+   },
+   {
+    "chunk": 3,
+    "forward_no_grad_ms": 106.4,
+    "fast_calls": 12,
+    "fallback_calls": 0,
+    "layout_fail": 0
+   }
+  ],
+  "correctness_vs_full_prefill_16k": {
+   "chunked_vs_full_16k": {
+    "max_abs": 3.546875,
+    "mean_abs": 0.10253942012786865,
+    "signed_mean": 5.3007257520221174e-05,
+    "top1_agreement": 0.75927734375,
+    "chunked_repeat_bitwise": true
+   },
+   "loss_16k_1chunk_vs_2chunks": {
+    "one_chunk": 11.85065,
+    "two_chunks": [
+     11.85576,
+     11.84663
+    ],
+    "mean": 11.8512,
+    "abs_diff_vs_one_chunk": 0.00054
+   },
+   "chunked_vs_full_16k_tiebreak": {
+    "max_abs": 3.96875,
+    "mean_abs": 0.09964405000209808,
+    "signed_mean": -0.0001753867109073326,
+    "top1_agreement": 0.76171875,
+    "loss_one_chunk": 11.850637,
+    "loss_two_chunks": [
+     11.857167,
+     11.84658
+    ],
+    "loss_abs_diff": 0.001236
+   },
+   "window_only_16k": {
+    "max_abs": 2.1328125,
+    "mean_abs": 0.005179157480597496,
+    "bitwise": false
+   }
+  },
+  "speed": {
+   "262k_eager_ms": {
+    "ref": 3494.2,
+    "fast": 3212.6,
+    "delta_pct": -8.06
+   },
+   "1m_eager_ms": {
+    "ref": 15322.6,
+    "fast": 13710.0,
+    "delta_pct": -10.52
+   }
+  },
+  "per_chunk_cuda_graphs": {
+   "262k": {
+    "n_chunks": 16,
+    "capture_s": 10.5,
+    "peak_mem_gib": 7.94,
+    "eager_ms": 3158.7,
+    "graph_ms": 2283.9,
+    "delta_pct": -27.69,
+    "graph_vs_eager_bitexact": 284,
+    "n_params": 284
+   },
+   "1m": {
+    "n_chunks": 64,
+    "capture_s": 42.8,
+    "peak_mem_gib": 9.0,
+    "eager_ms": 13722.4,
+    "graph_ms": 10917.6,
+    "delta_pct": -20.44,
+    "graph_vs_eager_bitexact": 284,
+    "n_params": 284
+   }
+  }
+ },
+ "tests": {
+  "local_cpu": "44 passed, 7 skipped (new CUDA-only test skipped on CPU)",
+  "new_cuda_regression": "tests/test_chunked_prefill_grad_det.py: all chunk>0 chunks take the fast path and gradients are bitwise reproducible (passed on the 5090, 11 s)"
+ },
+ "raw_files": [
+  "runs/g35_repro_4chunk.json",
+  "runs/g38_micro.json",
+  "runs/g37_layer11.json",
+  "runs/g45/det_state.json",
+  "runs/g45/det_262k.json",
+  "runs/g45/det_nockpt_dg.json",
+  "runs/g45/attn_path.json",
+  "runs/g45/check.json",
+  "runs/g45/262k_fast.json",
+  "runs/g45/262k_ref.json",
+  "runs/g45/1m_fast.json",
+  "runs/g45/1m_ref.json",
+  "runs/g45/graph_parity_262k.json",
+  "runs/g45/graph_parity_1m.json"
+ ],
+ "cost": {
+  "gpu": "1x RTX 5090 \u00a52.88/h, session ~59 min",
+  "spent_cny": 2.83,
+  "balance_cny": 48.34
+ }
+}

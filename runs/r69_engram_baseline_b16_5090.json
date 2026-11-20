@@ -1,0 +1,21 @@
+{
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.12.1+cu130",
+  "b": 16,
+  "seq": 1024,
+  "parity_param_rel": NaN,
+  "head_fp8": "2",
+  "peak_mem_gib": 18.46,
+  "variants": {
+    "eager step(+opt)": {
+      "ms": NaN,
+      "tflops": NaN,
+      "mfu_pct": NaN
+    },
+    "graph replay+opt": {
+      "ms": 229.1,
+      "tflops": 30.32,
+      "mfu_pct": 14.47
+    }
+  }
+}

@@ -1,0 +1,113 @@
+{
+ "arm": "fast_z",
+ "out": "/root/nanov41/runs/r93/hp/zl/fast_z",
+ "config": "d12_aligned",
+ "engram": "d12_aligned",
+ "optimizer": "v41",
+ "resume": false,
+ "start_step": 0,
+ "steps_total": 20,
+ "tokens_per_step": 2097152,
+ "log_every": 1,
+ "env": {
+  "NANOV41_HEAD_FP8": "v2",
+  "NANOV41_CE_CHUNK": "8192",
+  "NANOV41_ATTN_V2": "0",
+  "FAST_ATTN_TL": "1",
+  "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+ },
+ "points": [
+  {
+   "step": 1,
+   "loss": 10.847334,
+   "lr": 0.000325403125,
+   "tok_s": 52123.3,
+   "mfu_pct": 42.989,
+   "gn": 0.763106,
+   "imb": null,
+   "elapsed_s": 40.23
+  },
+  {
+   "step": 2,
+   "loss": 10.763638,
+   "lr": 0.00065080625,
+   "tok_s": 52127.6,
+   "mfu_pct": 42.992,
+   "gn": 0.750249,
+   "imb": null,
+   "elapsed_s": 80.46
+  },
+  {
+   "step": 3,
+   "loss": 10.558406,
+   "lr": 0.0009762093749999999,
+   "tok_s": 52149.0,
+   "mfu_pct": 43.01,
+   "gn": 1.050139,
+   "imb": null,
+   "elapsed_s": 120.64
+  },
+  {
+   "step": 4,
+   "loss": 10.110553,
+   "lr": 0.0013016125,
+   "tok_s": 52168.3,
+   "mfu_pct": 43.026,
+   "gn": 1.840908,
+   "imb": null,
+   "elapsed_s": 160.8
+  },
+  {
+   "step": 5,
+   "loss": 9.404478,
+   "lr": 0.001627015625,
+   "tok_s": 52186.7,
+   "mfu_pct": 43.041,
+   "gn": 2.103256,
+   "imb": null,
+   "elapsed_s": 200.93
+  },
+  {
+   "step": 6,
+   "loss": 8.844855,
+   "lr": 0.0019524187499999999,
+   "tok_s": 52200.7,
+   "mfu_pct": 43.053,
+   "gn": 2.269016,
+   "imb": null,
+   "elapsed_s": 241.05
+  },
+  {
+   "step": 7,
+   "loss": 8.629406,
+   "lr": 0.0022778218749999997,
+   "tok_s": 52209.9,
+   "mfu_pct": 43.06,
+   "gn": 8.573208,
+   "imb": null,
+   "elapsed_s": 281.17
+  },
+  {
+   "step": 8,
+   "loss": 8.332574,
+   "lr": 0.002603225,
+   "tok_s": 52219.7,
+   "mfu_pct": 43.068,
+   "gn": 3.249394,
+   "imb": null,
+   "elapsed_s": 321.28
+  },
+  {
+   "step": 9,
+   "loss": 7.994905,
+   "lr": 0.002603225,
+   "tok_s": 52227.9,
+   "mfu_pct": 43.075,
+   "gn": 2.641778,
+   "imb": null,
+   "elapsed_s": 361.38
+  }
+ ],
+ "gate_load_summary": {},
+ "summary": {}
+}

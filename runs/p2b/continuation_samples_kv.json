@@ -1,0 +1,32 @@
+{
+  "ckpt": "/tmp/p2b_default.pt",
+  "max_new_tokens": 20,
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "samples": [
+    {
+      "prompt": "The capital of France is",
+      "continuation": " a part of the world's economy. The country is a part of the world's economy. The",
+      "full": "The capital of France is a part of the world's economy. The country is a part of the world's economy. The",
+      "new_tokens": 20,
+      "seconds": 3.39,
+      "tok_per_s": 5.89
+    },
+    {
+      "prompt": "def fibonacci(n):\n    if n <= 1:\n        return n\n    return",
+      "continuation": " n\n\ndef _get_ops():\n    return _get_ops()# Copyright 201",
+      "full": "def fibonacci(n):\n    if n <= 1:\n        return n\n    return n\n\ndef _get_ops():\n    return _get_ops()# Copyright 201",
+      "new_tokens": 20,
+      "seconds": 1.36,
+      "tok_per_s": 14.73
+    },
+    {
+      "prompt": "\u4eba\u5de5\u667a\u80fd\u7684\u672a\u6765\u662f",
+      "continuation": "D: 0.0.0.0.0.0.0.0.0",
+      "full": "\u4eba\u5de5\u667a\u80fd\u7684\u672a\u6765\u662fD: 0.0.0.0.0.0.0.0.0",
+      "new_tokens": 20,
+      "seconds": 1.66,
+      "tok_per_s": 12.03
+    }
+  ]
+}

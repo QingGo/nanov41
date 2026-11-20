@@ -1,0 +1,11 @@
+{
+  "arm": "E-thick",
+  "config": "d12",
+  "engram": "d12_thick",
+  "tokens": 599998464,
+  "steps": 36621,
+  "train_seconds": 2460.8,
+  "avg_logged_loss": 4.765996079695852,
+  "table_params": 256016960,
+  "ckpt": "runs/p2/E-thick.pt"
+}

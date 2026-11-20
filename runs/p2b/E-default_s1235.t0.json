@@ -1,0 +1,382 @@
+{
+  "created_utc": "2026-11-07T01:38:03Z",
+  "dataset": {
+    "domains": {
+      "academic": {
+        "bootstrap_ci": {},
+        "domain": "academic",
+        "elapsed_s": 33.6373,
+        "est_flops": 401234019696640.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 7.4015295744773635,
+            "bpb": 2.110826570241375,
+            "bytes": 10047492,
+            "bytes_per_token": 3.506460302719703,
+            "nll_nats": 14700621.043806553,
+            "tokens": 2865423
+          },
+          "text": {
+            "bits_per_token": 7.4015295744773635,
+            "bpb": 2.110826570241375,
+            "bytes": 10047492,
+            "bytes_per_token": 3.506460302719703,
+            "nll_nats": 14700621.043806553,
+            "tokens": 2865423
+          }
+        },
+        "shards": 1,
+        "tokens_available": 2868853,
+        "tokens_dropped": 629,
+        "tokens_per_second": 85269.02910012516,
+        "tokens_processed": 2868224,
+        "tokens_scored": 2865423,
+        "window": 1024
+      },
+      "code": {
+        "bootstrap_ci": {},
+        "domain": "code",
+        "elapsed_s": 29.4593,
+        "est_flops": 356397801144320.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 5.214320524349033,
+            "bpb": 1.3236334938753485,
+            "bytes": 10026653,
+            "bytes_per_token": 3.9393990469994,
+            "nll_nats": 9199181.646932125,
+            "tokens": 2545224
+          },
+          "text": {
+            "bits_per_token": 5.214320524349033,
+            "bpb": 1.3236334938753485,
+            "bytes": 10026653,
+            "bytes_per_token": 3.9393990469994,
+            "nll_nats": 9199181.646932125,
+            "tokens": 2545224
+          }
+        },
+        "shards": 1,
+        "tokens_available": 2548432,
+        "tokens_dropped": 720,
+        "tokens_per_second": 86482.31639996776,
+        "tokens_processed": 2547712,
+        "tokens_scored": 2545224,
+        "window": 1024
+      },
+      "math": {
+        "bootstrap_ci": {},
+        "domain": "math",
+        "elapsed_s": 32.6469,
+        "est_flops": 397223111966720.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 6.585878046701675,
+            "bpb": 1.8595823168588488,
+            "bytes": 10046708,
+            "bytes_per_token": 3.541589951138245,
+            "nll_nats": 12949847.341217995,
+            "tokens": 2836779
+          },
+          "text": {
+            "bits_per_token": 6.585878046701675,
+            "bpb": 1.8595823168588488,
+            "bytes": 10046708,
+            "bytes_per_token": 3.541589951138245,
+            "nll_nats": 12949847.341217995,
+            "tokens": 2836779
+          }
+        },
+        "shards": 1,
+        "tokens_available": 2839946,
+        "tokens_dropped": 394,
+        "tokens_per_second": 86977.67862593711,
+        "tokens_processed": 2839552,
+        "tokens_scored": 2836779,
+        "window": 1024
+      },
+      "stackexchange": {
+        "bootstrap_ci": {},
+        "domain": "stackexchange",
+        "elapsed_s": 10.4695,
+        "est_flops": 127203073720320.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 6.865847172104776,
+            "bpb": 1.5592368865643065,
+            "bytes": 4000098,
+            "bytes_per_token": 4.40333808882196,
+            "nll_nats": 4323228.523492336,
+            "tokens": 908424
+          },
+          "text": {
+            "bits_per_token": 6.865847172104776,
+            "bpb": 1.5592368865643065,
+            "bytes": 4000098,
+            "bytes_per_token": 4.40333808882196,
+            "nll_nats": 4323228.523492336,
+            "tokens": 908424
+          }
+        },
+        "shards": 1,
+        "tokens_available": 909956,
+        "tokens_dropped": 644,
+        "tokens_per_second": 86853.29513642313,
+        "tokens_processed": 909312,
+        "tokens_scored": 908424,
+        "window": 1024
+      },
+      "web": {
+        "bootstrap_ci": {},
+        "domain": "web",
+        "elapsed_s": 31.6052,
+        "est_flops": 383041688207360.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 6.2754641921453125,
+            "bpb": 1.4259351181523177,
+            "bytes": 12038798,
+            "bytes_per_token": 4.400946517311996,
+            "nll_nats": 11898942.16172266,
+            "tokens": 2735502
+          },
+          "text": {
+            "bits_per_token": 6.2754641921453125,
+            "bpb": 1.4259351181523177,
+            "bytes": 12038798,
+            "bytes_per_token": 4.400946517311996,
+            "nll_nats": 11898942.16172266,
+            "tokens": 2735502
+          }
+        },
+        "shards": 1,
+        "tokens_available": 2738942,
+        "tokens_dropped": 766,
+        "tokens_per_second": 86637.00729955557,
+        "tokens_processed": 2738176,
+        "tokens_scored": 2735502,
+        "window": 1024
+      },
+      "wikipedia": {
+        "bootstrap_ci": {},
+        "domain": "wikipedia",
+        "elapsed_s": 6.0994,
+        "est_flops": 74774779822080.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 7.3839615325510595,
+            "bpb": 1.6361238558262803,
+            "bytes": 2410013,
+            "bytes_per_token": 4.513082250012173,
+            "nll_nats": 2733134.619858265,
+            "tokens": 534006
+          },
+          "text": {
+            "bits_per_token": 7.3839615325510595,
+            "bpb": 1.6361238558262803,
+            "bytes": 2410013,
+            "bytes_per_token": 4.513082250012173,
+            "nll_nats": 2733134.619858265,
+            "tokens": 534006
+          }
+        },
+        "shards": 1,
+        "tokens_available": 535354,
+        "tokens_dropped": 826,
+        "tokens_per_second": 87636.1340082145,
+        "tokens_processed": 534528,
+        "tokens_scored": 534006,
+        "window": 1024
+      },
+      "zh": {
+        "bootstrap_ci": {},
+        "domain": "zh",
+        "elapsed_s": 28.38,
+        "est_flops": 362127669329920.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 15.517196842113345,
+            "bpb": 3.5431299116303867,
+            "bytes": 11326061,
+            "bytes_per_token": 4.379516763181014,
+            "nll_nats": 27815792.230992317,
+            "tokens": 2586144
+          },
+          "text": {
+            "bits_per_token": 15.517196842113345,
+            "bpb": 3.5431299116303867,
+            "bytes": 11326061,
+            "bytes_per_token": 4.379516763181014,
+            "nll_nats": 27815792.230992317,
+            "tokens": 2586144
+          }
+        },
+        "shards": 1,
+        "tokens_available": 2589052,
+        "tokens_dropped": 380,
+        "tokens_per_second": 91214.59955079055,
+        "tokens_processed": 2588672,
+        "tokens_scored": 2586144,
+        "window": 1024
+      }
+    },
+    "domains_requested": [
+      "academic",
+      "code",
+      "math",
+      "stackexchange",
+      "web",
+      "wikipedia",
+      "zh"
+    ],
+    "manifest_sha256": "f180ce074c4dba017b50d6b9ec5fef3c1c4f94b261d6ab5774893e27e6e97e28",
+    "root": "/root/nanov41/runs/eval/data_pilot"
+  },
+  "git": {
+    "commit": null,
+    "dirty": null
+  },
+  "mixes": {
+    "marin-8b-jellyfish": {
+      "bpb": 1.558138220287236,
+      "contributions": {
+        "academic": {
+          "bpb": 2.110826570241375,
+          "bytes": 10047492,
+          "normalized_weight": 0.16,
+          "tokens": 2865423,
+          "weight": 0.16
+        },
+        "code": {
+          "bpb": 1.3236334938753485,
+          "bytes": 10026653,
+          "normalized_weight": 0.022,
+          "tokens": 2545224,
+          "weight": 0.022
+        },
+        "math": {
+          "bpb": 1.8595823168588488,
+          "bytes": 10046708,
+          "normalized_weight": 0.093,
+          "tokens": 2836779,
+          "weight": 0.093
+        },
+        "stackexchange": {
+          "bpb": 1.5592368865643065,
+          "bytes": 4000098,
+          "normalized_weight": 0.032,
+          "tokens": 908424,
+          "weight": 0.032
+        },
+        "web": {
+          "bpb": 1.4259351181523177,
+          "bytes": 12038798,
+          "normalized_weight": 0.678,
+          "tokens": 2735502,
+          "weight": 0.678
+        },
+        "wikipedia": {
+          "bpb": 1.6361238558262803,
+          "bytes": 2410013,
+          "normalized_weight": 0.015,
+          "tokens": 534006,
+          "weight": 0.015
+        }
+      },
+      "coverage": 1.0,
+      "description": "Marin-8B phase 3 (Jellyfish cooldown, 3.78T-4.78T tokens): 70% high-quality web + 30% Dolmino/FineMath mix, aggregated to eval domains (original table in source_weights).",
+      "method": "token_mix_weighted_nll_per_byte",
+      "missing": [],
+      "name": "marin-8b-jellyfish",
+      "source": "https://github.com/marin-community/marin/blob/main/docs/reports/marin-8b-retro.md",
+      "source_weights": {
+        "Dolma Algebraic Stack": 0.021,
+        "Dolma Arxiv": 0.052,
+        "Dolma Megawika": 0.008,
+        "Dolma Open Web Math": 0.009,
+        "Dolma StackExchange": 0.032,
+        "Dolma Wikipedia": 0.007,
+        "Dolma peS2o": 0.108,
+        "Dolmino DCLM HQ": 0.678,
+        "FineMath-3+": 0.063,
+        "StarCoder": 0.022
+      }
+    },
+    "marin-8b-phase1": {
+      "bpb": 1.424876333943535,
+      "contributions": {
+        "code": {
+          "bpb": 1.3236334938753485,
+          "bytes": 10026653,
+          "normalized_weight": 0.061,
+          "tokens": 2545224,
+          "weight": 0.061
+        },
+        "math": {
+          "bpb": 1.8595823168588488,
+          "bytes": 10046708,
+          "normalized_weight": 0.013,
+          "tokens": 2836779,
+          "weight": 0.013
+        },
+        "web": {
+          "bpb": 1.4259351181523177,
+          "bytes": 12038798,
+          "normalized_weight": 0.926,
+          "tokens": 2735502,
+          "weight": 0.926
+        }
+      },
+      "coverage": 1.0,
+      "description": "Marin-8B phase 1/2 (Kestrel/Ocelot, 0-3.78T tokens): DCLM 7B mix at ratios roughly proportional to token count.",
+      "method": "token_mix_weighted_nll_per_byte",
+      "missing": [],
+      "name": "marin-8b-phase1",
+      "source": "https://github.com/marin-community/marin/blob/main/docs/reports/marin-8b-retro.md",
+      "source_weights": {
+        "DCLM Baseline": 0.926,
+        "ProofPile 2": 0.013,
+        "StarCoder Data": 0.061
+      }
+    }
+  },
+  "model_label": "model-bf16",
+  "provider": {
+    "checkpoint": "runs/p2b/E-default_s1235.pt",
+    "checkpoint_sha256": "c8b5a5dc92f0726ade1eccc70f14c7d79e1fe9fa43789f2616bc94a2672136c4",
+    "config": null,
+    "device": "cuda",
+    "dtype": "bf16",
+    "engram": true,
+    "engram_table_params": 128016192,
+    "flops_per_token": 139889360.0,
+    "n_params": 193906024,
+    "n_params_non_embedding": 94618984,
+    "provider": "model",
+    "vocab_size": 129280
+  },
+  "schema": "nanov41-eval-report/1",
+  "settings": {
+    "batch_size": 16,
+    "bootstrap": 0,
+    "ce_chunk": 256,
+    "max_tokens_per_domain": null,
+    "window": 1024
+  },
+  "summary": {
+    "byte_weighted_bpb": 2.0141511008507815,
+    "domains": 7,
+    "elapsed_s": 172.2977,
+    "flops_per_token": 139889360.0,
+    "macro_bpb": 1.922638307592695,
+    "tokens_processed": 15026176,
+    "tokens_scored": 15011502
+  }
+}

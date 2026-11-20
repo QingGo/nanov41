@@ -1,0 +1,133 @@
+{
+ "title": "opt #4 \u2014 MoE forward/backward fusion + 5090 tile retune (R65)",
+ "date": "2026-11-04",
+ "device": "NVIDIA GeForce RTX 5090 (32 GB, sm_120)",
+ "torch": "2.12.1+cu130",
+ "triton": "3.7.1",
+ "host_note": "Xeon Platinum 8470Q, 25-core cgroup quota; eager step has a large CPU launch gap (16K full-seq step: 100.4 ms device kernels vs 162.8 ms wall), so this host is partly host-bound \u2014 see `cpu_gap_ms`.",
+ "implementation": {
+  "NANOV41_MOE_FUSED_DY": "NOPAD bwd no longer materialises dy_pad (zeros + tail_bwd + 2 reads); new _dw_map_kernel / _swiglu_bwd_tb_map_kernel read dout[flat_of_row//k]. Bitwise identical to the old path.",
+  "NANOV41_MOE_DWS_INLINE": "dws = sum_inter acc*act0 produced as per-n-tile partial sums inside swiglu_bwd and reduced by _dws_reduce_kernel; _moe_dws and the dact write are gone.",
+  "NANOV41_MOE_FUSED_DX": "dx = dgate@w1^T + dup@w3^T in one kernel (_aggemm2_t_kernel), one bf16 rounding instead of two; saves 12 launches/step but is slower per-kernel.",
+  "NANOV41_MOE_BWD_TILE": "separate tile for the backward kernels (constraint BWD_BM|BM, 384%BK/BN==0)",
+  "env_used_in_ab": {
+   "NANOV41_MOE_TILE": "64,64,64,4,3",
+   "NANOV41_MOE_DW_TILE": "128,64,64,4,3",
+   "NANOV41_MOE_DWS_INLINE": "1",
+   "NANOV41_MOE_FUSED_DY": "1"
+  }
+ },
+ "correctness": {
+  "tests": "tests/test_moe_fused_dy.py",
+  "result": "4 passed on both an RTX 4090 (torch 2.12.1/triton 3.7.1) and the RTX 5090",
+  "fused_dy": "torch.equal on output and all five gradients (dx, dws, dW1, dW3, dW2)",
+  "fused_dx": "only dx differs (single bf16 rounding vs two + add), rel < 5e-3; other grads bitwise",
+  "dws_inline": "dws rel 2.5e-3 (pre-rounding acc vs bf16-rounded DACT in the old path); others bitwise"
+ },
+ "moe_isolated_12layers_T16384": {
+  "base_kernel_ms": 17.03,
+  "best_kernel_ms": 15.06,
+  "delta_pct": -11.6,
+  "base_wall_ms": 43.0,
+  "best_wall_ms": 46.3,
+  "cpu_gap_ms": 27.05,
+  "flag_kernel_totals_ms": {
+   "base": 17.03,
+   "tile_BK64_fwd_bwd": 16.32,
+   "dw_tile_128_64_64": 16.41,
+   "dws_inline": 16.46,
+   "fused_dy": 16.97,
+   "fused_dx": 17.28,
+   "fused_dxdy_dws": 16.71,
+   "best(BK64+dwtile+dws+dy)": 15.06
+  },
+  "note": "wall/gap in the isolated harness are host-noisy; only kernel device time is compared."
+ },
+ "full_step_16k_eager_ab": {
+  "base_ms": [
+   161.78,
+   163.78
+  ],
+  "fused_ms": [
+   159.59,
+   161.33
+  ],
+  "base_mean_ms": 162.78,
+  "fused_mean_ms": 160.46,
+  "delta_pct": -1.43,
+  "kernel_base_ms": [
+   100.4,
+   100.36
+  ],
+  "kernel_fused_ms": [
+   100.06,
+   100.07
+  ],
+  "flag_set": "FUSED_DX+FUSED_DY+DWS_INLINE",
+  "evidence": "runs/g20_full_{base1,base2,best1,best2}.json"
+ },
+ "chunked_ab": {
+  "protocol": "in-process interleaved A/B on the production path (hsi-auto + FP8 CE + CKPT_EVERY=2, chunk=16K), median over rounds, alternating order per round",
+  "262k": {
+   "run1_5rounds": {
+    "base_ms": 4004.6,
+    "best5_ms": 3871.2,
+    "delta_pct": -3.33
+   },
+   "run2_4rounds": {
+    "base_ms": 3965.9,
+    "best5_ms": 3919.5,
+    "delta_pct": -1.17
+   },
+   "verdict": "\u22121.2% \u2026 \u22123.3% (two independent runs; host noise \u00b10.7% per step)"
+  },
+  "1m": {
+   "run0_2rounds": {
+    "base_ms": 17222.5,
+    "fused_ms": 17152.8,
+    "fused_tile_ms": 16949.8,
+    "fused_delta_pct": -0.4,
+    "fused_tile_delta_pct": -1.58
+   },
+   "run1_2rounds": {
+    "base_ms": 17098.8,
+    "best4_ms": 17166.1,
+    "best5_ms": 17189.5,
+    "best4_delta_pct": 0.39,
+    "best5_delta_pct": 0.53
+   },
+   "run2_4rounds": {
+    "base_ms": 17272.2,
+    "best5_ms": 17229.6,
+    "delta_pct": -0.25
+   },
+   "verdict": "\u22121.6% \u2026 +0.5% across runs; median effect \u2248 \u22120.3% (within run-to-run noise). MoE kernel time is only ~5.6% of the 1M chunked step, so \u221211.6% MoE kernel time can move the step by at most ~0.7% plus launch-gap savings."
+  }
+ },
+ "why_opt4_gain_is_small": "Report \u00a73p ranked MoE at 28.7% of a late chunk, but that profile predates HSI (#1): after #1 the indexer no longer dominates and MoE is ~9.5% of a late chunk / ~5.6% of the 1M chunked step. Kernel-time savings of \u221211.6% therefore cap the end-to-end gain at ~1%.",
+ "recommended_env": "NANOV41_MOE_TILE=64,64,64,4,3 NANOV41_MOE_DW_TILE=128,64,64,4,3 NANOV41_MOE_DWS_INLINE=1 NANOV41_MOE_FUSED_DY=1  (leave FUSED_DX off)",
+ "host_gap_finding": {
+  "16k_full_step": {
+   "wall_ms": 162.8,
+   "device_kernel_ms": 100.4,
+   "gap_ms": 61.4,
+   "gap_pct": 38
+  },
+  "moe_12layers": {
+   "wall_ms": 43.0,
+   "device_kernel_ms": 17.0,
+   "gap_ms": 26.0,
+   "gap_pct": 60
+  },
+  "actionable": "on hosts like this, cutting launch count (or CUDA-graph capture) matters more than kernel time; MoE fusion removes only ~48 of ~2000 launches/step"
+ },
+ "tools": [
+  "tools/g20_moe_profile.py",
+  "tools/g21_moe_sweep.py",
+  "tools/g25_moe_ab_inproc.py",
+  "tools/g27_chunk_ab_inproc.py",
+  "tools/g22_stage1.sh",
+  "tools/g23a_full_ab.sh",
+  "tools/g26_chunk_ab.sh"
+ ]
+}

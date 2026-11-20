@@ -1,0 +1,317 @@
+{
+  "schema": "nanov41-attn-decode-verify/1",
+  "date": "2026-11-07",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "steps": 24,
+  "triton": true,
+  "prompt": "The capital of France is",
+  "parity": {
+    "steps_compared": 24,
+    "logit_max_abs": 0.07123804092407227,
+    "logit_mean_abs": 0.008649216508880878,
+    "argmax_agreement": 1.0,
+    "per_step": [
+      {
+        "step": 0,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 260,
+        "argmax_patched": 260,
+        "same_argmax": true
+      },
+      {
+        "step": 1,
+        "max_abs": 0.0,
+        "mean_abs": 0.0,
+        "argmax_ref": 892,
+        "argmax_patched": 892,
+        "same_argmax": true
+      },
+      {
+        "step": 2,
+        "max_abs": 0.047715187072753906,
+        "mean_abs": 0.011498581618070602,
+        "argmax_ref": 294,
+        "argmax_patched": 294,
+        "same_argmax": true
+      },
+      {
+        "step": 3,
+        "max_abs": 0.04815763235092163,
+        "mean_abs": 0.005756526254117489,
+        "argmax_ref": 270,
+        "argmax_patched": 270,
+        "same_argmax": true
+      },
+      {
+        "step": 4,
+        "max_abs": 0.02938699722290039,
+        "mean_abs": 0.01228509470820427,
+        "argmax_ref": 2058,
+        "argmax_patched": 2058,
+        "same_argmax": true
+      },
+      {
+        "step": 5,
+        "max_abs": 0.06240701675415039,
+        "mean_abs": 0.017143867909908295,
+        "argmax_ref": 734,
+        "argmax_patched": 734,
+        "same_argmax": true
+      },
+      {
+        "step": 6,
+        "max_abs": 0.04252433776855469,
+        "mean_abs": 0.005929016973823309,
+        "argmax_ref": 8536,
+        "argmax_patched": 8536,
+        "same_argmax": true
+      },
+      {
+        "step": 7,
+        "max_abs": 0.04513359069824219,
+        "mean_abs": 0.0034843916073441505,
+        "argmax_ref": 16,
+        "argmax_patched": 16,
+        "same_argmax": true
+      },
+      {
+        "step": 8,
+        "max_abs": 0.06435394287109375,
+        "mean_abs": 0.005681365728378296,
+        "argmax_ref": 455,
+        "argmax_patched": 455,
+        "same_argmax": true
+      },
+      {
+        "step": 9,
+        "max_abs": 0.0299530029296875,
+        "mean_abs": 0.008625254966318607,
+        "argmax_ref": 3924,
+        "argmax_patched": 3924,
+        "same_argmax": true
+      },
+      {
+        "step": 10,
+        "max_abs": 0.0328136682510376,
+        "mean_abs": 0.00912986509501934,
+        "argmax_ref": 344,
+        "argmax_patched": 344,
+        "same_argmax": true
+      },
+      {
+        "step": 11,
+        "max_abs": 0.04155704379081726,
+        "mean_abs": 0.0034911297261714935,
+        "argmax_ref": 260,
+        "argmax_patched": 260,
+        "same_argmax": true
+      },
+      {
+        "step": 12,
+        "max_abs": 0.07123804092407227,
+        "mean_abs": 0.014959225431084633,
+        "argmax_ref": 892,
+        "argmax_patched": 892,
+        "same_argmax": true
+      },
+      {
+        "step": 13,
+        "max_abs": 0.04260826110839844,
+        "mean_abs": 0.004865578375756741,
+        "argmax_ref": 294,
+        "argmax_patched": 294,
+        "same_argmax": true
+      },
+      {
+        "step": 14,
+        "max_abs": 0.04588395357131958,
+        "mean_abs": 0.008124517276883125,
+        "argmax_ref": 270,
+        "argmax_patched": 270,
+        "same_argmax": true
+      },
+      {
+        "step": 15,
+        "max_abs": 0.05550098419189453,
+        "mean_abs": 0.002411067020148039,
+        "argmax_ref": 2058,
+        "argmax_patched": 2058,
+        "same_argmax": true
+      },
+      {
+        "step": 16,
+        "max_abs": 0.038130998611450195,
+        "mean_abs": 0.0059568630531430244,
+        "argmax_ref": 734,
+        "argmax_patched": 734,
+        "same_argmax": true
+      },
+      {
+        "step": 17,
+        "max_abs": 0.04066276550292969,
+        "mean_abs": 0.007389314938336611,
+        "argmax_ref": 8536,
+        "argmax_patched": 8536,
+        "same_argmax": true
+      },
+      {
+        "step": 18,
+        "max_abs": 0.04668021202087402,
+        "mean_abs": 0.010771841742098331,
+        "argmax_ref": 16,
+        "argmax_patched": 16,
+        "same_argmax": true
+      },
+      {
+        "step": 19,
+        "max_abs": 0.05511432886123657,
+        "mean_abs": 0.02987198904156685,
+        "argmax_ref": 455,
+        "argmax_patched": 455,
+        "same_argmax": true
+      },
+      {
+        "step": 20,
+        "max_abs": 0.03719806671142578,
+        "mean_abs": 0.00783457513898611,
+        "argmax_ref": 3924,
+        "argmax_patched": 3924,
+        "same_argmax": true
+      },
+      {
+        "step": 21,
+        "max_abs": 0.06876230239868164,
+        "mean_abs": 0.02364349737763405,
+        "argmax_ref": 344,
+        "argmax_patched": 344,
+        "same_argmax": true
+      },
+      {
+        "step": 22,
+        "max_abs": 0.04049515724182129,
+        "mean_abs": 0.00229605077765882,
+        "argmax_ref": 260,
+        "argmax_patched": 260,
+        "same_argmax": true
+      },
+      {
+        "step": 23,
+        "max_abs": 0.05225324630737305,
+        "mean_abs": 0.006431581452488899,
+        "argmax_ref": 892,
+        "argmax_patched": 892,
+        "same_argmax": true
+      }
+    ]
+  },
+  "greedy": {
+    "ref_tokens": [
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260,
+      892
+    ],
+    "patched_tokens": [
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260,
+      892
+    ],
+    "token_agreement": 1.0,
+    "ref_text": " a part of the world's economy. The country is a part of the world's economy. The country is a part",
+    "patched_text": " a part of the world's economy. The country is a part of the world's economy. The country is a part"
+  },
+  "timing": {
+    "reference": {
+      "best": {
+        "decode_s": 1.7867594957351685,
+        "steps": 23,
+        "tok_s": 12.872465519225669
+      },
+      "reps": [
+        {
+          "decode_s": 1.8524990361183882,
+          "steps": 23,
+          "tok_s": 12.415660980959416
+        },
+        {
+          "decode_s": 1.8082944601774216,
+          "steps": 23,
+          "tok_s": 12.719167429038823
+        },
+        {
+          "decode_s": 1.7867594957351685,
+          "steps": 23,
+          "tok_s": 12.872465519225669
+        }
+      ]
+    },
+    "attn_decode": {
+      "best": {
+        "decode_s": 1.6375026367604733,
+        "steps": 23,
+        "tok_s": 14.045778909707087
+      },
+      "reps": [
+        {
+          "decode_s": 1.6375026367604733,
+          "steps": 23,
+          "tok_s": 14.045778909707087
+        },
+        {
+          "decode_s": 1.7097705528140068,
+          "steps": 23,
+          "tok_s": 13.452097395259093
+        },
+        {
+          "decode_s": 1.683301828801632,
+          "steps": 23,
+          "tok_s": 13.663622059018405
+        }
+      ]
+    },
+    "speedup": 1.0911490800833
+  }
+}

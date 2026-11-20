@@ -1,0 +1,24 @@
+{
+  "schema": "nanov41-engram-tl-padded/1",
+  "date": "2026-11-07",
+  "instance": "205a42a6aa (bj-B1, RTX 5090), /root/t141 torch 2.14.1+cu130 triton 3.8.0 tilelang 0.1.15",
+  "what": "official DeepSeek TileKernels TileLang Engram gate fwd/bwd made usable for the nano d12/d20 dims via exact power-of-two zero-padding; default path selection re-measured",
+  "problem": "official kernels assert hidden_size % 256 == 0; naive next-multiple-of-256 padding uses c=sqrt(P/D)=sqrt(4/3), and storing c*x in bf16 rounds by ~0.4%, so the padded gate and its gradients differ from the reference (earlier D=384: gkv rel 0.42, gwh rel 0.52).",
+  "fix": "grow P by factors of 4 (c=2^k exactly): x'=2x, key'=2key, w'=0.5w are exact in bf16; D=384->P=1536 (c=2), D=640->P=2560 (c=2), D=512 stays native (c=1). Chain rule: grad_x=c*grad_x'-(c-1)*grad_out, grad_key=c*grad_key', grad_value=grad_value', grad_w=(1/c)*grad_w'.",
+  "validation_vs_engram_gate_ref": [
+    {"dim": 384, "pad": 1536, "out_rel": 1.66e-3, "grad_x_rel": 3.68e-3, "grad_key_rel": 4.95e-4, "grad_value_rel": 4.80e-5, "grad_wh_rel": 6.35e-6, "grad_we_rel": 1.65e-4},
+    {"dim": 640, "pad": 2560, "out_rel": 1.65e-3, "grad_x_rel": 3.68e-3, "grad_key_rel": 1.52e-4, "grad_value_rel": 4.47e-6, "grad_wh_rel": 1.17e-4, "grad_we_rel": 1.85e-5},
+    {"dim": 512, "pad": 512, "out_rel": 1.58e-3, "grad_x_rel": 1.59e-5, "grad_key_rel": 1.35e-5, "grad_value_rel": 4.01e-8, "grad_wh_rel": 8.01e-7, "grad_we_rel": 1.56e-5}
+  ],
+  "d12_tuned_graph_step_ms": {
+    "shape": "b=16 x seq=1024, graph-only, 2 rounds (same session)",
+    "baseline": [64.61, 64.6],
+    "engram_tilelang_padded_forced": [73.21, 73.14],
+    "engram_inductor_fused": [67.12, 67.24],
+    "overhead_pct": {"tilelang_padded": 13.33, "inductor_fused": 4.0},
+    "conclusion": "padded official kernels are exact but 4x width -> slower than the Inductor-fused gate on d12; default remains: TL only for native hidden%256==0 (d16), padded TL opt-in via NANOV41_ENGRAM_TL_FORCE=1."
+  },
+  "d16_native_tilelang": {"baseline_median_ms": 138.74, "engram_median_ms": 140.96, "overhead_pct": 1.6,
+                           "source": "runs/graph_engram_r69tuned_5090_2026-11-07.json"},
+  "code": ["nanov41/engram_tl.py", "nanov41/nano_engram.py"]
+}

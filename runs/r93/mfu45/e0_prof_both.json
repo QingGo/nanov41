@@ -1,0 +1,26 @@
+{
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.14.1+cu130",
+  "b": 1,
+  "seq": 8192,
+  "parity_param_rel": NaN,
+  "head_fp8": "v2",
+  "peak_mem_gib": 15.75,
+  "peak_reserved_gib": 17.88,
+  "config_json": "/root/nanov41/docs/r93/configs/d24_c1_dense40k.json",
+  "engram_name": "d12_aligned",
+  "ce_chunk_env": "8192",
+  "accum": 1,
+  "variants": {
+    "eager step(+opt)": {
+      "ms": NaN,
+      "tflops": NaN,
+      "mfu_pct": NaN
+    },
+    "graph replay+opt": {
+      "ms": 127.76,
+      "tflops": 110.79,
+      "mfu_pct": 52.88
+    }
+  }
+}

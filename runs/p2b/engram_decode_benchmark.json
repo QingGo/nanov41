@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-07",
+  "kernel": "nanov41/engram_decode.py: hash decode + FP8/E8M0 row gather/dequant",
+  "gpu": "RTX 4090 (base env torch 2.12.1, triton 3.7.1)",
+  "table": "2,000,136 x 32 bf16 -> e4m3 + one ue8m0 scale byte per row",
+  "gather_dequant": {
+    "n_ids_8":   {"triton_us": 30.1, "torch_us": 99.8, "parity_maxdiff": 0.0},
+    "n_ids_64":  {"triton_us": 28.8, "torch_us": 99.7, "parity_maxdiff": 0.0},
+    "n_ids_512": {"triton_us": 29.1, "torch_us": 100.4, "parity_maxdiff": 0.0},
+    "speedup_vs_torch": "~3.4x at decode-sized row counts"
+  },
+  "hash_decode": {
+    "checked": "incremental hash ids for a 3-token decode window, independent torch reference",
+    "parity": true,
+    "maxdiff": 0,
+    "note": "decode_hash_ids also unit-tested against ref NgramHashState.forward in tests/test_engram_decode.py"
+  },
+  "not_yet_kernelised": ["wkv GEMM + q/k gate elementwise (currently PyTorch in engram_gate_decode)", "MoE small-M decode", "attention decode"],
+  "next": "MoE small-M decode kernel, then attention decode; gate fusion can be folded into the gather kernel later"
+}

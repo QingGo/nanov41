@@ -1,0 +1,11 @@
+{
+  "arm": "d12e32",
+  "config": "d12e32",
+  "engram": "none",
+  "tokens": 599998464,
+  "steps": 36621,
+  "train_seconds": 2391.6,
+  "avg_logged_loss": 4.888264681163587,
+  "table_params": 0,
+  "ckpt": "runs/p2/d12e32.pt"
+}

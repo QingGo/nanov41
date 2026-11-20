@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-07",
+  "path": "nanov41/moe_decode.py: small-M batched-GEMM MoE forward",
+  "gpu": "RTX 5090 32GB, bf16, d12 MoE layer (dim=384, inter=384, E=16, top-2)",
+  "microbench": {
+    "T=1": {"reference_us": 852.9, "small_m_us": 455.8, "speedup": 1.87, "parity_maxdiff": 0.0009765625},
+    "T=2": {"reference_us": 1092.1, "small_m_us": 450.8, "speedup": 2.42, "parity_maxdiff": 0.0009765625},
+    "T=4": {"reference_us": 1952.2, "small_m_us": 460.2, "speedup": 4.24, "parity_maxdiff": 0.0009765625},
+    "T=8": {"reference_us": 2911.2, "small_m_us": 463.8, "speedup": 6.28, "parity_maxdiff": 0.0009765625}
+  },
+  "method": "per (token,slot) gather W1/W3/W2 -> 3 bmm launches + index_add; shared expert unchanged",
+  "note": "parity is bf16-level (maxdiff 9.77e-4); full-model CPU float32 integration parity vs reference is 4.8e-6"
+}

@@ -1,0 +1,67 @@
+{
+  "schema": "nanov41-decode-cpu-profile/1",
+  "date": "2026-11-07",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "ctx": 512,
+  "steps": 5,
+  "configs": {
+    "reference": {
+      "wall_ms": 78.611,
+      "attn_ms": 20.62,
+      "moe_ms": 15.491,
+      "engram_ms": 1.159,
+      "hc_rest_ms": 39.439,
+      "head_ms": 0.052,
+      "norm_ms": 0.117,
+      "other_ms": 1.733,
+      "shares_pct": {
+        "attn": 26.23,
+        "moe": 19.71,
+        "engram": 1.47,
+        "hc_rest": 50.17,
+        "head": 0.07,
+        "norm": 0.15,
+        "other": 2.2
+      }
+    },
+    "native": {
+      "wall_ms": 48.746,
+      "attn_ms": 20.804,
+      "moe_ms": 10.262,
+      "engram_ms": 1.164,
+      "hc_rest_ms": 14.544,
+      "head_ms": 0.055,
+      "norm_ms": 0.131,
+      "other_ms": 1.786,
+      "shares_pct": {
+        "attn": 42.68,
+        "moe": 21.05,
+        "engram": 2.39,
+        "hc_rest": 29.84,
+        "head": 0.11,
+        "norm": 0.27,
+        "other": 3.66
+      }
+    },
+    "native+attn_decode": {
+      "wall_ms": 42.607,
+      "attn_ms": 14.946,
+      "moe_ms": 10.369,
+      "engram_ms": 1.17,
+      "hc_rest_ms": 14.074,
+      "head_ms": 0.057,
+      "norm_ms": 0.137,
+      "other_ms": 1.855,
+      "shares_pct": {
+        "attn": 35.08,
+        "moe": 24.34,
+        "engram": 2.75,
+        "hc_rest": 33.03,
+        "head": 0.13,
+        "norm": 0.32,
+        "other": 4.35
+      }
+    }
+  }
+}

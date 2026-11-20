@@ -1,0 +1,33 @@
+{
+ "parity": {
+  "loss_ref": 10.639374732971191,
+  "loss_fast": 10.639374732971191,
+  "loss_rel": 0.0,
+  "grad_hidden_rel": 1.4222403478925116e-05,
+  "grad_weight_rel": 0.00023748911917209625,
+  "z_term_expected": 0.011295901611447334,
+  "z_term_measured": 0.011296272277832031,
+  "z_term_rel": 3.281423629976778e-05,
+  "gate_loss": true,
+  "gate_grad": true,
+  "gate_zterm": true
+ },
+ "bench": {
+  "ref_z": {
+   "ms": 29.391,
+   "loss": 10.639432907104492,
+   "speedup_vs_ref_z": 1.0
+  },
+  "fast_z": {
+   "ms": 7.713,
+   "loss": 10.639431953430176,
+   "speedup_vs_ref_z": 3.811
+  },
+  "fast_0": {
+   "ms": 6.855,
+   "loss": 10.628135681152344,
+   "speedup_vs_ref_z": 4.288
+  }
+ },
+ "ok": true
+}

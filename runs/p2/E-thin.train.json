@@ -1,0 +1,11 @@
+{
+  "arm": "E-thin",
+  "config": "d12",
+  "engram": "d12_thin",
+  "tokens": 599998464,
+  "steps": 36621,
+  "train_seconds": 2466.6,
+  "avg_logged_loss": 4.817454927846005,
+  "table_params": 64008256,
+  "ckpt": "runs/p2/E-thin.pt"
+}

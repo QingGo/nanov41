@@ -1,0 +1,234 @@
+{
+ "arm": "probe_1p8e-3",
+ "out": "/root/autodl-tmp/nanochat/runs/probe/arm_1p8e-3",
+ "config": "d12_aligned",
+ "engram": "d12_aligned",
+ "optimizer": "v41",
+ "resume": true,
+ "start_step": 1908,
+ "steps_total": 2002,
+ "tokens_per_step": 2097152,
+ "log_every": 5,
+ "env": {
+  "NANOV41_HEAD_FP8": "v2",
+  "NANOV41_CE_CHUNK": "8192",
+  "NANOV41_ATTN_V2": "0",
+  "FAST_ATTN_TL": "1",
+  "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+ },
+ "points": [
+  {
+   "step": 1911,
+   "loss": 3.551155,
+   "lr": 0.0018,
+   "tok_s": 62607.2,
+   "mfu_pct": 51.636,
+   "gn": 5.666123,
+   "imb": null,
+   "elapsed_s": 100.49
+  },
+  {
+   "step": 1916,
+   "loss": 3.544352,
+   "lr": 0.0018,
+   "tok_s": 62640.0,
+   "mfu_pct": 51.663,
+   "gn": 4.037433,
+   "imb": null,
+   "elapsed_s": 267.84
+  },
+  {
+   "step": 1921,
+   "loss": 3.560732,
+   "lr": 0.0018,
+   "tok_s": 62642.5,
+   "mfu_pct": 51.665,
+   "gn": 3.160527,
+   "imb": null,
+   "elapsed_s": 435.22
+  },
+  {
+   "step": 1926,
+   "loss": 3.531691,
+   "lr": 0.0018,
+   "tok_s": 62646.3,
+   "mfu_pct": 51.668,
+   "gn": 3.674599,
+   "imb": null,
+   "elapsed_s": 602.57
+  },
+  {
+   "step": 1931,
+   "loss": 3.536403,
+   "lr": 0.0018,
+   "tok_s": 62643.6,
+   "mfu_pct": 51.666,
+   "gn": 3.281208,
+   "imb": null,
+   "elapsed_s": 769.98
+  },
+  {
+   "step": 1936,
+   "loss": 3.582125,
+   "lr": 0.0018,
+   "tok_s": 62632.4,
+   "mfu_pct": 51.656,
+   "gn": 3.091141,
+   "imb": null,
+   "elapsed_s": 937.54
+  },
+  {
+   "step": 1941,
+   "loss": 3.588856,
+   "lr": 0.0018,
+   "tok_s": 62632.1,
+   "mfu_pct": 51.656,
+   "gn": 3.198251,
+   "imb": null,
+   "elapsed_s": 1104.96
+  },
+  {
+   "step": 1946,
+   "loss": 3.551517,
+   "lr": 0.0018,
+   "tok_s": 62633.0,
+   "mfu_pct": 51.657,
+   "gn": 2.976545,
+   "imb": null,
+   "elapsed_s": 1272.36
+  },
+  {
+   "step": 1951,
+   "loss": 3.641122,
+   "lr": 0.0018,
+   "tok_s": 62635.3,
+   "mfu_pct": 51.659,
+   "gn": 3.337041,
+   "imb": null,
+   "elapsed_s": 1439.72
+  },
+  {
+   "step": 1956,
+   "loss": 3.583308,
+   "lr": 0.0018,
+   "tok_s": 62638.4,
+   "mfu_pct": 51.661,
+   "gn": 2.695469,
+   "imb": null,
+   "elapsed_s": 1607.05
+  },
+  {
+   "step": 1961,
+   "loss": 3.614203,
+   "lr": 0.0018,
+   "tok_s": 62639.7,
+   "mfu_pct": 51.662,
+   "gn": 2.998109,
+   "imb": null,
+   "elapsed_s": 1774.42
+  },
+  {
+   "step": 1966,
+   "loss": 3.586025,
+   "lr": 0.0018,
+   "tok_s": 62638.6,
+   "mfu_pct": 51.661,
+   "gn": 2.728978,
+   "imb": null,
+   "elapsed_s": 1941.85
+  },
+  {
+   "step": 1971,
+   "loss": 3.593569,
+   "lr": 0.0018,
+   "tok_s": 62637.9,
+   "mfu_pct": 51.661,
+   "gn": 3.206898,
+   "imb": null,
+   "elapsed_s": 2109.27
+  },
+  {
+   "step": 1976,
+   "loss": 3.577606,
+   "lr": 0.0018,
+   "tok_s": 62638.0,
+   "mfu_pct": 51.661,
+   "gn": 2.870662,
+   "imb": null,
+   "elapsed_s": 2276.67
+  },
+  {
+   "step": 1981,
+   "loss": 3.605687,
+   "lr": 0.0018,
+   "tok_s": 62637.3,
+   "mfu_pct": 51.66,
+   "gn": 2.906764,
+   "imb": null,
+   "elapsed_s": 2444.1
+  },
+  {
+   "step": 1986,
+   "loss": 3.596314,
+   "lr": 0.0018,
+   "tok_s": 62637.1,
+   "mfu_pct": 51.66,
+   "gn": 2.891442,
+   "imb": null,
+   "elapsed_s": 2611.52
+  },
+  {
+   "step": 1991,
+   "loss": 3.590086,
+   "lr": 0.0018,
+   "tok_s": 62637.2,
+   "mfu_pct": 51.66,
+   "gn": 2.482005,
+   "imb": null,
+   "elapsed_s": 2778.92
+  },
+  {
+   "step": 1996,
+   "loss": 3.593976,
+   "lr": 0.0018,
+   "tok_s": 62636.6,
+   "mfu_pct": 51.66,
+   "gn": 2.666266,
+   "imb": null,
+   "elapsed_s": 2946.35
+  },
+  {
+   "step": 2001,
+   "loss": 3.590606,
+   "lr": 0.0018,
+   "tok_s": 62636.3,
+   "mfu_pct": 51.66,
+   "gn": 2.572878,
+   "imb": null,
+   "elapsed_s": 3113.77
+  },
+  {
+   "step": 2002,
+   "loss": 3.592784,
+   "lr": 0.0018,
+   "tok_s": 62635.9,
+   "mfu_pct": 51.659,
+   "gn": 2.819739,
+   "imb": null,
+   "elapsed_s": 3147.27
+  }
+ ],
+ "gate_load_summary": {},
+ "summary": {
+  "steps": 94,
+  "tokens": 197132288,
+  "train_seconds": 3147.3,
+  "tokens_per_sec": 62635.7,
+  "avg_logged_loss": 3.5806059002876283,
+  "raw_bf16_mfu": 0.5165908995936156,
+  "peak_lr": 0.0018,
+  "last_loss": 3.592784,
+  "last_gn": 2.819739,
+  "last_imb": null
+ }
+}

@@ -1,0 +1,11 @@
+{
+  "arm": "E-default_s1235",
+  "config": "d12",
+  "engram": "d12",
+  "tokens": 599998464,
+  "steps": 36621,
+  "train_seconds": 2593.7,
+  "avg_logged_loss": 4.662225867572584,
+  "table_params": 128016192,
+  "ckpt": "runs/p2b/E-default_s1235.pt"
+}

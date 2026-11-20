@@ -1,0 +1,59 @@
+{
+ "total": 262144,
+ "chunk": 16384,
+ "n_chunks": 16,
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "ckpt": "state",
+ "head_fp8": "2",
+ "steps": 3,
+ "capture_s": 12.5,
+ "capture_stats": {
+  "graphs": 16,
+  "seconds": 12.5,
+  "peak_mem_gib": 8.86
+ },
+ "parity": {
+  "weights_bitexact_after_all_steps": true,
+  "first_differing_params": [],
+  "eager_losses": [
+   11.845507,
+   11.846958,
+   11.846037
+  ],
+  "graph_losses": [
+   11.845507,
+   11.846958,
+   11.846037
+  ],
+  "losses_bitwise": true
+ },
+ "timing": {
+  "eager": {
+   "step_ms": [
+    3034.6,
+    2963.4,
+    2972.2
+   ],
+   "step_median_ms": 2972.2,
+   "tokens_per_s": 88197,
+   "peak_mem_gib": 10.21,
+   "capture_s": 0.0,
+   "loss_readout_ms": 0.04
+  },
+  "graph": {
+   "step_ms": [
+    2239.0,
+    2239.9,
+    2240.2
+   ],
+   "step_median_ms": 2239.9,
+   "tokens_per_s": 117035,
+   "peak_mem_gib": 4.57,
+   "capture_s": 12.5,
+   "loss_readout_ms": 0.13
+  }
+ },
+ "delta_pct": -24.64,
+ "speedup": 1.33
+}

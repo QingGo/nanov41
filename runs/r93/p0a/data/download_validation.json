@@ -1,0 +1,768 @@
+{
+ "dest": "/root/autodl-tmp/nanochat/climbmix40k_raw",
+ "expected": "shard_00000..00106",
+ "n_expected": 107,
+ "files": [
+  {
+   "i": 0,
+   "name": "shard_00000.parquet",
+   "bytes": 92291918,
+   "rows": 86016,
+   "cols": 1
+  },
+  {
+   "i": 1,
+   "name": "shard_00001.parquet",
+   "bytes": 92124317,
+   "rows": 86016,
+   "cols": 1
+  },
+  {
+   "i": 2,
+   "name": "shard_00002.parquet",
+   "bytes": 91803619,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 3,
+   "name": "shard_00003.parquet",
+   "bytes": 91793972,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 4,
+   "name": "shard_00004.parquet",
+   "bytes": 91428652,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 5,
+   "name": "shard_00005.parquet",
+   "bytes": 91845922,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 6,
+   "name": "shard_00006.parquet",
+   "bytes": 91455616,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 7,
+   "name": "shard_00007.parquet",
+   "bytes": 91202032,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 8,
+   "name": "shard_00008.parquet",
+   "bytes": 91155507,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 9,
+   "name": "shard_00009.parquet",
+   "bytes": 92072356,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 10,
+   "name": "shard_00010.parquet",
+   "bytes": 92181541,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 11,
+   "name": "shard_00011.parquet",
+   "bytes": 119475710,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 12,
+   "name": "shard_00012.parquet",
+   "bytes": 91531067,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 13,
+   "name": "shard_00013.parquet",
+   "bytes": 91842434,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 14,
+   "name": "shard_00014.parquet",
+   "bytes": 91794786,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 15,
+   "name": "shard_00015.parquet",
+   "bytes": 91642426,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 16,
+   "name": "shard_00016.parquet",
+   "bytes": 91875697,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 17,
+   "name": "shard_00017.parquet",
+   "bytes": 92252148,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 18,
+   "name": "shard_00018.parquet",
+   "bytes": 92097325,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 19,
+   "name": "shard_00019.parquet",
+   "bytes": 91468190,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 20,
+   "name": "shard_00020.parquet",
+   "bytes": 92023878,
+   "rows": 86016,
+   "cols": 1
+  },
+  {
+   "i": 21,
+   "name": "shard_00021.parquet",
+   "bytes": 92007015,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 22,
+   "name": "shard_00022.parquet",
+   "bytes": 91895569,
+   "rows": 86016,
+   "cols": 1
+  },
+  {
+   "i": 23,
+   "name": "shard_00023.parquet",
+   "bytes": 91788901,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 24,
+   "name": "shard_00024.parquet",
+   "bytes": 91816001,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 25,
+   "name": "shard_00025.parquet",
+   "bytes": 92082140,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 26,
+   "name": "shard_00026.parquet",
+   "bytes": 91646155,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 27,
+   "name": "shard_00027.parquet",
+   "bytes": 91534737,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 28,
+   "name": "shard_00028.parquet",
+   "bytes": 92205715,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 29,
+   "name": "shard_00029.parquet",
+   "bytes": 91416996,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 30,
+   "name": "shard_00030.parquet",
+   "bytes": 91557375,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 31,
+   "name": "shard_00031.parquet",
+   "bytes": 91761076,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 32,
+   "name": "shard_00032.parquet",
+   "bytes": 91797604,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 33,
+   "name": "shard_00033.parquet",
+   "bytes": 91448157,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 34,
+   "name": "shard_00034.parquet",
+   "bytes": 91977442,
+   "rows": 86016,
+   "cols": 1
+  },
+  {
+   "i": 35,
+   "name": "shard_00035.parquet",
+   "bytes": 91501064,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 36,
+   "name": "shard_00036.parquet",
+   "bytes": 91493685,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 37,
+   "name": "shard_00037.parquet",
+   "bytes": 91950930,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 38,
+   "name": "shard_00038.parquet",
+   "bytes": 91681390,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 39,
+   "name": "shard_00039.parquet",
+   "bytes": 91480777,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 40,
+   "name": "shard_00040.parquet",
+   "bytes": 91501658,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 41,
+   "name": "shard_00041.parquet",
+   "bytes": 91995895,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 42,
+   "name": "shard_00042.parquet",
+   "bytes": 91400837,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 43,
+   "name": "shard_00043.parquet",
+   "bytes": 91490600,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 44,
+   "name": "shard_00044.parquet",
+   "bytes": 91090081,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 45,
+   "name": "shard_00045.parquet",
+   "bytes": 91188024,
+   "rows": 82944,
+   "cols": 1
+  },
+  {
+   "i": 46,
+   "name": "shard_00046.parquet",
+   "bytes": 91600459,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 47,
+   "name": "shard_00047.parquet",
+   "bytes": 92007753,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 48,
+   "name": "shard_00048.parquet",
+   "bytes": 91791765,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 49,
+   "name": "shard_00049.parquet",
+   "bytes": 91330275,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 50,
+   "name": "shard_00050.parquet",
+   "bytes": 91234778,
+   "rows": 82944,
+   "cols": 1
+  },
+  {
+   "i": 51,
+   "name": "shard_00051.parquet",
+   "bytes": 92016071,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 52,
+   "name": "shard_00052.parquet",
+   "bytes": 91529024,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 53,
+   "name": "shard_00053.parquet",
+   "bytes": 91473476,
+   "rows": 82944,
+   "cols": 1
+  },
+  {
+   "i": 54,
+   "name": "shard_00054.parquet",
+   "bytes": 91396912,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 55,
+   "name": "shard_00055.parquet",
+   "bytes": 91320632,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 56,
+   "name": "shard_00056.parquet",
+   "bytes": 91400250,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 57,
+   "name": "shard_00057.parquet",
+   "bytes": 91313283,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 58,
+   "name": "shard_00058.parquet",
+   "bytes": 91911182,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 59,
+   "name": "shard_00059.parquet",
+   "bytes": 91555652,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 60,
+   "name": "shard_00060.parquet",
+   "bytes": 91524191,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 61,
+   "name": "shard_00061.parquet",
+   "bytes": 91823199,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 62,
+   "name": "shard_00062.parquet",
+   "bytes": 91669638,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 63,
+   "name": "shard_00063.parquet",
+   "bytes": 92138204,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 64,
+   "name": "shard_00064.parquet",
+   "bytes": 92027475,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 65,
+   "name": "shard_00065.parquet",
+   "bytes": 91610871,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 66,
+   "name": "shard_00066.parquet",
+   "bytes": 91782288,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 67,
+   "name": "shard_00067.parquet",
+   "bytes": 91627031,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 68,
+   "name": "shard_00068.parquet",
+   "bytes": 91582958,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 69,
+   "name": "shard_00069.parquet",
+   "bytes": 92094808,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 70,
+   "name": "shard_00070.parquet",
+   "bytes": 91276778,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 71,
+   "name": "shard_00071.parquet",
+   "bytes": 91527354,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 72,
+   "name": "shard_00072.parquet",
+   "bytes": 91171991,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 73,
+   "name": "shard_00073.parquet",
+   "bytes": 91820849,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 74,
+   "name": "shard_00074.parquet",
+   "bytes": 92038597,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 75,
+   "name": "shard_00075.parquet",
+   "bytes": 91542457,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 76,
+   "name": "shard_00076.parquet",
+   "bytes": 91480315,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 77,
+   "name": "shard_00077.parquet",
+   "bytes": 91215695,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 78,
+   "name": "shard_00078.parquet",
+   "bytes": 92297727,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 79,
+   "name": "shard_00079.parquet",
+   "bytes": 92302344,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 80,
+   "name": "shard_00080.parquet",
+   "bytes": 91755139,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 81,
+   "name": "shard_00081.parquet",
+   "bytes": 91953019,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 82,
+   "name": "shard_00082.parquet",
+   "bytes": 91511623,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 83,
+   "name": "shard_00083.parquet",
+   "bytes": 91837292,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 84,
+   "name": "shard_00084.parquet",
+   "bytes": 91390849,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 85,
+   "name": "shard_00085.parquet",
+   "bytes": 91447629,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 86,
+   "name": "shard_00086.parquet",
+   "bytes": 92098233,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 87,
+   "name": "shard_00087.parquet",
+   "bytes": 91340825,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 88,
+   "name": "shard_00088.parquet",
+   "bytes": 91228987,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 89,
+   "name": "shard_00089.parquet",
+   "bytes": 92064537,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 90,
+   "name": "shard_00090.parquet",
+   "bytes": 92048118,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 91,
+   "name": "shard_00091.parquet",
+   "bytes": 91811974,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 92,
+   "name": "shard_00092.parquet",
+   "bytes": 91820437,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 93,
+   "name": "shard_00093.parquet",
+   "bytes": 92020735,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 94,
+   "name": "shard_00094.parquet",
+   "bytes": 91468677,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 95,
+   "name": "shard_00095.parquet",
+   "bytes": 92057617,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 96,
+   "name": "shard_00096.parquet",
+   "bytes": 92136374,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 97,
+   "name": "shard_00097.parquet",
+   "bytes": 91616098,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 98,
+   "name": "shard_00098.parquet",
+   "bytes": 92137123,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 99,
+   "name": "shard_00099.parquet",
+   "bytes": 91360745,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 100,
+   "name": "shard_00100.parquet",
+   "bytes": 92030208,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 101,
+   "name": "shard_00101.parquet",
+   "bytes": 91223597,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 102,
+   "name": "shard_00102.parquet",
+   "bytes": 91907524,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 103,
+   "name": "shard_00103.parquet",
+   "bytes": 91457455,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 104,
+   "name": "shard_00104.parquet",
+   "bytes": 91496905,
+   "rows": 83968,
+   "cols": 1
+  },
+  {
+   "i": 105,
+   "name": "shard_00105.parquet",
+   "bytes": 91956808,
+   "rows": 84992,
+   "cols": 1
+  },
+  {
+   "i": 106,
+   "name": "shard_00106.parquet",
+   "bytes": 91690455,
+   "rows": 84992,
+   "cols": 1
+  }
+ ],
+ "missing": [],
+ "too_small": {},
+ "unreadable": {},
+ "n_found": 107,
+ "total_bytes": 9840374202,
+ "total_gb": 9.84,
+ "min_bytes": 91090081,
+ "max_bytes": 119475710,
+ "avg_bytes": 91966114.0,
+ "rows_total": 9053184,
+ "extra_files": [],
+ "ok": true
+}

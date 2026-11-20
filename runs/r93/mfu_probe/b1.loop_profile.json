@@ -1,0 +1,236 @@
+{
+  "config": {
+    "arm": "mfu_b1",
+    "batch": 1,
+    "seq": 8192,
+    "accum": 256,
+    "tokens_per_step": 2097152,
+    "optimizer": "v41",
+    "head_fp8": "v2",
+    "head_fwdgrad": "1",
+    "ce_chunk": "8192",
+    "attn_v2": "0",
+    "fast_attn_tl": "1",
+    "moe_stacked": "0",
+    "moe_dw_tile": "",
+    "moe_tile": "",
+    "profile_steps": 4,
+    "pipelined_steps": 2,
+    "sync_steps": 2,
+    "gpu": "NVIDIA GeForce RTX 5090"
+  },
+  "baseline_mem_gib": {
+    "allocated": 2.269,
+    "reserved": 24.24
+  },
+  "peak_mem_gib": {
+    "allocated_gib": 5.685,
+    "reserved_gib": 27.777
+  },
+  "pipelined": {
+    "wall_ms": 46993.59,
+    "gpu_ms": {
+      "h2d": 0.007,
+      "replay": 183.035,
+      "accumulate": 0.085,
+      "clip": 29.63,
+      "opt_adamw": 20.565,
+      "opt_muon": 61.01,
+      "opt_sinkhorn": 5.464,
+      "opt_engram": 9.151,
+      "bias": 0.001,
+      "log_sync": 0.508
+    },
+    "gpu_total_ms": 309.456,
+    "host_ms": {
+      "setup": 0.887,
+      "data": 39.644,
+      "h2d": 91.022,
+      "replay": 45273.559,
+      "accumulate": 569.821,
+      "clip": 358.678,
+      "opt_adamw": 78.049,
+      "opt_muon": 26.055,
+      "opt_sinkhorn": 20.806,
+      "opt_engram": 3.615,
+      "bias": 0.879,
+      "log_sync": 10.867
+    },
+    "host_total_ms": 46473.882
+  },
+  "sync": {
+    "gpu_ms": {
+      "h2d": 17.898,
+      "replay": 46906.428,
+      "accumulate": 65.535,
+      "clip": 4.873,
+      "opt_adamw": 10.131,
+      "opt_muon": 55.602,
+      "opt_sinkhorn": 5.022,
+      "opt_engram": 8.456,
+      "bias": 0.853,
+      "log_sync": 0.434
+    },
+    "gpu_total_ms": 47075.232,
+    "host_ms": {
+      "setup": 0.726,
+      "data": 37.197,
+      "h2d": 17.898,
+      "replay": 46906.428,
+      "accumulate": 65.535,
+      "clip": 4.873,
+      "opt_adamw": 10.131,
+      "opt_muon": 55.602,
+      "opt_sinkhorn": 5.022,
+      "opt_engram": 8.456,
+      "bias": 0.853,
+      "log_sync": 0.434
+    },
+    "host_total_ms": 47113.155,
+    "wall_ms": 47118.281
+  },
+  "derived": {
+    "replay_ms_per_micro": 183.228,
+    "accumulate_ms_per_micro": 0.256,
+    "replay_gpu_total_ms": 46906.428,
+    "pipelined_non_gpu_ms": -81.642,
+    "pipelined_non_gpu_pct": -0.17,
+    "sync_step_ms": 47118.281,
+    "tokens_per_sec_pipelined": 44626.3,
+    "raw_mfu_pipelined": 0.36806
+  },
+  "steps": [
+    {
+      "step": 0,
+      "sync": false,
+      "wall_ms": 47000.647,
+      "gpu_ms": {
+        "h2d": 0.007,
+        "replay": 182.96,
+        "accumulate": 0.084,
+        "clip": 58.025,
+        "opt_adamw": 34.806,
+        "opt_muon": 65.747,
+        "opt_sinkhorn": 6.101,
+        "opt_engram": 9.928,
+        "bias": 0.001,
+        "log_sync": 0.602
+      },
+      "host_ms": {
+        "setup": 0.962,
+        "data": 35.453,
+        "h2d": 94.476,
+        "replay": 45188.826,
+        "accumulate": 613.319,
+        "clip": 444.474,
+        "opt_adamw": 34.766,
+        "opt_muon": 31.659,
+        "opt_sinkhorn": 39.912,
+        "opt_engram": 5.892,
+        "bias": 0.882,
+        "log_sync": 3.314
+      },
+      "gpu_total_ms": 358.261,
+      "host_total_ms": 46493.935
+    },
+    {
+      "step": 1,
+      "sync": false,
+      "wall_ms": 46986.532,
+      "gpu_ms": {
+        "h2d": 0.007,
+        "replay": 183.109,
+        "accumulate": 0.087,
+        "clip": 1.236,
+        "opt_adamw": 6.324,
+        "opt_muon": 56.272,
+        "opt_sinkhorn": 4.827,
+        "opt_engram": 8.373,
+        "bias": 0.0,
+        "log_sync": 0.415
+      },
+      "host_ms": {
+        "setup": 0.813,
+        "data": 43.834,
+        "h2d": 87.567,
+        "replay": 45358.292,
+        "accumulate": 526.323,
+        "clip": 272.881,
+        "opt_adamw": 121.332,
+        "opt_muon": 20.451,
+        "opt_sinkhorn": 1.7,
+        "opt_engram": 1.339,
+        "bias": 0.875,
+        "log_sync": 18.42
+      },
+      "gpu_total_ms": 260.651,
+      "host_total_ms": 46453.828
+    },
+    {
+      "step": 2,
+      "sync": true,
+      "wall_ms": 47099.101,
+      "gpu_ms": {
+        "h2d": 16.303,
+        "replay": 46899.323,
+        "accumulate": 59.128,
+        "clip": 4.88,
+        "opt_adamw": 10.097,
+        "opt_muon": 55.618,
+        "opt_sinkhorn": 5.018,
+        "opt_engram": 8.454,
+        "bias": 0.85,
+        "log_sync": 0.436
+      },
+      "host_ms": {
+        "setup": 0.736,
+        "data": 33.291,
+        "h2d": 16.303,
+        "replay": 46899.323,
+        "accumulate": 59.128,
+        "clip": 4.88,
+        "opt_adamw": 10.097,
+        "opt_muon": 55.618,
+        "opt_sinkhorn": 5.018,
+        "opt_engram": 8.454,
+        "bias": 0.85,
+        "log_sync": 0.436
+      },
+      "gpu_total_ms": 47060.108,
+      "host_total_ms": 47094.135
+    },
+    {
+      "step": 3,
+      "sync": true,
+      "wall_ms": 47137.461,
+      "gpu_ms": {
+        "h2d": 19.493,
+        "replay": 46913.533,
+        "accumulate": 71.942,
+        "clip": 4.867,
+        "opt_adamw": 10.166,
+        "opt_muon": 55.585,
+        "opt_sinkhorn": 5.027,
+        "opt_engram": 8.457,
+        "bias": 0.857,
+        "log_sync": 0.433
+      },
+      "host_ms": {
+        "setup": 0.716,
+        "data": 41.104,
+        "h2d": 19.493,
+        "replay": 46913.533,
+        "accumulate": 71.942,
+        "clip": 4.867,
+        "opt_adamw": 10.166,
+        "opt_muon": 55.585,
+        "opt_sinkhorn": 5.027,
+        "opt_engram": 8.457,
+        "bias": 0.857,
+        "log_sync": 0.433
+      },
+      "gpu_total_ms": 47090.36,
+      "host_total_ms": 47132.18
+    }
+  ]
+}

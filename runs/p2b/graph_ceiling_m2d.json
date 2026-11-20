@@ -1,0 +1,103 @@
+{
+  "schema": "nanov41-graph-ceiling/1",
+  "breakdown": {
+    "kernel_busy_us_per_replay": 1169.0,
+    "replay_wall_us": 1230.9,
+    "gap_us_per_replay": 61.9,
+    "by_category_us": {
+      "mhc": 269.0,
+      "moe": 252.6,
+      "gemm": 230.1,
+      "elementwise_copy": 214.6,
+      "attn_decode_kernels": 149.1,
+      "other": 38.0,
+      "reduce": 15.6
+    },
+    "top_kernels": [
+      {
+        "name": "decode_post_mixes_pre_kernel",
+        "us": 136.97
+      },
+      {
+        "name": "decode_mixes_pre_kernel",
+        "us": 132.01
+      },
+      {
+        "name": "head_gemv_kernel",
+        "us": 108.69
+      },
+      {
+        "name": "moe_gu_kernel",
+        "us": 108.32
+      },
+      {
+        "name": "moe_gate_kernel",
+        "us": 83.59
+      },
+      {
+        "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 5, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+        "us": 68.7
+      },
+      {
+        "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1} const&)::{lambda(int)#1}>(int, at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}>(at::TensorIteratorBase&, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1} const&)::{lambda(int)#1})",
+        "us": 66.53
+      },
+      {
+        "name": "sparse_attn_decode_kernel",
+        "us": 63.03
+      },
+      {
+        "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 7, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+        "us": 45.92
+      },
+      {
+        "name": "moe_down_partial_kernel",
+        "us": 37.35
+      },
+      {
+        "name": "rope_kernel",
+        "us": 29.34
+      },
+      {
+        "name": "rmsnorm_decode_kernel",
+        "us": 29.13
+      },
+      {
+        "name": "rmsnorm_kernel",
+        "us": 27.61
+      },
+      {
+        "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, 4, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1> >(int, at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{lambda()#3}::operator()() const::{lambda()#7}::operator()() const::{lambda(float)#1}, std::array<char*, 2ul>, TrivialOffsetCalculator<1, unsigned int>, TrivialOffsetCalculator<1, unsigned int>, at::native::memory::LoadWithCast<1>, at::native::memory::StoreWithCast<1>)",
+        "us": 22.2
+      },
+      {
+        "name": "memcpy32_post",
+        "us": 18.58
+      }
+    ],
+    "kernels": 73
+  },
+  "date": "2026-11-08",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "ctx": 512,
+  "attn": true,
+  "patches": {
+    "engram": 2,
+    "moe": 12,
+    "mhc": 4,
+    "attn": 12,
+    "bf16_head": 1,
+    "mhc_fast": 12,
+    "moe_fast": 12,
+    "rmsnorm_fast": 1
+  },
+  "eager_ms_per_step": 30.59,
+  "eager_tps": 32.7,
+  "graph_ok": true,
+  "graph_ms_per_step": 1.231,
+  "graph_tps": 812.4,
+  "graph_speedup_vs_eager": 24.85,
+  "graph_error": null,
+  "note": "timing-only: the graph is captured at a fixed start_pos, so position-dependent Python control flow is frozen; a real decode runtime needs tensor-driven position/scalar tables before this can be used for generation"
+}

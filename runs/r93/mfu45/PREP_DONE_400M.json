@@ -1,0 +1,31 @@
+{
+ "title": "R93 P0b prep stamp",
+ "finished_utc": "2026-11-15T15:35:05Z",
+ "tokenizer": "runs/r92/vocab/K40000_s1280/tokenizer.json (V=41280, bytes/token 4.270631)",
+ "engram_compressed_vocab_size_exact": 32410,
+ "engram_compressed_vocab_size_pure_python": 32553,
+ "corpus": "/root/autodl-tmp/nanochat/p2_p0b_40k",
+ "corpus_tokens": 400000000,
+ "eval_panel": "/root/autodl-tmp/nanochat/p0_eval_40k",
+ "accounting_check": {
+  "analytic": {
+   "backbone_params": 330247472,
+   "backbone_non_embedding": 245706032,
+   "embed_plus_head": 84541440,
+   "experts_total": 0,
+   "inactive_expert_params": 0,
+   "active_params": 287976752,
+   "activation_fraction": 1.0,
+   "fwd_flops_per_token_est": 575953504,
+   "ffn_impl": "dense",
+   "dense_inter_dim": 2304,
+   "ffn_params": 169869312,
+   "engram_params": 220049152,
+   "total_with_engram": 550296624,
+   "engram_backbone_ratio": 0.6663159317083281,
+   "engram_nonembed_ratio": 0.895578957540611,
+   "accounting_note": "ANALYTIC (tools/r93_make_configs.py, validated to 0.005% against the committed d12/d16 configs); re-run tools/make_aligned_config.py on the GPU box for the torch-authoritative numbers."
+  }
+ },
+ "log": "/root/nanov41/runs/r93/p0b/prep.log"
+}

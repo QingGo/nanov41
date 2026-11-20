@@ -1,0 +1,35 @@
+{
+  "schema": "nanov41-engram-tl-nano-opt/1",
+  "date": "2026-11-07",
+  "instance": "205a42a6aa (bj-B1, RTX 5090), /root/t141 torch 2.14.1+cu130 triton 3.8.0 tilelang 0.1.15",
+  "goal": "reduce the R69-tuned d12 Engram graph-step overhead from +4.5% to <= +3%",
+  "result": "achieved: 63.69 -> 65.32 ms median over 3 interleaved rounds = +2.56% (pair deltas +2.17/+2.75/+2.56%)",
+  "profile_finding": "the nano gate kernels themselves are only ~0.65 ms/graph (fwd 0.166 + bwd 0.479 for 2 layers at b=16x1024) and the backward is memory-bound; most of the +2.9 ms was outside the graph: sparse table Adam (~1.4 ms) and redundant grad zeroing (params ~188 MB + engram leaf grads ~100 MB per step, both overwritten by the assignment-based R69 capture).",
+  "optimizations": [
+    {"what": "use the gate kernel's own output", "why": "native (no-padding) nano path already computes x+gate*value; the wrapper was recomputing it with an extra addcmul kernel", "impact": "removes one elementwise kernel + one write/read of the [16K,4,384] residual per Engram layer"},
+    {"what": "fused sparse Adam row-update Triton kernel (nanov41/sparse_adam_triton.py)", "why": "torch index_select/gather/index_copy_ + Python loop cost ~0.4 ms/step", "impact": "one kernel per table; row-independent, deterministic"},
+    {"what": "fused deterministic segment-sum + sparse Adam (one kernel per table)", "why": "collect was ~0.25 ms/table (argsort+unique+segment_reduce+row-grad tensor); the single-record graph path can sum sorted segments and update in one program per unique row", "impact": "removes the intermediate [rows,32] grads tensor and the separate update kernel"},
+    {"what": "skip param/leaf grad zeroing when accum==1", "why": "R69 captures torch.autograd.grad outputs into baked buffers; replay overwrites every element, so zeroing 188 MB of param grads + ~100 MB leaf grads is dead work (R68 chunked accumulation keeps zeroing)", "impact": "~0.5-0.7 ms/step"},
+    {"what": "int32 stable sort + torch.segment_reduce + single-sync slot assignment", "why": "smaller sort keys and one fewer device->host sync in the fallback collector", "impact": "~0.05-0.1 ms/step"},
+    {"what": "nano bwd kernel (previous turn)", "why": "128-tile forward, 1 warp/head backward, dynamic v-copy layout, single-warp dldg reduction", "impact": "native 384/640 without padding; the bwd kernel is now bandwidth-bound (0.24 ms/layer), further kernel-only headroom is small"}
+  ],
+  "final_measurement": {
+    "shape": "b=16 x seq=1024, graph-only, R69 final_env + accepted flags, 3 interleaved rounds",
+    "baseline_ms": [63.94, 63.54, 63.69],
+    "engram_ms": [65.33, 65.29, 65.32],
+    "baseline_median_ms": 63.69,
+    "engram_median_ms": 65.32,
+    "pair_deltas_pct": [2.17, 2.75, 2.56],
+    "median_pair_overhead_pct": 2.56,
+    "capture": "PASS (all rounds)",
+    "peak_mem_gib": {"baseline": 8.69, "engram": 9.15}
+  },
+  "sanity_checks": {
+    "5_step_graph_training": {"graph_loss": 11.880011, "tracked_rows": [301861, 302263], "capture": "PASS"},
+    "fused_segment_adam_kernel_vs_torch": "m/v/weight all close (<=4e-6 weight, <=1e-5 moments)",
+    "fused_sparse_adam_kernel_sizes": [3000, 2999, 1, 2, 3, 5],
+    "nano_gate_kernel_vs_engram_gate_ref": "grad rel <= 3.6e-4 (384/640/512; see runs/graph_engram_tl_nano_5090_2026-11-07.json)"
+  },
+  "code": ["nanov41/sparse_adam_triton.py", "nanov41/nano_engram.py", "nanov41/engram_tl.py", "tools/bench_graph_train.py (internal zeroing skip for accum==1)"],
+  "caveat": "R68 chunked-BPTT trainers keep param/leaf zeroing because backward accumulates into the captured grad buffers; the fast sparse path is only used when exactly one captured forward is pending."
+}

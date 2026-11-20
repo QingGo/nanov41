@@ -1,0 +1,11 @@
+{
+  "arm": "E-none",
+  "config": "d12",
+  "engram": "none",
+  "tokens": 599998464,
+  "steps": 36621,
+  "train_seconds": 2362.7,
+  "avg_logged_loss": 4.876677839379561,
+  "table_params": 0,
+  "ckpt": "runs/p2/E-none.pt"
+}

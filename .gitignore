@@ -27,6 +27,7 @@ tilelang_cache/
 .idea/
 
 # ========== artifacts / binaries / logs ==========
+# *.npy: generated eval shards / byte tables (rebuild with tools/make_eval_slices.py)
 *.pt
 *.pth
 *.bin
@@ -34,7 +35,11 @@ tilelang_cache/
 *.ckpt
 *.log
 *.jsonl
+*.npy
 nohup.out
+
+# ========== third-party bundles / assets (not redistributed) ==========
+/assets/
 
 # ========== local secrets (never commit) ==========
 .env
@@ -86,6 +91,35 @@ infra-refs/
 !/docs/architecture.md
 !/docs/benchmarks.md
 !/docs/v41-scaling-check.md
+!/docs/optimization-playbook.md
+!/docs/compare-nanogpt.md
+!/docs/compare-nanochat.md
+!/docs/engram-integration-plan.md
+!/docs/product-vs-nanochat.md
+!/docs/opd-strategy.md
+!/docs/eval-proxies.md
+!/docs/eval-harness.md
+!/docs/engram-design.md
+!/docs/tokenizer-contract.md
+!/docs/capacity-vs-compute-codesign.md
+!/docs/kernel-optimization-status.md
+!/docs/status-2026-11-07.md
+!/docs/decode-200tps-plan.md
+!/docs/inference-kernels.md
+!/docs/vllm-conversion.md
+!/docs/generation-kv.md
+!/docs/aligned/
+!/docs/aligned/*.json
+!/docs/r90-*.md
+!/docs/r91-*.md
+!/docs/r93-*.md
+!/docs/r93/
+!/docs/r93/configs/
+!/docs/r93/configs/*.json
+!/docs/r94-*.md
+!/docs/r94-research/
+!/docs/r94-research/*.md
+!/docs/r95-*.md
 
 # Internal ops tooling (cloud enable/disable, SSH sync) is not part of the public release.
 /tools/**
@@ -94,9 +128,78 @@ infra-refs/
 !/tools/ab_bench.py
 !/tools/mfu_accounting.py
 !/tools/v41_scaling_check.py
+!/tools/make_eval_slices.py
+!/tools/eval_t0.py
+!/tools/fetch_eval_data.py
+!/tools/engram_hash_parity.py
+!/tools/bench_engram_gpu.py
+!/tools/r93_capability_snapshot.py
+!/tools/r93_fullval_eval.py
+!/tools/r93_p1_eval_loop_keep.sh
+!/tools/r93_p1_plot.py
+!/tools/r93_p1_train.sh
+!/tools/r93_predl_datasets.py
+!/tools/r93_probe_run.sh
+!/tools/r95_build_domain_eval.py
 
 # One-off kernel/benchmark experiments (default ignored; curated packages are whitelisted).
 /tl_kernels/
 /experiments/*
 !/experiments/README.md
 !/experiments/tl_kernels/
+!/runs/g27_moe_fusion_5090.json
+!/runs/g20_moe_base_5090.json
+!/runs/g20_moe_best_5090.json
+!/runs/g21_moe_sweep_5090.json
+!/runs/g27_best5_1m_5090.json
+!/runs/g34_gap_graph_5090.json
+!/runs/g28_gap_full_5090.json
+!/runs/g28_gap_chunk_262k_5090.json
+!/runs/g30_chunk_graph_all_5090.json
+!/runs/g32_graph_1m_5090.json
+!/runs/g33_graph_parity_262k_5090.json
+!/runs/g33_det_1chunk_5090.json
+!/runs/g33_det_4chunk_5090.json
+!/runs/g45_grad_det_fix_5090.json
+!/runs/g35_repro_4chunk.json
+!/runs/g38_micro.json
+!/runs/g37_layer11.json
+!/runs/g46_chunk_graph_trainer_5090.json
+!/runs/g46_chunk_train_262k_5090.json
+!/runs/g46_chunk_train_1m_5090.json
+!/runs/g5_graph_262k_5090.json
+!/runs/r69_mfu_5090.json
+!/runs/engram_gpu_5090_2026-11-07.json
+!/runs/graph_engram_ab_5090_2026-11-07.json
+!/runs/graph_engram_r69tuned_5090_2026-11-07.json
+!/runs/graph_engram_tlpad_5090_2026-11-07.json
+!/runs/graph_engram_tl_nano_5090_2026-11-07.json
+!/runs/graph_engram_tl_nano_opt_5090_2026-11-07.json
+!/docs/p2-ab-report.md
+!/runs/p2/E-none.train.json
+!/runs/p2/E-none.t0.json
+!/runs/p2/E-thin.train.json
+!/runs/p2/E-thin.t0.json
+!/runs/p2/E-default.train.json
+!/runs/p2/E-default.t0.json
+!/runs/p2/E-thick.train.json
+!/runs/p2/E-thick.t0.json
+!/runs/p2/d12e32.train.json
+!/runs/p2/d12e32.t0.json
+!/runs/p2/
+!/runs/p2/*.json
+!/runs/p2b/
+!/runs/p2b/*.json
+!/tools/p2_continue.py
+!/tools/export_vllm_ckpt.py
+!/tools/engram_fp8_export.py
+!/runs/p2b/*.png
+!/runs/p2/summary.json
+!/tools/p2_make_data.py
+!/tools/p2_train.py
+!/tools/p2_run_arms.sh
+!/tools/p2_report.py
+!/tools/p2b_seed_arms.sh
+!/runs/g47_engram_chunk_65536_5090.json
+!/runs/r69_engram_baseline_b16_5090.json
+!/runs/r69_engram_d12_b16_5090.json

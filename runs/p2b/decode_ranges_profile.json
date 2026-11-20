@@ -1,0 +1,117 @@
+{
+  "schema": "nanov41-decode-ranges/1",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ctx": 512,
+  "steps": 4,
+  "category_self_us_per_step": {
+    "attn": 0.0,
+    "moe": 0.0,
+    "engram": 0.0,
+    "block_residual_hc_norm": 0.0,
+    "head": 0.0,
+    "final_norm": 0.0,
+    "outside": 2209.21
+  },
+  "top": [
+    {
+      "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 7, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+      "us_per_step": 26.92,
+      "category": "outside"
+    },
+    {
+      "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 7, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+      "us_per_step": 26.86,
+      "category": "outside"
+    },
+    {
+      "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 7, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+      "us_per_step": 26.82,
+      "category": "outside"
+    },
+    {
+      "name": "std::enable_if<!(false), void>::type internal::gemvx::kernel<int, int, __nv_bfloat16, __nv_bfloat16, __nv_bfloat16, float, false, true, true, false, 7, false, cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float> >(cublasGemvParamsEx<int, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16 const>, cublasGemvTensorStridedBatched<__nv_bfloat16>, float>)",
+      "us_per_step": 26.71,
+      "category": "outside"
+    },
+    {
+      "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4> >(at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4>)",
+      "us_per_step": 5.69,
+      "category": "outside"
+    },
+    {
+      "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4> >(at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4>)",
+      "us_per_step": 5.64,
+      "category": "outside"
+    },
+    {
+      "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4> >(at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4>)",
+      "us_per_step": 5.57,
+      "category": "outside"
+    },
+    {
+      "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4> >(at::native::ReduceOp<float, at::native::ArgMaxOps<float>, unsigned int, long, 4, 4>)",
+      "us_per_step": 5.56,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.83,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.82,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.81,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.81,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.81,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.81,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.8,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.8,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.8,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.8,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.8,
+      "category": "outside"
+    },
+    {
+      "name": "decode_post_mixes_pre_kernel",
+      "us_per_step": 2.8,
+      "category": "outside"
+    }
+  ]
+}

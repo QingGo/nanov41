@@ -1,0 +1,26 @@
+{
+ "total": 1048576,
+ "chunk": 16384,
+ "n_chunks": 64,
+ "opt": "fused",
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "capture_s": 47.1,
+ "peak_mem_after_capture_gib": 13.51,
+ "grad_rel_diff_max": 0.03255397826433182,
+ "grads_bitexact": false,
+ "eager_ms": [
+  16105.4,
+  16142.8,
+  16203.6
+ ],
+ "graph_ms": [
+  14769.4,
+  14772.2,
+  14773.0
+ ],
+ "eager_median_ms": 16142.8,
+ "graph_median_ms": 14772.2,
+ "delta_pct": -8.49,
+ "speedup": 1.09
+}

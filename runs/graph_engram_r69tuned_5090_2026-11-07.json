@@ -1,0 +1,47 @@
+{
+  "schema": "nanov41-engram-graph-r69tuned/1",
+  "date": "2026-11-07",
+  "instance": "205a42a6aa-598ca007 (bj-B1, 1x RTX 5090 32GB)",
+  "stack": {
+    "python": "/root/t141/bin/python",
+    "torch": "2.14.1+cu130",
+    "triton": "3.8.0",
+    "tilelang": "0.1.15",
+    "env": "tools/final_env.sh + R69 accepted flags (NANOV41_MHC_V4=1 V4_MODE=split MOE_LAYOUT=fast ATTN_DKV_BF16=1 MOE_DWS_INLINE=1 MOE_TILE=64,64,64,4,3)",
+    "build": "--mhc-level 3 --mhc-post-triton --mhc-split-triton --mhc-core-triton",
+    "shape": "b=16 x seq=1024; graph-only (capture fwd+loss+bwd, optimizer outside); 2 warm steps + 20 timed replays",
+    "optimizer": "AdamW fused disabled (mixed bf16/fp32 param dtypes)"
+  },
+  "d12": {
+    "config": "d12 (dim 384, Engram layers [1,4], table 128.02M)",
+    "engram_gate": "Inductor/Triton fused bf16 gate (official TileLang kernels require hidden_size % 256 == 0; 384 unsupported natively)",
+    "rounds": 4,
+    "baseline_ms": [66.3, 67.38, 66.17, 66.32],
+    "engram_ms": [69.07, 70.69, 70.14, 68.99],
+    "baseline_median_ms": 66.31,
+    "engram_median_ms": 69.6,
+    "pair_deltas_pct": [4.18, 4.91, 6.0, 4.03],
+    "median_pair_overhead_pct": 4.55,
+    "capture": "PASS (all rounds)",
+    "peak_mem_gib": {"baseline": 8.69, "engram": 9.48}
+  },
+  "d16": {
+    "config": "d16 (dim 512, Engram layers [1,6], table 256.02M)",
+    "engram_gate": "official DeepSeek TileKernels `tile_kernels.engram` TileLang gate fwd/bwd (MIT), native hidden 512, TILE_KERNELS_PATH=/root/TileKernels",
+    "rounds": 2,
+    "baseline_ms": [137.73, 139.75],
+    "engram_ms": [140.56, 141.35],
+    "baseline_median_ms": 138.74,
+    "engram_median_ms": 140.96,
+    "pair_deltas_pct": [2.05, 1.14],
+    "median_pair_overhead_pct": 1.6,
+    "capture": "PASS (both rounds)",
+    "peak_mem_gib": {"baseline": 16.67, "engram": 18.04},
+    "caveat": "d16 CE head v3 falls back to the bf16 head (v3 only supports d=384), so absolute d16 step is not comparable to d12; the A/B relative overhead is."
+  },
+  "notes": [
+    "The historical R69 58 ms baseline was measured on a west-D host with torch 2.12.1; this bj-B1 host with the same final_env gives 66.3 ms median, so absolute step times are host/env dependent. The deliverable here is the same-process/round pair relative overhead.",
+    "R68 chunked-graph parity remains bitwise (runs/g47_engram_chunk_65536_5090.json).",
+    "TL padded-hidden path (for dims 384/640) exists in nanov41/engram_tl.py but is not enabled: forward rescaling is exact, but the backward chain-rule mapping for the padded RMSNorm needs more validation; dispatcher only uses TL when hidden_size % 256 == 0 (d16)."
+  ]
+}

@@ -1,0 +1,143 @@
+{
+ "title": "opt-A productionized: ChunkedGraphTrainer (per-chunk CUDA graphs, weights bitwise over multi-step training)",
+ "date": "2026-11-05",
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "config": "d12 bf16, b=1, chunk=16384, production env (HEAD_FP8=2, IDX_MODE=hsi-auto, CKPT=state CKPT_EVERY=2, fused ATTN_V2/MHC_V3/MOE_*/RMS/SWIGLU/WOA/ROPE)",
+ "module": "nanov41/chunk_graph.py :: ChunkedGraphTrainer",
+ "design": {
+  "captured": "per-chunk loss (length-weighted) + backward, plus tiny writes that publish per-chunk and total loss into static device buffers",
+  "outside_graphs": "optimizer.step(), detach_leaked_buffers, loss readout, cache zeroing, data copy into static input buffers",
+  "static_inputs": "caller-owned buffers dict (e.g. ids [1,total]); step(ids=...) does buf.copy_(ids) before replay",
+  "memory": "one shared torch.cuda.graph_pool_handle() across all chunk graphs, replayed in order",
+  "guards": "p.grad storage identity checked every step (forbids zero_grad(set_to_none=True)); capture failure recorded in .capture_error and step() falls back to eager; capture=False = eager mode (CPU/debug)",
+  "capture_recipe": "1 main-stream eager pass (grad alloc), 2 side-stream warmup passes, then one graph per chunk; capture is one-time (~12 s at 262K, ~50 s at 1M)",
+  "capture_safe_loss": "FP8 CE head (HEAD_FP8=2) + grouped Triton MoE; the reference MoE loop (bincount().tolist()) and the bf16 CE head backward sync with the host and cannot be captured (documented in the module)"
+ },
+ "262k": {
+  "total": 262144,
+  "chunk": 16384,
+  "n_chunks": 16,
+  "capture": {
+   "graphs": 16,
+   "seconds": 12.5,
+   "peak_mem_gib": 8.86
+  },
+  "parity": {
+   "weights_bitexact_after_all_steps": true,
+   "first_differing_params": [],
+   "eager_losses": [
+    11.845507,
+    11.846958,
+    11.846037
+   ],
+   "graph_losses": [
+    11.845507,
+    11.846958,
+    11.846037
+   ],
+   "losses_bitwise": true
+  },
+  "timing": {
+   "eager": {
+    "step_ms": [
+     3034.6,
+     2963.4,
+     2972.2
+    ],
+    "step_median_ms": 2972.2,
+    "tokens_per_s": 88197,
+    "peak_mem_gib": 10.21,
+    "capture_s": 0.0,
+    "loss_readout_ms": 0.04
+   },
+   "graph": {
+    "step_ms": [
+     2239.0,
+     2239.9,
+     2240.2
+    ],
+    "step_median_ms": 2239.9,
+    "tokens_per_s": 117035,
+    "peak_mem_gib": 4.57,
+    "capture_s": 12.5,
+    "loss_readout_ms": 0.13
+   }
+  },
+  "delta_pct": -24.64,
+  "speedup": 1.33
+ },
+ "1m": {
+  "total": 1048576,
+  "chunk": 16384,
+  "n_chunks": 64,
+  "capture": {
+   "graphs": 64,
+   "seconds": 50.4,
+   "peak_mem_gib": 9.93
+  },
+  "parity": {
+   "weights_bitexact_after_all_steps": true,
+   "first_differing_params": [],
+   "eager_losses": [
+    11.846062,
+    11.845636
+   ],
+   "graph_losses": [
+    11.846062,
+    11.845636
+   ],
+   "losses_bitwise": true
+  },
+  "timing": {
+   "eager": {
+    "step_ms": [
+     12192.2,
+     12155.2
+    ],
+    "step_median_ms": 12173.7,
+    "tokens_per_s": 86135,
+    "peak_mem_gib": 11.28,
+    "capture_s": 0.0,
+    "loss_readout_ms": 0.07
+   },
+   "graph": {
+    "step_ms": [
+     10721.1,
+     10722.1
+    ],
+    "step_median_ms": 10721.6,
+    "tokens_per_s": 97800,
+    "peak_mem_gib": 5.36,
+    "capture_s": 50.4,
+    "loss_readout_ms": 0.1
+   }
+  },
+  "delta_pct": -11.93,
+  "speedup": 1.14
+ },
+ "integration_g5_bench_graph": {
+  "total_tokens": 262144,
+  "chunk": 16384,
+  "num_chunks": 16,
+  "step_ms": 2021.6,
+  "tokens_per_s": 129675,
+  "peak_mem_gib": 2.29,
+  "graph": true,
+  "capture_s": 11.0,
+  "capture_peak_mem_gib": 10.1,
+  "context": "chunked CUDA graphs: fwd+loss+bwd per chunk captured, optimizer/logging outside; weights updated in place"
+ },
+ "host_variance_note": "same-process A/B is authoritative. The graph step is GPU-bound and stable across hosts (1M: 10.72 s here vs 10.92 s on the bj-B1 host); the eager step is CPU-launch-bound and host-dependent (1M: 12.17 s here vs 13.72 s on bj-B1, both after the \u00a73v attention fix). Hence the graph delta is -11.9% on this (faster-CPU) host and -20.4% on bj-B1, but the absolute graph step time is within 2%.",
+ "tests": "tests/test_chunk_graph.py: CPU eager==manual bitwise; CUDA replay grads + 2-step training weights/losses bitwise vs eager (passed on the 5090, 12.7 s).",
+ "tools": [
+  "nanov41/chunk_graph.py",
+  "tools/g46_chunk_train.py",
+  "tools/g5_chunked_train.py --graph"
+ ],
+ "raw_files": [
+  "runs/g46_chunk_train_262k_5090.json",
+  "runs/g46_chunk_train_1m_5090.json",
+  "runs/g5_graph_262k_5090.json"
+ ]
+}

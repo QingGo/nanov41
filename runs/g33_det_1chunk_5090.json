@@ -1,0 +1,56 @@
+{
+ "total": 16384,
+ "chunk": 16384,
+ "n_chunks": 1,
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "eager_determinism": {
+  "max_rel": 0.0,
+  "n_params": 284,
+  "n_bitexact": 284,
+  "n_diff_gt_1e6": 0,
+  "diff_by_subsystem": {
+   "hc": 0,
+   "expert": 0,
+   "attn": 0,
+   "norm": 0,
+   "embed_head": 0,
+   "other": 0
+  },
+  "worst": [
+   {
+    "name": "inner.embed.weight",
+    "rel": 0.0
+   },
+   {
+    "name": "inner.layers.0.hc_attn_fn",
+    "rel": 0.0
+   },
+   {
+    "name": "inner.layers.0.hc_ffn_fn",
+    "rel": 0.0
+   },
+   {
+    "name": "inner.layers.0.hc_attn_base",
+    "rel": 0.0
+   },
+   {
+    "name": "inner.layers.0.hc_ffn_base",
+    "rel": 0.0
+   },
+   {
+    "name": "inner.layers.0.hc_attn_scale",
+    "rel": 0.0
+   },
+   {
+    "name": "inner.layers.0.hc_ffn_scale",
+    "rel": 0.0
+   },
+   {
+    "name": "inner.layers.0.attn.attn_sink",
+    "rel": 0.0
+   }
+  ]
+ },
+ "eager_loss_max_abs_diff": 0.0
+}

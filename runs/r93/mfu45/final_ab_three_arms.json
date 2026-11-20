@@ -1,0 +1,31 @@
+{
+ "run": "2026-11-16 sprint final A/B (50 steps x 2^21 tok/arm, seed 1234, val p0_eval_40k 3M tokens)",
+ "arms": {
+  "A_production": {
+   "tok_s": 43865.7,
+   "raw_mfu": 0.361784,
+   "bpb": 1.9573295735019678,
+   "final_loss": 6.085061
+  },
+  "B1_e0only": {
+   "tok_s": 62848.0,
+   "raw_mfu": 0.5183,
+   "bpb": 1.9623959088030112,
+   "final_loss": 6.09583,
+   "bpb_delta_vs_A": 0.005066
+  },
+  "B2_e0_b2": {
+   "tok_s": 64749.6,
+   "raw_mfu": 0.534025,
+   "bpb": 1.9676837224233537,
+   "final_loss": 6.112883,
+   "bpb_delta_vs_A": 0.010354
+  }
+ },
+ "verdict": "E0 PASS (MFU 51.83%, bpb +0.0051 within +0.01 gate); E0+b2 MFU 53.40% but bpb +0.0104 (0.0004 over gate, trajectory-noise dominated at 0.1B); fp8 not adopted (quality unverified, fp8+b2 OOM). P1 stack = E0 (+b2 guarded).",
+ "expected_p1_8B_cost_cny": {
+  "E0": 106,
+  "E0_b2": 103,
+  "production_36.6pct": 150
+ }
+}

@@ -1,0 +1,149 @@
+{
+  "created_utc": "2026-11-18T15:18:14Z",
+  "dataset": {
+    "domains": {
+      "climbmix_val": {
+        "bootstrap_ci": {},
+        "domain": "climbmix_val",
+        "elapsed_s": 100.7021,
+        "est_flops": 1774128393093120.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 4.753083265220715,
+            "bpb": 1.0662408287835705,
+            "bytes": 13338704,
+            "bytes_per_token": 4.457795215592436,
+            "nll_nats": 9858126.911627293,
+            "tokens": 2992220
+          },
+          "text": {
+            "bits_per_token": 4.753083265220715,
+            "bpb": 1.0662408287835705,
+            "bytes": 13338704,
+            "bytes_per_token": 4.457795215592436,
+            "nll_nats": 9858126.911627293,
+            "tokens": 2992220
+          }
+        },
+        "shards": 1,
+        "tokens_available": 56778205,
+        "tokens_dropped": 1728,
+        "tokens_per_second": 29773.681249297446,
+        "tokens_processed": 2998272,
+        "tokens_scored": 2992220,
+        "window": 2048
+      },
+      "code_py": {
+        "bootstrap_ci": {},
+        "domain": "code_py",
+        "elapsed_s": 100.0618,
+        "est_flops": 1774128393093120.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 6.091906511857132,
+            "bpb": 1.8004865037520632,
+            "bytes": 10139634,
+            "bytes_per_token": 3.3834780206139334,
+            "nll_nats": 12654284.968454838,
+            "tokens": 2996808
+          },
+          "text": {
+            "bits_per_token": 6.091906511857132,
+            "bpb": 1.8004865037520632,
+            "bytes": 10139634,
+            "bytes_per_token": 3.3834780206139334,
+            "nll_nats": 12654284.968454838,
+            "tokens": 2996808
+          }
+        },
+        "shards": 1,
+        "tokens_available": 3033838,
+        "tokens_dropped": 1728,
+        "tokens_per_second": 29964.195161892392,
+        "tokens_processed": 2998272,
+        "tokens_scored": 2996808,
+        "window": 2048
+      },
+      "math_web": {
+        "bootstrap_ci": {},
+        "domain": "math_web",
+        "elapsed_s": 100.054,
+        "est_flops": 1774128393093120.0,
+        "kind": "text",
+        "metrics": {
+          "all": {
+            "bits_per_token": 5.766387218485728,
+            "bpb": 1.5713521692264836,
+            "bytes": 10997379,
+            "bytes_per_token": 3.6696975582019267,
+            "nll_nats": 11978106.84703517,
+            "tokens": 2996808
+          },
+          "text": {
+            "bits_per_token": 5.766387218485728,
+            "bpb": 1.5713521692264836,
+            "bytes": 10997379,
+            "bytes_per_token": 3.6696975582019267,
+            "nll_nats": 11978106.84703517,
+            "tokens": 2996808
+          }
+        },
+        "shards": 1,
+        "tokens_available": 3041608,
+        "tokens_dropped": 1728,
+        "tokens_per_second": 29966.5302242709,
+        "tokens_processed": 2998272,
+        "tokens_scored": 2996808,
+        "window": 2048
+      }
+    },
+    "domains_requested": [
+      "climbmix_val",
+      "code_py",
+      "math_web"
+    ],
+    "manifest_sha256": "db402f987f999d67b7e6e8242ad1716dcaacd0a2ce965a471d7c822239f82881",
+    "root": "/root/autodl-tmp/nanochat/p0_eval_40k"
+  },
+  "git": {
+    "commit": null,
+    "dirty": null
+  },
+  "mixes": {},
+  "model_label": "model-bf16",
+  "nll_mode": "auto",
+  "provider": {
+    "checkpoint": "/root/autodl-tmp/nanochat/runs/p1/p1_8b.pt",
+    "checkpoint_sha256": "a0bf1936e318a0492a242bc44ed69326a8f5907a25c027dfd9182ea2dca090e9",
+    "config": null,
+    "device": "cuda",
+    "dtype": "bf16",
+    "engram": true,
+    "engram_table_params": 220049152,
+    "flops_per_token": 591716960.0,
+    "n_params": 338129200,
+    "n_params_non_embedding": 253587760,
+    "nll_mode": "auto",
+    "provider": "model",
+    "vocab_size": 41280
+  },
+  "schema": "nanov41-eval-report/1",
+  "settings": {
+    "batch_size": 8,
+    "bootstrap": 0,
+    "ce_chunk": 256,
+    "max_tokens_per_domain": 3000000,
+    "window": 2048
+  },
+  "summary": {
+    "byte_weighted_bpb": 1.443314444346438,
+    "domains": 3,
+    "elapsed_s": 300.8179,
+    "flops_per_token": 591716960.0,
+    "macro_bpb": 1.4793598339207057,
+    "tokens_processed": 8994816,
+    "tokens_scored": 8985836
+  }
+}

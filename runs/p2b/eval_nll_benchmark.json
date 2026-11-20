@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-07",
+  "gpu": "RTX 5090 32GB",
+  "model": "P2b E-default seed1235 (d12, 193.9M params + 128.0M Engram table)",
+  "shape": "batch x 1024 tokens, bf16, T0 NLL head only; random valid token ids",
+  "modes": {
+    "logits (legacy)": {"batch16_tok_s": 88020, "batch16_peak_GB": 17.48, "batch32": "OOM"},
+    "chunked head NLL": {"batch16_tok_s": 90912, "batch16_peak_GB": 9.04, "batch32_tok_s": 96909, "batch32_peak_GB": 17.81},
+    "fused v3 head NLL": {"batch16_tok_s": 128070, "batch16_peak_GB": 3.24, "batch32": "int32 P offset limit (split into 2x16)"}
+  },
+  "fused_v3_accuracy_vs_bf16_chunked": {
+    "mean_abs_nats_per_token": 0.0602,
+    "p50": 0.0458, "p95": 0.1651, "p99": 0.2366,
+    "bias_nats": 0.00582,
+    "approx_bpb_bias": 0.0084,
+    "note": "fused v3 is an FP8 head; use chunked (exact parity) for arm comparisons, fused for speed exploration when both runs use the same mode"
+  },
+  "conclusion": "native eval fast path: chunked reduces peak memory ~2x and enables batch32 (legacy OOM); fused v3 head gives ~1.45x over logits and ~1.4x over chunked at batch16, with ~0.008 BPB numerical bias."
+}

@@ -1,0 +1,73 @@
+{
+  "schema": "nanov41-decode-graph-verify/1",
+  "date": "2026-11-08",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "steps": 64,
+  "contexts": {
+    "64": {
+      "ctx": 64,
+      "eager_vs_graph_forward": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "eager_vs_graph_tokens": {
+        "agreement": 1.0
+      },
+      "capture_parity": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "speed": {
+        "graph_generate_s": 0.1617,
+        "graph_tok_s": 395.9,
+        "graph_ms_per_token": 2.526,
+        "eager_tok_s": 22.81,
+        "speedup": 17.35
+      },
+      "greedy_agreement": 1.0,
+      "text_graph": " village had been able to find a way to get to the river. The water was very cold, and the water was very cold. The water was very cold, and the water was very cold. The water was very cold, and the water was very cold. The water was very cold, and the water was very"
+    },
+    "512": {
+      "ctx": 512,
+      "eager_vs_graph_forward": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "eager_vs_graph_tokens": {
+        "agreement": 1.0
+      },
+      "capture_parity": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "speed": {
+        "graph_generate_s": 0.1613,
+        "graph_tok_s": 396.79,
+        "graph_ms_per_token": 2.52,
+        "eager_tok_s": 20.79,
+        "speedup": 19.08
+      },
+      "greedy_agreement": 1.0,
+      "text_graph": " the sea was quiet. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear. The water was clear"
+    }
+  },
+  "hash_ids": {
+    "same": true,
+    "ref_shape": [
+      1,
+      1,
+      2,
+      4
+    ],
+    "mismatches": 0
+  }
+}

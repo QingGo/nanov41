@@ -1,0 +1,232 @@
+{
+ "mode": "chunk",
+ "total": 262144,
+ "chunk": 16384,
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "triton": "3.7.1",
+ "wall_no_sync": {
+  "median_ms": 4375.63,
+  "all_ms": [
+   4351.42,
+   4391.61,
+   4375.63
+  ]
+ },
+ "wall_with_sync": {
+  "median_ms": 4442.55,
+  "all_ms": [
+   4484.39,
+   4440.57,
+   4442.55
+  ]
+ },
+ "per_chunk_ms": [
+  192.9,
+  237.9,
+  240.7,
+  267.0,
+  268.5,
+  276.1,
+  279.9,
+  295.2,
+  312.8,
+  321.9,
+  296.6,
+  312.4,
+  297.4,
+  296.8,
+  297.3,
+  298.6
+ ],
+ "per_chunk_summary": {
+  "n": 16,
+  "first": 192.9,
+  "mid": 312.8,
+  "last": 298.6,
+  "sum": 4492.0,
+  "median": 295.9
+ },
+ "profile_mid_chunk": {
+  "wall_ms": 296.51,
+  "device_kernel_ms": 1129.21,
+  "gap_ms": -832.7,
+  "gap_pct": -280.8,
+  "cpu_self_ms": 376.36,
+  "kernel_launches": 33223,
+  "cpu_ops": 64082,
+  "us_per_launch_gap": -25.1,
+  "device_by_component": {
+   "other": {
+    "ms": 787.48,
+    "launches": 12015
+   },
+   "copy/elew": {
+    "ms": 195.86,
+    "launches": 15446
+   },
+   "moe": {
+    "ms": 67.22,
+    "launches": 2663
+   },
+   "indexer": {
+    "ms": 29.27,
+    "launches": 597
+   },
+   "mhc": {
+    "ms": 14.71,
+    "launches": 276
+   },
+   "gate": {
+    "ms": 13.39,
+    "launches": 1144
+   },
+   "head_ce": {
+    "ms": 10.62,
+    "launches": 646
+   },
+   "norm": {
+    "ms": 5.63,
+    "launches": 363
+   },
+   "attention": {
+    "ms": 4.58,
+    "launches": 72
+   },
+   "optimizer": {
+    "ms": 0.45,
+    "launches": 1
+   }
+  },
+  "cpu_by_component_ms": {
+   "other": 294.66,
+   "copy/elew": 36.04,
+   "moe": 16.51,
+   "norm": 11.57,
+   "gate": 8.09,
+   "mhc": 5.57,
+   "attention": 1.95,
+   "indexer": 1.5,
+   "optimizer": 0.21,
+   "head_ce": 0.18
+  },
+  "sync_ops": {
+   "cudaLaunchKernel": {
+    "count": 11070,
+    "cpu_ms": 47.61
+   },
+   "aten::item": {
+    "count": 1,
+    "cpu_ms": 0.01
+   },
+   "aten::_local_scalar_dense": {
+    "count": 1,
+    "cpu_ms": 0.0
+   },
+   "cudaMemcpyAsync": {
+    "count": 705,
+    "cpu_ms": 5.88
+   },
+   "cudaStreamSynchronize": {
+    "count": 128,
+    "cpu_ms": 18.5
+   },
+   "cudaLaunchKernelExC": {
+    "count": 123,
+    "cpu_ms": 0.56
+   },
+   "cudaDeviceSynchronize": {
+    "count": 2,
+    "cpu_ms": 0.14
+   }
+  },
+  "top_cpu_ops": [
+   {
+    "name": "_BlockStateFn",
+    "count": 12,
+    "self_cpu_ms": 47.82
+   },
+   {
+    "name": "cudaLaunchKernel",
+    "count": 11070,
+    "self_cpu_ms": 47.61
+   },
+   {
+    "name": "_BlockStateFnBackward",
+    "count": 12,
+    "self_cpu_ms": 43.23
+   },
+   {
+    "name": "cudaStreamSynchronize",
+    "count": 128,
+    "self_cpu_ms": 18.5
+   },
+   {
+    "name": "aten::empty",
+    "count": 3282,
+    "self_cpu_ms": 9.54
+   },
+   {
+    "name": "aten::mm",
+    "count": 432,
+    "self_cpu_ms": 8.26
+   },
+   {
+    "name": "aten::copy_",
+    "count": 1911,
+    "self_cpu_ms": 7.73
+   },
+   {
+    "name": "aten::topk",
+    "count": 280,
+    "self_cpu_ms": 7.69
+   },
+   {
+    "name": "aten::add",
+    "count": 973,
+    "self_cpu_ms": 6.34
+   },
+   {
+    "name": "_RMSNormFn",
+    "count": 105,
+    "self_cpu_ms": 6.2
+   },
+   {
+    "name": "cudaMemcpyAsync",
+    "count": 705,
+    "self_cpu_ms": 5.88
+   },
+   {
+    "name": "aten::bmm",
+    "count": 248,
+    "self_cpu_ms": 5.7
+   },
+   {
+    "name": "aten::mul",
+    "count": 439,
+    "self_cpu_ms": 5.25
+   },
+   {
+    "name": "_RMSNormFnBackward",
+    "count": 51,
+    "self_cpu_ms": 4.97
+   },
+   {
+    "name": "aten::empty_strided",
+    "count": 1490,
+    "self_cpu_ms": 4.9
+   },
+   {
+    "name": "aten::view",
+    "count": 4112,
+    "self_cpu_ms": 4.6
+   }
+  ]
+ },
+ "mid_chunk_range": [
+  131072,
+  147456
+ ],
+ "triton_kernel_launch_us": 10.03,
+ "aten_pointwise_launch_us": 7.07
+}

@@ -1,0 +1,52 @@
+{
+  "schema": "nanov41-engram-graph-ab/1",
+  "created_utc": "2026-11-06T16:36:19Z",
+  "device": "NVIDIA GeForce RTX 5090",
+  "torch": "2.12.1+cu130",
+  "env": {
+    "head_fp8": "2",
+    "ckpt": "none",
+    "optimizer": "fused auto (off: mixed dtypes)"
+  },
+  "r69_full_step": {
+    "b": 16,
+    "seq": 1024,
+    "rounds": 3,
+    "baseline_ms": [
+      221.49,
+      221.94,
+      221.49
+    ],
+    "engram_ms": [
+      226.46,
+      226.87,
+      226.62
+    ],
+    "baseline_median_ms": 221.49,
+    "engram_median_ms": 226.62,
+    "overhead_pct": 2.32
+  },
+  "r68_chunked": {
+    "total": 65536,
+    "chunk": 16384,
+    "rounds": 3,
+    "baseline_ms": [
+      427.2,
+      427.8,
+      428.7
+    ],
+    "engram_ms": [
+      448.6,
+      448.3,
+      448.7
+    ],
+    "baseline_median_ms": 427.8,
+    "engram_median_ms": 448.6,
+    "overhead_pct": 4.86
+  },
+  "r68_parity": {
+    "weights_bitexact": true,
+    "losses_bitwise": true,
+    "source": "runs/g47_engram_chunk_65536_5090.json (2 steps eager vs graph)"
+  }
+}

@@ -1,0 +1,184 @@
+{
+ "ckpt": "/root/autodl-tmp/nanochat/runs/p1/p1_8b.pt",
+ "started": "2026-11-18T13:42:24Z",
+ "model": {
+  "params": 338129200,
+  "flops_per_token": 591716960.0,
+  "config": null
+ },
+ "generation": [
+  {
+   "tag": "story",
+   "mode": "greedy",
+   "prompt": "Once upon a time, in a small village by the sea, there lived a fisherman who",
+   "completion": " loved to fish and had a special bond with their loved ones. They would often gather around the campfire, sharing stories and laughter over the years.\n\nOne day, while exploring the nearby town of Loughborough, they stumbled upon a group of friendly people who loved sharing their love for fishing. They spent hours exploring the nearby river, learning about different fish species, and even learned about the"
+  },
+  {
+   "tag": "story",
+   "mode": "sample",
+   "prompt": "Once upon a time, in a small village by the sea, there lived a fisherman who",
+   "completion": " loved exploring the bustling city life in the nearby town of Lake District. They were curious about the incredible fish population living in the nearby lake as they often saw the ducks swimming in the river. They quickly caught fish, squid, and turtle ducks.\n\nOne day, they noticed something strange happening inside the lake. The duckling was eating the fish and they could see the fish"
+  },
+  {
+   "tag": "story2",
+   "mode": "greedy",
+   "prompt": "The old library was silent except for the sound of rain. She opened the book and",
+   "completion": " read the book. She was a great teacher and she was very patient with her. She was very patient and kind. She was very patient and kind. She was very patient and kind. She was very patient. She was very patient. She was very patient. She was very patient. She was patient. She was patient. She was patient. She was patient. She was patient. She was"
+  },
+  {
+   "tag": "story2",
+   "mode": "sample",
+   "prompt": "The old library was silent except for the sound of rain. She opened the book and",
+   "completion": " read the book, but later reordered the same issue. She also found out that you could have missed it if you want to see how it's going to turn.\nI had to give a warning. I'm really tired of hearing the noise (the kids have a lot of trouble with the sounds on the screen). The only real sound I hear is some kind of hum, but I don't"
+  },
+  {
+   "tag": "common_sense",
+   "mode": "greedy",
+   "prompt": "Q: If you put a glass of water in the freezer, what happens to the water?\nA:",
+   "completion": " The water in the glass will evaporate, and the water will evaporate. The water will evaporate, and the water will evaporate. The water will evaporate and the water will evaporate. The water will evaporate and the water will evaporate. The water will evaporate and the water will evaporate. The water will evapor"
+  },
+  {
+   "tag": "common_sense",
+   "mode": "sample",
+   "prompt": "Q: If you put a glass of water in the freezer, what happens to the water?\nA:",
+   "completion": " This depends on the amount of water vapor in the air around it. There are a number of different ways to do it. One way is to use a water filter. Another way is to add more water and put some in the filter.\nQ: How can I prevent my water from going through the filter?\n\nQuestion: Which of the following is NOT a suggested way to clean a water filter? A"
+  },
+  {
+   "tag": "common_sense2",
+   "mode": "greedy",
+   "prompt": "Q: Why do leaves fall from trees in autumn?\nA:",
+   "completion": " The leaves of a tree are called the leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called leaves. The leaves are called"
+  },
+  {
+   "tag": "common_sense2",
+   "mode": "sample",
+   "prompt": "Q: Why do leaves fall from trees in autumn?\nA:",
+   "completion": " Most trees and shrubs do not drop their leaves at all. \u2026 However, once a tree has died and is being removed, it will be unable to regrow any remaining leaves.\nQ: How do I winterize my tree?\nA: There are two ways to revive a dead tree. You can use a broom or a rake to spread it to new growth. You can also"
+  },
+  {
+   "tag": "math",
+   "mode": "greedy",
+   "prompt": "Q: What is 17 + 26?\nA: The answer is",
+   "completion": " 2.5 m long and 1.5 m long. 2. 3. 4. 5. 6. 7. 8. 9. 10. 11. 12. 12. 13. 14. 15. 16. 17. 18. 19. 20. 22. 22."
+  },
+  {
+   "tag": "math",
+   "mode": "sample",
+   "prompt": "Q: What is 17 + 26?\nA: The answer is",
+   "completion": " A, B, and C is B, C is C, D is C, AB is Q, C is Q, H is C, A, 1 is T, T is 65, C is C, D, and C is a constant of 2 and 3.\nQ5: What is the significance of the difference between the three formulas A, C, D, E"
+  },
+  {
+   "tag": "math2",
+   "mode": "greedy",
+   "prompt": "Q: A train travels 60 miles per hour for 3 hours. How far does it travel?\nA: The train travels",
+   "completion": " 3.5 hours. The train takes 3 hours to travel 3 hours. How long does it take to travel 3 hours? A: The train takes 3 hours to travel 3 hours. How long does it take to travel 3 hours? A: The train takes 3 hours to travel 3 hours. How long does it take to travel 3 hours? A"
+  },
+  {
+   "tag": "math2",
+   "mode": "sample",
+   "prompt": "Q: A train travels 60 miles per hour for 3 hours. How far does it travel?\nA: The train travels",
+   "completion": " in 30 minutes. The train takes 10 minutes, travels 15 miles in 10 minutes. How long will it take to walk 1 mile?\nA: 18 kilometers\nQ. What is the average speed of an average train?\nQ: What is the fastest train at 100 mph?\nAns: 2 hours\nQ: How long does it take to travel 50"
+  },
+  {
+   "tag": "code",
+   "mode": "greedy",
+   "prompt": "def fibonacci(n):\n    \"\"\"Return the n-th Fibonacci number.\"\"\"\n",
+   "completion": "    return Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci Fibonacci"
+  },
+  {
+   "tag": "code",
+   "mode": "sample",
+   "prompt": "def fibonacci(n):\n    \"\"\"Return the n-th Fibonacci number.\"\"\"\n",
+   "completion": "        # print(a)  # 1)   # \u8f93\u5165:  # 2) # 3\n    # 4)  # 5\n\ndef __init__(self, y):\n        #  # 4\n# 5# 6\n# 6  # 7# 8# 13# 7\n# 9  # 10"
+  },
+  {
+   "tag": "code2",
+   "mode": "greedy",
+   "prompt": "def is_palindrome(s):\n    \"\"\"Return True if s reads the same backwards.\"\"\"\n",
+   "completion": "    return None\n    return None\n    return None\n\n    return None\n\n    def __init__(self, value):\n        return None\n\n    def __init__(self, value, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,"
+  },
+  {
+   "tag": "code2",
+   "mode": "sample",
+   "prompt": "def is_palindrome(s):\n    \"\"\"Return True if s reads the same backwards.\"\"\"\n",
+   "completion": "        if n == 0:\n            return \"'\"\n\nif (n==0):\n        return False\n\n    elif len = True:\n        return False\n    \n    return False\n\ndef check_list(self, n):\n        while True:\n        return n"
+  },
+  {
+   "tag": "knowledge",
+   "mode": "greedy",
+   "prompt": "Q: What is the capital of France?\nA:",
+   "completion": " The capital of France is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France. It is the capital of France."
+  },
+  {
+   "tag": "knowledge",
+   "mode": "sample",
+   "prompt": "Q: What is the capital of France?\nA:",
+   "completion": " The capital of France is Paris. It is located in Paris."
+  },
+  {
+   "tag": "knowledge2",
+   "mode": "greedy",
+   "prompt": "Q: Which planet is known as the Red Planet?\nA:",
+   "completion": " The planet is the only planet in the solar system that is not visible to the naked eye.\n\nQuestion: What is the name of the planet that is the largest planet in our solar system? Answer: The Solar System.\n\nQuestion: What is the name of the planet that is the largest planet in our solar system? Answer: The Solar System.\n\nQuestion: What is the name of the planet that is"
+  },
+  {
+   "tag": "knowledge2",
+   "mode": "sample",
+   "prompt": "Q: Which planet is known as the Red Planet?\nA:",
+   "completion": " Red Planet\nQ: When was Earth first discovered?\nA: The KBO team discovered a second planet in our solar system, and it was a rocky world.\nQ: What is the name of the first planetary 2022?\nA: The first planet named after the first person to successfully complete the mission to the moon was the first person we saw on Earth. The second mission was"
+  }
+ ],
+ "benchmarks": {
+  "mmlu": {
+   "error": "TypeError(\"string indices must be integers, not 'str'\")"
+  },
+  "arc_easy": {
+   "error": "TypeError(\"string indices must be integers, not 'str'\")"
+  },
+  "hellaswag": {
+   "error": "TypeError(\"string indices must be integers, not 'str'\")"
+  },
+  "gsm8k": {
+   "error": "TypeError(\"string indices must be integers, not 'str'\")"
+  }
+ },
+ "generation_ema": [
+  {
+   "tag": "story",
+   "mode": "greedy",
+   "prompt": "Once upon a time, in a small village by the sea, there lived a fisherman who",
+   "completion": " loved to fish and had a special bond with the sea. They were always curious and loved exploring the ocean and its creatures, and they would always remember the importance of preserving our environment and ensuring their survival for future generations."
+  },
+  {
+   "tag": "story2",
+   "mode": "greedy",
+   "prompt": "The old library was silent except for the sound of rain. She opened the book and",
+   "completion": " read the book. She was a great teacher and she was very patient with her. She was very patient and kind. She was very patient and kind. She was very patient and kind. She was very patient. She was very patient. She was very patient. She was very patient. She was patient. She was patient. She was patient. She was patient. She was patient. She was"
+  },
+  {
+   "tag": "common_sense",
+   "mode": "greedy",
+   "prompt": "Q: If you put a glass of water in the freezer, what happens to the water?\nA:",
+   "completion": " The water in the glass will evaporate, and the water will evaporate. The water will evaporate, and the water will evaporate. The water will evaporate and the water will evaporate. The water will evaporate and the water will evaporate. The water will evaporate and evaporate. The water will evaporate and ev"
+  },
+  {
+   "tag": "common_sense2",
+   "mode": "greedy",
+   "prompt": "Q: Why do leaves fall from trees in autumn?\nA:",
+   "completion": " The leaves of a tree are called the leaves. The leaves are the main source of food for animals. The leaves are the main source of food for animals. The leaves are the main source of food for animals. The leaves are the main source of food for animals is the leaves. The leaves are the main source of food for animals. The leaves are the main source of food for animals is the"
+  },
+  {
+   "tag": "math",
+   "mode": "greedy",
+   "prompt": "Q: What is 17 + 26?\nA: The answer is",
+   "completion": " 1.5 m long and 1.5 m long. 2. 3. 4. 5. 6. 7. 8. 8. 9. 10. 11. 12. 12. 13. 14. 15. 17. 18. 19. 20. 22. 22."
+  },
+  {
+   "tag": "math2",
+   "mode": "greedy",
+   "prompt": "Q: A train travels 60 miles per hour for 3 hours. How far does it travel?\nA: The train travels",
+   "completion": " 3 hours 30 minutes. How long does it take to travel 3 hours to travel 3 hours?\nA: The average time it takes to travel 3 hours is 3 hours 3 hours. The average time it takes to travel 3 hours is 3 hours. The average time it takes to travel 3 hours is 3 hours. The average time it takes to travel"
+  }
+ ],
+ "finished": "2026-11-18T13:47:00Z"
+}

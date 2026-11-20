@@ -1,0 +1,359 @@
+{
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "triton": "3.7.1",
+ "env": {
+  "NANOV41_MOE_STACKED": "1",
+  "NANOV41_MOE_TB": "1",
+  "NANOV41_MOE_FUSED_TAIL": "1",
+  "NANOV41_MOE_NOPAD": "1",
+  "NANOV41_MOE_FUSED_DWS": "1",
+  "NANOV41_HEAD_FP8": "2",
+  "NANOV41_IDX_FUSED": "0",
+  "NANOV41_IDX_NOGRAD": "1",
+  "NANOV41_ROPE_ATTN": "1",
+  "NANOV41_ATTN_V2": "1",
+  "NANOV41_MHC_V3": "1",
+  "NANOV41_RMS_FUSED": "1",
+  "NANOV41_SWIGLU_FUSED": "1",
+  "NANOV41_WOA_FUSED": "1"
+ },
+ "mode": "moe",
+ "tokens": 16384,
+ "layers": 12,
+ "dim": 384,
+ "tile_env": {
+  "NANOV41_MOE_TILE": "",
+  "NANOV41_MOE_DW_TILE": "",
+  "NANOV41_MOE_DW_V2": "",
+  "NANOV41_MOE_FUSED_DX": "",
+  "NANOV41_MOE_FP8": ""
+ },
+ "per_layer_ms": 3.917,
+ "wall": {
+  "median_ms": 47.01,
+  "min_ms": 41.5,
+  "max_ms": 63.55,
+  "all_ms": [
+   41.5,
+   45.81,
+   43.66,
+   44.39,
+   47.16,
+   47.01,
+   49.26,
+   63.55,
+   49.17
+  ]
+ },
+ "kernel_total_ms": 17.08,
+ "num_kernels": 69,
+ "top_kernels": [
+  {
+   "name": "_dw13_nopad_kernel",
+   "ms": 2.054,
+   "calls": 12,
+   "pct": 12.03
+  },
+  {
+   "name": "_swiglu_fwd_nopad_kernel",
+   "ms": 1.631,
+   "calls": 12,
+   "pct": 9.55
+  },
+  {
+   "name": "_aggemm_tb_kernel",
+   "ms": 1.496,
+   "calls": 24,
+   "pct": 8.76
+  },
+  {
+   "name": "_swiglu_bwd_tb_kernel",
+   "ms": 1.152,
+   "calls": 12,
+   "pct": 6.74
+  },
+  {
+   "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x64_32x6_tn_align8>(cutlass_80_tensorop_",
+   "ms": 1.034,
+   "calls": 36,
+   "pct": 6.05
+  },
+  {
+   "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x64_32x6_nn_align8>(cutlass_80_tensorop_",
+   "ms": 1.011,
+   "calls": 36,
+   "pct": 5.92
+  },
+  {
+   "name": "_dw_kernel",
+   "ms": 0.983,
+   "calls": 12,
+   "pct": 5.75
+  },
+  {
+   "name": "void cutlass::Kernel2<cutlass_80_tensorop_bf16_s16816gemm_relu_bf16_64x128_64x3_nt_align8>(cutlass_80_tensorop",
+   "ms": 0.905,
+   "calls": 36,
+   "pct": 5.3
+  },
+  {
+   "name": "_aggemm_kernel",
+   "ms": 0.755,
+   "calls": 12,
+   "pct": 4.42
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<4, at::native::CUDAFunctor_add<c10::BFloat16>, std::array<char*",
+   "ms": 0.626,
+   "calls": 71,
+   "pct": 3.67
+  },
+  {
+   "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{la",
+   "ms": 0.493,
+   "calls": 36,
+   "pct": 2.89
+  },
+  {
+   "name": "_moe_dws_kernel",
+   "ms": 0.46,
+   "calls": 12,
+   "pct": 2.69
+  },
+  {
+   "name": "void at_cuda_detail::cub::detail::radix_sort::DeviceRadixSortOnesweepKernel<at_cuda_detail::cub::detail::radix",
+   "ms": 0.446,
+   "calls": 96,
+   "pct": 2.61
+  },
+  {
+   "name": "void cutlass::Kernel2<cutlass_80_simt_sgemm_64x64_8x5_tn_align1>(cutlass_80_simt_sgemm_64x64_8x5_tn_align1::Pa",
+   "ms": 0.345,
+   "calls": 12,
+   "pct": 2.02
+  },
+  {
+   "name": "void at::native::sbtopk::gatherTopK<float, unsigned int, 2, false>(at::cuda::detail::TensorInfo<float const, u",
+   "ms": 0.257,
+   "calls": 12,
+   "pct": 1.51
+  },
+  {
+   "name": "void cutlass::Kernel2<cutlass_80_simt_sgemm_128x32_8x5_nt_align1>(cutlass_80_simt_sgemm_128x32_8x5_nt_align1::",
+   "ms": 0.238,
+   "calls": 12,
+   "pct": 1.39
+  },
+  {
+   "name": "_swiglu_bwd_kernel",
+   "ms": 0.216,
+   "calls": 12,
+   "pct": 1.27
+  },
+  {
+   "name": "_moe_tail_fwd_kernel",
+   "ms": 0.177,
+   "calls": 24,
+   "pct": 1.04
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<4, at::native::AUnaryFunctor<float, float, float, at::native::b",
+   "ms": 0.16,
+   "calls": 48,
+   "pct": 0.94
+  },
+  {
+   "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::AUnaryFunctor<float",
+   "ms": 0.152,
+   "calls": 12,
+   "pct": 0.89
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<4, at::native::bfloat16_copy_kernel_cuda(at::TensorIteratorBase",
+   "ms": 0.15,
+   "calls": 36,
+   "pct": 0.88
+  },
+  {
+   "name": "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<a",
+   "ms": 0.144,
+   "calls": 48,
+   "pct": 0.84
+  },
+  {
+   "name": "_moe_tail_bwd_kernel",
+   "ms": 0.143,
+   "calls": 12,
+   "pct": 0.84
+  },
+  {
+   "name": "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_kernel_impl<a",
+   "ms": 0.139,
+   "calls": 24,
+   "pct": 0.81
+  },
+  {
+   "name": "void at::native::reduce_kernel<512, 1, at::native::ReduceOp<float, at::native::func_wrapper_t<float, at::nativ",
+   "ms": 0.133,
+   "calls": 36,
+   "pct": 0.78
+  },
+  {
+   "name": "void cutlass::Kernel2<cutlass_80_simt_sgemm_128x64_8x5_nn_align1>(cutlass_80_simt_sgemm_128x64_8x5_nn_align1::",
+   "ms": 0.13,
+   "calls": 12,
+   "pct": 0.76
+  },
+  {
+   "name": "void at::native::bitonicSortKVInPlace<2, -1, 16, 16, float, long, at::native::GTOp<float, true>, unsigned int>",
+   "ms": 0.118,
+   "calls": 12,
+   "pct": 0.69
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<4, at::native::FillFunctor<c10::BFloat16>, std::array<char*, 1u",
+   "ms": 0.097,
+   "calls": 12,
+   "pct": 0.57
+  },
+  {
+   "name": "Memset (Device)",
+   "ms": 0.091,
+   "calls": 132,
+   "pct": 0.53
+  },
+  {
+   "name": "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_im",
+   "ms": 0.09,
+   "calls": 24,
+   "pct": 0.52
+  },
+  {
+   "name": "void at::native::indexFuncLargeIndex<long, long, unsigned int, 1, 1, -2, true, 4, at::native::(anonymous names",
+   "ms": 0.088,
+   "calls": 12,
+   "pct": 0.51
+  },
+  {
+   "name": "_swiglu_fwd_kernel",
+   "ms": 0.083,
+   "calls": 12,
+   "pct": 0.49
+  },
+  {
+   "name": "void at::native::_scatter_gather_elementwise_kernel<128, 8, at::native::_cuda_scatter_gather_internal_kernel<t",
+   "ms": 0.072,
+   "calls": 12,
+   "pct": 0.42
+  },
+  {
+   "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::BinaryFunctor<float",
+   "ms": 0.067,
+   "calls": 48,
+   "pct": 0.39
+  },
+  {
+   "name": "void cublasLt::splitKreduce_kernel<32, 16, int, __nv_bfloat16, __nv_bfloat16, float, __nv_bfloat16, false, __n",
+   "ms": 0.059,
+   "calls": 36,
+   "pct": 0.35
+  },
+  {
+   "name": "void at::native::index_elementwise_kernel<128, 4, at::native::gpu_index_kernel<at::native::index_put_kernel_im",
+   "ms": 0.058,
+   "calls": 12,
+   "pct": 0.34
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<2, at::native::FillFunctor<long>, std::array<char*, 1ul> >(int,",
+   "ms": 0.056,
+   "calls": 72,
+   "pct": 0.33
+  },
+  {
+   "name": "void at::native::unrolled_elementwise_kernel<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase&)::{la",
+   "ms": 0.052,
+   "calls": 48,
+   "pct": 0.31
+  },
+  {
+   "name": "void at::native::_scatter_gather_elementwise_kernel<128, 8, at::native::_cuda_scatter_gather_internal_kernel<f",
+   "ms": 0.05,
+   "calls": 12,
+   "pct": 0.3
+  },
+  {
+   "name": "void at::native::elementwise_kernel<128, 4, at::native::gpu_kernel_impl_nocast<at::native::(anonymous namespac",
+   "ms": 0.045,
+   "calls": 12,
+   "pct": 0.26
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<4, at::native::(anonymous namespace)::softplus_backward_kernel(",
+   "ms": 0.041,
+   "calls": 12,
+   "pct": 0.24
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<2, at::native::BUnaryFunctor<long, long, long, at::native::bina",
+   "ms": 0.037,
+   "calls": 24,
+   "pct": 0.22
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctorOnSelf_add<long>, std::array<char*, 2",
+   "ms": 0.036,
+   "calls": 36,
+   "pct": 0.21
+  },
+  {
+   "name": "void at::native::elementwise_kernel<128, 2, at::native::gpu_kernel_impl_nocast<at::native::CUDAFunctor_add<flo",
+   "ms": 0.035,
+   "calls": 24,
+   "pct": 0.21
+  },
+  {
+   "name": "void cublasLt::splitKreduce_kernel<32, 16, int, float, float, float, float, false, float, float, float, true, ",
+   "ms": 0.035,
+   "calls": 12,
+   "pct": 0.2
+  },
+  {
+   "name": "void at::native::(anonymous namespace)::CatArrayBatchedCopy_alignedK_contig<at::native::(anonymous namespace):",
+   "ms": 0.034,
+   "calls": 36,
+   "pct": 0.2
+  },
+  {
+   "name": "void at_cuda_detail::cub::detail::radix_sort::DeviceRadixSortHistogramKernel<at_cuda_detail::cub::detail::radi",
+   "ms": 0.031,
+   "calls": 12,
+   "pct": 0.18
+  },
+  {
+   "name": "void at_cuda_detail::cub::detail::scan::DeviceScanKernel<at_cuda_detail::cub::detail::scan::policy_hub<long, l",
+   "ms": 0.029,
+   "calls": 24,
+   "pct": 0.17
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<4, at::native::BinaryFunctor<float, float, float, at::native::b",
+   "ms": 0.026,
+   "calls": 12,
+   "pct": 0.15
+  },
+  {
+   "name": "void at::native::vectorized_elementwise_kernel<2, at::native::CUDAFunctor_add<long>, std::array<char*, 3ul> >(",
+   "ms": 0.026,
+   "calls": 24,
+   "pct": 0.15
+  }
+ ],
+ "groups_ms": {
+  "other": 9.16,
+  "moe_related": 7.93
+ },
+ "kernel_ms_per_layer": 1.423,
+ "gap_ms": 29.93
+}

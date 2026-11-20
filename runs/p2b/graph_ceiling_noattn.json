@@ -1,0 +1,22 @@
+{
+  "schema": "nanov41-graph-ceiling/1",
+  "date": "2026-11-08",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "ctx": 512,
+  "attn": false,
+  "patches": {
+    "engram": 2,
+    "moe": 12,
+    "mhc": 4,
+    "attn": 0
+  },
+  "eager_ms_per_step": 76.842,
+  "eager_tps": 13.0,
+  "graph_ok": true,
+  "graph_ms_per_step": 3.215,
+  "graph_tps": 311.0,
+  "graph_speedup_vs_eager": 23.9,
+  "graph_error": null,
+  "note": "timing-only: the graph is captured at a fixed start_pos, so position-dependent Python control flow is frozen; a real decode runtime needs tensor-driven position/scalar tables before this can be used for generation"
+}

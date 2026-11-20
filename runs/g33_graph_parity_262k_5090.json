@@ -1,0 +1,77 @@
+{
+ "total": 262144,
+ "chunk": 16384,
+ "n_chunks": 16,
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "eager_determinism": {
+  "max_rel": 0.12908874,
+  "n_params": 284,
+  "n_bitexact": 22,
+  "worst": [
+   {
+    "name": "inner.layers.1.hc_attn_scale",
+    "rel": 0.12908874
+   },
+   {
+    "name": "inner.layers.3.hc_attn_scale",
+    "rel": 0.0489588
+   },
+   {
+    "name": "inner.layers.2.hc_attn_base",
+    "rel": 0.04637728
+   },
+   {
+    "name": "inner.layers.3.hc_attn_base",
+    "rel": 0.03837363
+   },
+   {
+    "name": "inner.layers.8.hc_attn_base",
+    "rel": 0.03396264
+   }
+  ]
+ },
+ "eager_loss_max_abs_diff": 0.0,
+ "eager_ms": [
+  3591.3,
+  3578.7,
+  3588.4
+ ],
+ "eager_median_ms": 3588.4,
+ "capture_s": 10.9,
+ "peak_mem_after_capture_gib": 12.45,
+ "graph_ms": [
+  3240.6,
+  3241.5,
+  3242.3
+ ],
+ "graph_median_ms": 3241.5,
+ "delta_pct": -9.67,
+ "graph_vs_eager": {
+  "max_rel": 0.15014848,
+  "n_params": 284,
+  "n_bitexact": 22,
+  "worst": [
+   {
+    "name": "inner.layers.1.hc_attn_scale",
+    "rel": 0.15014848
+   },
+   {
+    "name": "inner.layers.2.hc_attn_base",
+    "rel": 0.07786602
+   },
+   {
+    "name": "inner.layers.4.hc_attn_base",
+    "rel": 0.04331911
+   },
+   {
+    "name": "inner.layers.0.hc_attn_base",
+    "rel": 0.036497
+   },
+   {
+    "name": "inner.layers.4.hc_ffn_scale",
+    "rel": 0.03437122
+   }
+  ]
+ }
+}

@@ -1,0 +1,129 @@
+{
+ "device": "cuda",
+ "cfg": "tiny",
+ "total": 65536,
+ "chunk": 16384,
+ "passes": 2,
+ "ckpt": "state",
+ "n_chunks": 4,
+ "torch": "2.12.1+cu130",
+ "dtype": "float32",
+ "determinism": [
+  {
+   "passes": [
+    0,
+    1
+   ],
+   "loss_bitexact": true,
+   "loss_max_abs_diff": 0.0,
+   "n_params": 284,
+   "n_bitexact": 22,
+   "max_rel": 0.17729506,
+   "max_abs": 3.4332275390625e-05,
+   "diff_by_subsystem": {
+    "hc": 66,
+    "attn": 95,
+    "norm": 23,
+    "embed_head": 1,
+    "expert": 66,
+    "other": 11
+   },
+   "worst": [
+    {
+     "name": "inner.layers.9.hc_attn_scale",
+     "rel": 0.17729506,
+     "abs": 1.402213456458412e-07
+    },
+    {
+     "name": "inner.layers.5.hc_attn_base",
+     "rel": 0.16622652,
+     "abs": 2.800419451887137e-07
+    },
+    {
+     "name": "inner.layers.0.hc_ffn_base",
+     "rel": 0.10870282,
+     "abs": 5.031997716287151e-06
+    },
+    {
+     "name": "inner.layers.4.hc_ffn_base",
+     "rel": 0.09880279,
+     "abs": 3.759696483029984e-07
+    },
+    {
+     "name": "inner.layers.2.hc_attn_base",
+     "rel": 0.09232606,
+     "abs": 5.336914910003543e-07
+    },
+    {
+     "name": "inner.layers.9.hc_attn_base",
+     "rel": 0.06389701,
+     "abs": 9.358694796901545e-08
+    }
+   ]
+  }
+ ],
+ "losses": [
+  [
+   2.962249517440796,
+   2.9618122577667236,
+   2.9614264965057373,
+   2.961881637573242
+  ],
+  [
+   2.962249517440796,
+   2.9618122577667236,
+   2.9614264965057373,
+   2.961881637573242
+  ]
+ ],
+ "per_chunk": [
+  {
+   "chunk": 0,
+   "start_pos": 0,
+   "grad_pass01": {
+    "n_bitexact": 284,
+    "max_abs": 0.0,
+    "max_rel": 0.0
+   },
+   "hgrad_bitexact": true,
+   "hgrad_max_abs": 0.0,
+   "hgrad_absmax": 1.7508864402770996e-06
+  },
+  {
+   "chunk": 1,
+   "start_pos": 16384,
+   "grad_pass01": {
+    "n_bitexact": 22,
+    "max_abs": 3.24249267578125e-05,
+    "max_rel": 0.23728128
+   },
+   "hgrad_bitexact": true,
+   "hgrad_max_abs": 0.0,
+   "hgrad_absmax": 1.7434358596801758e-06
+  },
+  {
+   "chunk": 2,
+   "start_pos": 32768,
+   "grad_pass01": {
+    "n_bitexact": 22,
+    "max_abs": 3.814697265625e-05,
+    "max_rel": 0.20342001
+   },
+   "hgrad_bitexact": true,
+   "hgrad_max_abs": 0.0,
+   "hgrad_absmax": 1.6242265701293945e-06
+  },
+  {
+   "chunk": 3,
+   "start_pos": 49152,
+   "grad_pass01": {
+    "n_bitexact": 22,
+    "max_abs": 3.4332275390625e-05,
+    "max_rel": 0.17729506
+   },
+   "hgrad_bitexact": true,
+   "hgrad_max_abs": 0.0,
+   "hgrad_absmax": 1.7136335372924805e-06
+  }
+ ]
+}

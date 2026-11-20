@@ -1,0 +1,124 @@
+{
+ "arm": "smoke_5090_b1a256",
+ "out": "/root/nanov41/runs/r93/p0b/smoke_5090_b1a256",
+ "config": "d12_aligned",
+ "engram": "d12_aligned",
+ "optimizer": "v41",
+ "resume": false,
+ "start_step": 0,
+ "steps_total": 9,
+ "tokens_per_step": 2097152,
+ "log_every": 1,
+ "env": {
+  "NANOV41_HEAD_FP8": "v2",
+  "NANOV41_CE_CHUNK": "8192",
+  "NANOV41_ATTN_V2": "0",
+  "FAST_ATTN_TL": "1",
+  "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+ },
+ "points": [
+  {
+   "step": 1,
+   "loss": 10.834836,
+   "lr": 9.666666666666665e-05,
+   "tok_s": 43567.8,
+   "mfu_pct": 35.933,
+   "gn": 0.75788,
+   "imb": null,
+   "elapsed_s": 48.14
+  },
+  {
+   "step": 2,
+   "loss": 10.820359,
+   "lr": 0.0001933333333333333,
+   "tok_s": 44098.4,
+   "mfu_pct": 36.37,
+   "gn": 0.754158,
+   "imb": null,
+   "elapsed_s": 95.11
+  },
+  {
+   "step": 3,
+   "loss": 10.774155,
+   "lr": 0.00029,
+   "tok_s": 44268.0,
+   "mfu_pct": 36.51,
+   "gn": 0.751749,
+   "imb": null,
+   "elapsed_s": 142.12
+  },
+  {
+   "step": 4,
+   "loss": 10.689582,
+   "lr": 0.0003866666666666666,
+   "tok_s": 44349.4,
+   "mfu_pct": 36.577,
+   "gn": 0.841657,
+   "imb": null,
+   "elapsed_s": 189.15
+  },
+  {
+   "step": 5,
+   "loss": 10.553447,
+   "lr": 0.0004833333333333333,
+   "tok_s": 44397.2,
+   "mfu_pct": 36.617,
+   "gn": 1.064957,
+   "imb": null,
+   "elapsed_s": 236.18
+  },
+  {
+   "step": 6,
+   "loss": 10.346414,
+   "lr": 0.00058,
+   "tok_s": 44428.8,
+   "mfu_pct": 36.643,
+   "gn": 1.476861,
+   "imb": null,
+   "elapsed_s": 283.22
+  },
+  {
+   "step": 7,
+   "loss": 10.029543,
+   "lr": 0.0006766666666666667,
+   "tok_s": 44449.9,
+   "mfu_pct": 36.66,
+   "gn": 1.97504,
+   "imb": null,
+   "elapsed_s": 330.26
+  },
+  {
+   "step": 8,
+   "loss": 9.622021,
+   "lr": 0.0007733333333333332,
+   "tok_s": 44462.6,
+   "mfu_pct": 36.671,
+   "gn": 2.218748,
+   "imb": null,
+   "elapsed_s": 377.33
+  },
+  {
+   "step": 9,
+   "loss": 9.254267,
+   "lr": 0.0008699999999999999,
+   "tok_s": 44467.4,
+   "mfu_pct": 36.675,
+   "gn": 1.998791,
+   "imb": null,
+   "elapsed_s": 424.45
+  }
+ ],
+ "gate_load_summary": {},
+ "summary": {
+  "steps": 9,
+  "tokens": 18874368,
+  "train_seconds": 424.5,
+  "tokens_per_sec": 44465.4,
+  "avg_logged_loss": 10.32495805952284,
+  "raw_bf16_mfu": 0.3667303788531851,
+  "peak_lr": 0.0029,
+  "last_loss": 9.254267,
+  "last_gn": 1.998791,
+  "last_imb": null
+ }
+}

@@ -1,0 +1,17 @@
+{
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "note": "gradients truncated at chunk boundaries (cross-chunk KV cache is detached)",
+ "results": {
+  "total_tokens": 262144,
+  "chunk": 16384,
+  "num_chunks": 16,
+  "step_ms": 2021.6,
+  "tokens_per_s": 129675,
+  "peak_mem_gib": 2.29,
+  "graph": true,
+  "capture_s": 11.0,
+  "capture_peak_mem_gib": 10.1,
+  "context": "chunked CUDA graphs: fwd+loss+bwd per chunk captured, optimizer/logging outside; weights updated in place"
+ }
+}

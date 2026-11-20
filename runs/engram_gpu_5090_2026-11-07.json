@@ -1,0 +1,55 @@
+{
+  "baseline_ms": 431.43,
+  "batch": 8,
+  "config": "d12",
+  "created_utc": "2026-11-06T16:12:30Z",
+  "engram_ms": 435.39,
+  "engram_overhead_pct": 0.92,
+  "engram_sparse_ms": 430.58,
+  "engram_sparse_overhead_pct": -0.2,
+  "engram_table_params": 128016192,
+  "engram_tables": [
+    [
+      2000136,
+      32
+    ],
+    [
+      2000370,
+      32
+    ]
+  ],
+  "engram_tracked_rows": [
+    32495,
+    32493
+  ],
+  "gpu": "NVIDIA GeForce RTX 5090",
+  "iters": 5,
+  "path": "eager (fused head CE); CUDA-graph capture blocked by MoE router CPU sync",
+  "peak_mem_gib": 20.26,
+  "samples_ms": {
+    "baseline": [
+      437.7,
+      420.22,
+      431.43,
+      437.35,
+      426.83
+    ],
+    "engram": [
+      430.78,
+      446.03,
+      436.36,
+      435.39,
+      427.05
+    ],
+    "engram_sparse": [
+      427.71,
+      451.12,
+      434.31,
+      430.58,
+      421.62
+    ]
+  },
+  "schema": "nanov41-engram-gpu-bench/1",
+  "seq": 1024,
+  "torch": "2.12.1+cu130"
+}

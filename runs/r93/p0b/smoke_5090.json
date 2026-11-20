@@ -1,0 +1,11 @@
+{
+ "title": "R93 P0b smoke probe",
+ "utc": "2026-11-15T05:00:57Z",
+ "profile": "5090",
+ "batch": 1,
+ "grad_accum": 256,
+ "rc": 0,
+ "tok_s_steady": 44460.0,
+ "raw_mfu_pct": 36.67,
+ "peak_reserved_gib": 27.777
+}

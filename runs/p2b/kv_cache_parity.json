@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-07",
+  "ckpt": "P2b/E-default_s1235.pt (0.6B-token A/B run)",
+  "tokenizer": "DeepSeek-V4.1-Flash (129280)",
+  "test": "greedy 12 new tokens; official incremental path (nanov41/generate.py:generate_kv) vs full-prefix recompute (generate_no_cache); CPU float32, batch 1",
+  "prompts_and_results": [
+    {
+      "prompt": "The capital of France is",
+      "identical": true,
+      "kv_tok_s": 2.5,
+      "nocache_tok_s": 12.4,
+      "continuation": " a part of the world's economy. The country is a"
+    },
+    {
+      "prompt": "def fibonacci(n): keep",
+      "identical": true,
+      "kv_tok_s": 9.2,
+      "nocache_tok_s": 9.2,
+      "continuation": " n\\n\\ndef _get_ops():\\n    return _get"
+    },
+    {
+      "prompt": "\u4eba\u5de5\u667a\u80fd\u7684\u672a\u6765\u662f",
+      "identical": true,
+      "kv_tok_s": 3.0,
+      "nocache_tok_s": 8.8,
+      "continuation": "D: 0.0.0.0.0"
+    }
+  ],
+  "conclusion": "incremental KV-cache decode is bit-identical to full-prefix greedy decode; the official reference caches are correct. CPU speed is not representative (Python/CPU overhead; GPU should be much faster). Model weights load and produce finite distributions; continuation quality after 0.6B tokens is still weak/repetitive."
+}

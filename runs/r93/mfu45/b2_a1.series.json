@@ -1,0 +1,64 @@
+{
+ "arm": "b2_a1",
+ "out": "/root/nanov41/runs/r93/mfu45/b2_a1",
+ "config": "d12_aligned",
+ "engram": "d12_aligned",
+ "optimizer": "v41",
+ "resume": false,
+ "start_step": 0,
+ "steps_total": 3,
+ "tokens_per_step": 2097152,
+ "log_every": 1,
+ "env": {
+  "NANOV41_HEAD_FP8": "v2",
+  "NANOV41_CE_CHUNK": "8192",
+  "NANOV41_ATTN_V2": "0",
+  "FAST_ATTN_TL": "1",
+  "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+ },
+ "points": [
+  {
+   "step": 1,
+   "loss": 10.836849,
+   "lr": 0.0029,
+   "tok_s": 65195.0,
+   "mfu_pct": 53.77,
+   "gn": 0.757858,
+   "imb": null,
+   "elapsed_s": 32.17
+  },
+  {
+   "step": 2,
+   "loss": 10.194881,
+   "lr": 0.0029,
+   "tok_s": 65220.9,
+   "mfu_pct": 53.791,
+   "gn": 1.770734,
+   "imb": null,
+   "elapsed_s": 64.31
+  },
+  {
+   "step": 3,
+   "loss": 9.124929,
+   "lr": 0.0029,
+   "tok_s": 65194.8,
+   "mfu_pct": 53.77,
+   "gn": 3.623488,
+   "imb": null,
+   "elapsed_s": 96.5
+  }
+ ],
+ "gate_load_summary": {},
+ "summary": {
+  "steps": 3,
+  "tokens": 6291456,
+  "train_seconds": 96.5,
+  "tokens_per_sec": 65181.1,
+  "avg_logged_loss": 10.052220026652018,
+  "raw_bf16_mfu": 0.5375842257719857,
+  "peak_lr": 0.0029,
+  "last_loss": 9.124929,
+  "last_gn": 3.623488,
+  "last_imb": null
+ }
+}

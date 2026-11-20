@@ -1,0 +1,234 @@
+{
+ "arm": "fast_z2",
+ "out": "/root/nanov41/runs/r93/hp/zl2/fast_z2",
+ "config": "d12_aligned",
+ "engram": "d12_aligned",
+ "optimizer": "v41",
+ "resume": false,
+ "start_step": 0,
+ "steps_total": 20,
+ "tokens_per_step": 2097152,
+ "log_every": 1,
+ "env": {
+  "NANOV41_HEAD_FP8": "v2",
+  "NANOV41_CE_CHUNK": "8192",
+  "NANOV41_ATTN_V2": "0",
+  "FAST_ATTN_TL": "1",
+  "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True"
+ },
+ "points": [
+  {
+   "step": 1,
+   "loss": 10.847188,
+   "lr": 0.000325403125,
+   "tok_s": 62606.9,
+   "mfu_pct": 51.635,
+   "gn": 0.760603,
+   "imb": null,
+   "elapsed_s": 33.5
+  },
+  {
+   "step": 2,
+   "loss": 10.763363,
+   "lr": 0.00065080625,
+   "tok_s": 62638.6,
+   "mfu_pct": 51.662,
+   "gn": 0.74985,
+   "imb": null,
+   "elapsed_s": 66.96
+  },
+  {
+   "step": 3,
+   "loss": 10.558052,
+   "lr": 0.0009762093749999999,
+   "tok_s": 62622.3,
+   "mfu_pct": 51.648,
+   "gn": 1.051572,
+   "imb": null,
+   "elapsed_s": 100.47
+  },
+  {
+   "step": 4,
+   "loss": 10.109591,
+   "lr": 0.0013016125,
+   "tok_s": 62615.7,
+   "mfu_pct": 51.643,
+   "gn": 1.84343,
+   "imb": null,
+   "elapsed_s": 133.97
+  },
+  {
+   "step": 5,
+   "loss": 9.404006,
+   "lr": 0.001627015625,
+   "tok_s": 62612.3,
+   "mfu_pct": 51.64,
+   "gn": 2.100973,
+   "imb": null,
+   "elapsed_s": 167.47
+  },
+  {
+   "step": 6,
+   "loss": 8.846037,
+   "lr": 0.0019524187499999999,
+   "tok_s": 62610.5,
+   "mfu_pct": 51.638,
+   "gn": 2.319832,
+   "imb": null,
+   "elapsed_s": 200.97
+  },
+  {
+   "step": 7,
+   "loss": 8.627584,
+   "lr": 0.0022778218749999997,
+   "tok_s": 62615.1,
+   "mfu_pct": 51.642,
+   "gn": 8.185666,
+   "imb": null,
+   "elapsed_s": 234.45
+  },
+  {
+   "step": 8,
+   "loss": 8.338167,
+   "lr": 0.002603225,
+   "tok_s": 62624.5,
+   "mfu_pct": 51.65,
+   "gn": 3.234581,
+   "imb": null,
+   "elapsed_s": 267.9
+  },
+  {
+   "step": 9,
+   "loss": 7.993585,
+   "lr": 0.002603225,
+   "tok_s": 62631.0,
+   "mfu_pct": 51.655,
+   "gn": 2.595192,
+   "imb": null,
+   "elapsed_s": 301.36
+  },
+  {
+   "step": 10,
+   "loss": 7.784687,
+   "lr": 0.002603225,
+   "tok_s": 62640.9,
+   "mfu_pct": 51.663,
+   "gn": 2.223047,
+   "imb": null,
+   "elapsed_s": 334.79
+  },
+  {
+   "step": 11,
+   "loss": 7.730587,
+   "lr": 0.002603225,
+   "tok_s": 62648.6,
+   "mfu_pct": 51.67,
+   "gn": 3.285098,
+   "imb": null,
+   "elapsed_s": 368.22
+  },
+  {
+   "step": 12,
+   "loss": 7.691422,
+   "lr": 0.002603225,
+   "tok_s": 62657.0,
+   "mfu_pct": 51.677,
+   "gn": 3.310401,
+   "imb": null,
+   "elapsed_s": 401.64
+  },
+  {
+   "step": 13,
+   "loss": 7.649558,
+   "lr": 0.002603225,
+   "tok_s": 62660.5,
+   "mfu_pct": 51.68,
+   "gn": 2.201388,
+   "imb": null,
+   "elapsed_s": 435.09
+  },
+  {
+   "step": 14,
+   "loss": 7.620182,
+   "lr": 0.002603225,
+   "tok_s": 62662.7,
+   "mfu_pct": 51.681,
+   "gn": 4.185452,
+   "imb": null,
+   "elapsed_s": 468.54
+  },
+  {
+   "step": 15,
+   "loss": 7.627131,
+   "lr": 0.002603225,
+   "tok_s": 62659.1,
+   "mfu_pct": 51.678,
+   "gn": 3.61899,
+   "imb": null,
+   "elapsed_s": 502.04
+  },
+  {
+   "step": 16,
+   "loss": 7.536751,
+   "lr": 0.002603225,
+   "tok_s": 62657.7,
+   "mfu_pct": 51.677,
+   "gn": 3.8834,
+   "imb": null,
+   "elapsed_s": 535.52
+  },
+  {
+   "step": 17,
+   "loss": 7.476368,
+   "lr": 0.002603225,
+   "tok_s": 62654.2,
+   "mfu_pct": 51.674,
+   "gn": 2.877052,
+   "imb": null,
+   "elapsed_s": 569.02
+  },
+  {
+   "step": 18,
+   "loss": 7.432585,
+   "lr": 0.002603225,
+   "tok_s": 62653.1,
+   "mfu_pct": 51.673,
+   "gn": 2.04105,
+   "imb": null,
+   "elapsed_s": 602.5
+  },
+  {
+   "step": 19,
+   "loss": 7.295342,
+   "lr": 0.002603225,
+   "tok_s": 62652.2,
+   "mfu_pct": 51.673,
+   "gn": 2.437347,
+   "imb": null,
+   "elapsed_s": 635.99
+  },
+  {
+   "step": 20,
+   "loss": 7.352473,
+   "lr": 0.00143177375,
+   "tok_s": 62650.0,
+   "mfu_pct": 51.671,
+   "gn": 6.593303,
+   "imb": null,
+   "elapsed_s": 669.48
+  }
+ ],
+ "gate_load_summary": {},
+ "summary": {
+  "steps": 20,
+  "tokens": 41943040,
+  "train_seconds": 669.5,
+  "tokens_per_sec": 62644.9,
+  "avg_logged_loss": 8.43423297405243,
+  "raw_bf16_mfu": 0.5166665716983292,
+  "peak_lr": 0.002603225,
+  "last_loss": 7.352473,
+  "last_gn": 6.593303,
+  "last_imb": null
+ }
+}

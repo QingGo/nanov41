@@ -1,0 +1,358 @@
+{
+ "title": "R69: MFU push on RTX 5090 - component A/B, kernel census, optimizer amortization",
+ "date": "2026-11-05",
+ "device": "NVIDIA GeForce RTX 5090 (sm_120)",
+ "torch": "2.12.1+cu130 | tilelang 0.1.15 | triton 3.7.1",
+ "shape": "d12 bf16, b=16 x seq=1024, graph replay + optimizer outside the graph",
+ "protocol": "same-session interleaved A/B (one process per env config, rounds alternate, medians). 3-step eager-vs-graph parameter parity 0.0 in every accepted run. For torch 2.12.1 the graph is captured BEFORE any eager backward, with torch.autograd.grad ('grad mode') warm-up+capture on one side stream: 2.12 lacks set_override_stale_capture_stream and a prior .backward() makes the full-model capture fail with cudaErrorStreamCaptureImplicit.",
+ "accepted_env": {
+  "NANOV41_MHC_V4": "1",
+  "NANOV41_V4_MODE": "split",
+  "NANOV41_MOE_LAYOUT": "fast",
+  "NANOV41_ATTN_DKV_BF16": "1",
+  "NANOV41_MOE_DWS_INLINE": "1",
+  "NANOV41_MOE_TILE": "64,64,64,4,3"
+ },
+ "round1_2_components": {
+  "base_ms": 59.9,
+  "base_values": [
+   59.85,
+   59.95
+  ],
+  "mhc_v4_ms": 59.03,
+  "mhc_v4_delta_pct": -1.45,
+  "moe_fast_ms": 59.61,
+  "moe_fast_delta_pct": -0.48,
+  "combined_ms": 58.62,
+  "combined_delta_pct": -2.14,
+  "rejected": {
+   "moe_r65_bundle": {
+    "ms": 61.34,
+    "delta_pct": 2.4
+   },
+   "projection_fusion": {
+    "ms": 60.17,
+    "delta_pct": 0.45
+   },
+   "attn_v2_G4": {
+    "ms": 59.98,
+    "delta_pct": 0.13
+   },
+   "ce_chunk_4k_16k": {
+    "ms_4k": 58.69,
+    "ms_16k": 58.68,
+    "note": "no effect on top of the combined config"
+   }
+  }
+ },
+ "round3_attention_dkv_bf16": {
+  "combined_ms": 58.62,
+  "dkv_bf16_ms": 58.17,
+  "delta_pct": -0.77,
+  "tok_per_s": 281657,
+  "raw_mfu_pct": 56.99,
+  "microbench": {
+   "per_layer_ms_fp32": 0.496,
+   "bf16": 0.461,
+   "delta_pct": -7.1,
+   "dq_rel": 0.0,
+   "dsink_rel": 0.0,
+   "dkv_rel": 0.0033,
+   "capture": "OK"
+  }
+ },
+ "round4_stack_and_optimizer": {
+  "best1_ms": 60.56,
+  "best1_values": [
+   60.53,
+   60.59
+  ],
+  "dws_inline_ms": 57.19,
+  "dws_inline_delta_pct": -1.63,
+  "moe_tile_ms": 57.61,
+  "moe_tile_delta_pct": -0.91,
+  "fused_dy_ms": 58.66,
+  "fused_dy_delta_pct": 0.89,
+  "pmpfb_bk64_ms": 58.2,
+  "pmpfb_bk64_delta_pct": 0.1,
+  "opt_in_graph": {
+   "ms": 58.28,
+   "delta_pct": -2.7,
+   "verdict": "rejected: 3-step parameter parity 1.62"
+  },
+  "skip_opt_ms": 53.75,
+  "optimizer_cost_ms": 4.39,
+  "optimizer_cost_pct": 7.55,
+  "best_accepted_absolute_ms": 58.14,
+  "best_accepted_tok_per_s": 281778,
+  "best_accepted_raw_mfu_pct": 57.01,
+  "baseline_in_round4_ms": 58.14,
+  "best1_note": "the `best1` entry in this JSON mixes round-4 (`best`, 58.14 ms) and round-5 (`best1`, 60.56 ms); deltas below use the round-4 same-round baseline 58.14",
+  "stacked_r69_estimate_ms": 56.67,
+  "stacked_r69_estimate_delta_pct": -2.53,
+  "stacked_r69_estimate_tok_per_s": 289103,
+  "stacked_r69_estimate_raw_mfu_pct": 58.5,
+  "stacked_r69_acc4_estimate_ms": 55.31,
+  "stacked_r69_acc4_estimate_tok_per_s": 296242,
+  "stacked_r69_acc4_estimate_raw_mfu_pct": 59.94,
+  "stack_note": "best1 (58.14 ms) already contains mHC_V4+MOE_LAYOUT=fast+ATTN_DKV_BF16; the stacked estimate applies only the round-4 DWS_INLINE (-1.63%) and MOE_TILE (-0.91%) wins, and -2.41% for 4x accumulation (round-5 same-round measurement)"
+ },
+ "round5_gradient_accumulation": {
+  "best1_ms": 60.56,
+  "best2_ms": 58.76,
+  "best2_delta_vs_best1_pct": -2.97,
+  "acc2_ms": 115.15,
+  "acc2_tok_per_s": 284568,
+  "acc4_ms": 229.38,
+  "acc4_tok_per_s": 285709,
+  "acc4_per_16k_ms": 57.34,
+  "acc4_delta_vs_best2_per_token_pct": -2.41,
+  "parity": "0.0 (bitwise eager-accumulation vs graph-accumulation)",
+  "parity_param_rel": 0.0,
+  "note": "amortizes the 4.39 ms optimizer over K micro-batches; effective batch K x 16K tokens"
+ },
+ "final_clean_round": {
+  "rounds": 3,
+  "base_values": [
+   61.57,
+   61.85,
+   61.64
+  ],
+  "r69_values": [
+   58.64,
+   59.28,
+   58.78
+  ],
+  "acc4_values": [
+   228.62,
+   229.2,
+   229.19
+  ],
+  "base_ms": 61.64,
+  "r69_ms": 58.78,
+  "r69_acc4_ms": 229.19,
+  "r69_delta_pct": -4.64,
+  "acc4_per_16k_ms": 57.3,
+  "acc4_delta_per_token_pct": -7.04,
+  "r69_tok_per_s": 278734,
+  "r69_raw_mfu_pct": 56.4,
+  "acc4_tok_per_s": 285946,
+  "acc4_raw_mfu_pct": 57.86,
+  "host_note": "this round ran on a ~3% slower host state than round 1-2 (base 61.64 vs 59.90 ms); same-round ratios are authoritative"
+ },
+ "kernel_census": {
+  "step_ms": 58.68,
+  "device_ms": 56.27,
+  "kernels_per_replay": 2857,
+  "top": [
+   [
+    "kernel_kernel (TileLang attention x47)",
+    5.311
+   ],
+   [
+    "_k1_kernel (head fwd GEMM)",
+    4.978
+   ],
+   [
+    "_k3_kernel (head dW)",
+    4.626
+   ],
+   [
+    "_k2_kernel (head dX/CE)",
+    4.164
+   ],
+   [
+    "_dw13_nopad_kernel x12",
+    3.174
+   ],
+   [
+    "_post_bwd_kernel x24",
+    2.561
+   ],
+   [
+    "aten vectorized add x100 (grad accum)",
+    2.131
+   ],
+   [
+    "_mixes_pre_bwd_kernel x24",
+    1.646
+   ],
+   [
+    "_swiglu_fwd_nopad x12",
+    1.629
+   ],
+   [
+    "_aggemm_tb x24",
+    1.555
+   ],
+   [
+    "_dw_reduce x51",
+    1.534
+   ],
+   [
+    "_dw_kernel x12",
+    1.484
+   ],
+   [
+    "_post_fwd x24",
+    1.415
+   ],
+   [
+    "small cutlass bf16 GEMMs",
+    6.6
+   ],
+   [
+    "_swiglu_bwd_tb x12",
+    1.114
+   ],
+   [
+    "_rope_tail x72",
+    0.874
+   ],
+   [
+    "CUB radix sorts (attention scatter)",
+    0.83
+   ],
+   [
+    "copies/memcpy",
+    0.88
+   ]
+  ],
+  "takeaway": "head 13.77 + attention ~6.2 + mHC ~6.8 + MoE ~9.5 + small GEMMs ~6.6 + elementwise/copy/sort ~4.4; head GEMMs already at ~83% of fp8 peak, so remaining slack is bandwidth-bound elementwise / mHC / optimizer"
+ },
+ "shape_sweep": {
+  "b16_s1024": 59.96,
+  "b32_s512": 59.52,
+  "b64_s256": 59.1,
+  "b8_s2048": 60.75,
+  "b4_s4096": 61.25,
+  "b32_s1024": "OOM (32K tokens/step + graph pool > 32 GB)",
+  "note": "shorter seq slightly faster per token but not adopted (training seq 1K-4K)"
+ },
+ "numerics": {
+  "3step_loss": {
+   "base": 11.837434,
+   "r69": 11.838673,
+   "rel": 0.0001
+  },
+  "note": "accepted deltas stay in the bf16 training-noise class (R56/R63 precedents 7e-5..1e-4); accumulation changes the effective batch so its loss is not comparable to base"
+ },
+ "tests": {
+  "local_cpu": "45 passed, 9 skipped",
+  "gpu": [
+   "tests/test_fast_attn_v3.py passed (dq/dsink bitwise, dkv 3.3e-3, capture)",
+   "3-step eager-vs-graph parity 0.0 in every accepted A/B run"
+  ]
+ },
+ "raw_files": [
+  "runs/r69/final_{base,r69,r69_acc4}_r{1,2,3}.json",
+  "runs/r69/{base,mhc_v4,moe_fast,combined,dkv_bf16,best1,best2,best_dws,best_tile,best_fdy,best_bk64,best_skipopt,optgraph,proj,attn_g4,moe_r65}_r{1,2}.json"
+ ],
+ "verdict": "accept R69 env: measured same-round -4.64% step; +4x grad accumulation -2.4%/token. Measured 278.7k tok/s (56.4% MFU) on the slow-host round and 285.9k tok/s (57.9% MFU) with accumulation; on the faster host state the stacked estimate is ~56.7 ms / 289.2k tok/s / 58.5% MFU, or ~55.3 ms / 296.3k tok/s / 59.9% MFU with accumulation.",
+ "torch214_upgrade": {
+  "date": "2026-11-05 (same day, follow-up)",
+  "why": "R69 measured on the image's torch 2.12.1; the R50/R63 reference stack (and the W2 protocol in docs/benchmarks.md) is torch 2.14.1+cu130. Installed the known-good stack into a side venv (tools/setup_torch214.sh) and re-ran the A/B on the SAME host/GPU.",
+  "stack": {
+   "torch": "2.14.1+cu130",
+   "triton": "3.8.0",
+   "tilelang": "0.1.15 (reused from the image's base env via venv --system-site-packages)",
+   "driver": "595.71.05 5090 32GB",
+   "venv": "/root/t141 (system-site-packages: nvidia-*-cu13 + tilelang + tvm_ffi reused)"
+  },
+  "same_host_2x2": {
+   "protocol": "2 rounds interleaved, one process per config, 3-step parity 0.0 in all runs; final_env.sh carries the R69 block, so the `base` arm explicitly unsets the six R69 vars (NANOV41_MHC_V4/V4_MODE/MOE_LAYOUT/ATTN_DKV_BF16/MOE_DWS_INLINE/MOE_TILE)",
+   "base": {
+    "torch_2.12.1_ms": [
+     61.36,
+     61.56
+    ],
+    "torch_2.14.1_ms": [
+     60.92,
+     61.34
+    ],
+    "delta_pct": -0.54
+   },
+   "r69": {
+    "torch_2.12.1_ms": [
+     58.56,
+     58.79
+    ],
+    "torch_2.14.1_ms": [
+     57.47,
+     57.61
+    ],
+    "torch_2.14.1_tok_per_s": 284741,
+    "torch_2.14.1_raw_mfu_pct": 57.61,
+    "delta_pct": -1.93
+   },
+   "r69_flags_effect": {
+    "torch_2.12.1_pct": -4.53,
+    "torch_2.14.1_pct": -5.87
+   },
+   "parity_param_rel": 0.0,
+   "eager_step_ms": {
+    "torch_2.12.1": 113.39,
+    "torch_2.14.1": 113.21,
+    "note": "eager host-side cost is unchanged; the win is device-side"
+   }
+  },
+  "head_to_head_with_r69_flags": {
+   "old_2.12.1_ms": 58.51,
+   "new_2.14.1_ms": 57.51,
+   "delta_pct": -1.7,
+   "note": "separate interleaved matrix (tc_*.json) where final_env already carried the R69 block; both arms are the full R69 env, so this is the pure torch-version effect"
+  },
+  "accum4": {
+   "torch_2.12.1_per16k_ms": 57.06,
+   "torch_2.14.1_per16k_ms": 55.83,
+   "delta_pct": -2.15,
+   "torch_2.14.1_tok_per_s": 293462,
+   "torch_2.14.1_raw_mfu_pct": 59.38,
+   "step_ms_for_4x16k": {
+    "torch_2.12.1": 228.26,
+    "torch_2.14.1": 223.32
+   },
+   "note": "4x gradient accumulation (effective batch 64K tokens) amortizes the 4.39 ms optimizer"
+  },
+  "capture_note": "torch 2.14.1 has torch.autograd.graph.set_override_stale_capture_stream (the harness prints `override API: True`); the capture-first grad-mode recipe still works unchanged (capture: PASS). Future harnesses may switch back to capturing after the eager baseline on 2.14.",
+  "device_census": {
+   "step_ms": 57.94,
+   "device_ms": 54.34,
+   "kernels_per_replay": 2847,
+   "top": [
+    [
+     "_k1_kernel",
+     5.313
+    ],
+    [
+     "kernel_kernel (attention, x47)",
+     4.946
+    ],
+    [
+     "_k3_kernel",
+     4.7
+    ],
+    [
+     "_k2_kernel",
+     4.21
+    ],
+    [
+     "_dw13_nopad_kernel x12",
+     3.335
+    ],
+    [
+     "_post_bwd_kernel x24",
+     2.58
+    ]
+   ],
+   "note": "new-env census on the R69 config; comparable old-env census (step 58.68 / device 56.27 / 2857 kernels) was on a different host state"
+  },
+  "tests": {
+   "gpu": [
+    "tests/test_fast_attn_v3.py + tests/test_moe_fast_layout.py: 2 passed under torch 2.14.1 + triton 3.8.0"
+   ],
+   "parity": "0.0 in every 2x2/tc run"
+  },
+  "verdict": "UPGRADE ACCEPTED: torch 2.14.1+cu130 is -0.5% on the plain base config and -1.9% on the R69 config on the same host (device-side only), -2.15% with 4x accumulation. Production stack = torch 2.14.1 + R69 flags + 4x accumulation: 55.83 ms per 16K tokens = 293.5k tok/s / 59.4% raw bf16-MFU (best non-accum 57.5 ms / 284.9k / 57.6%). 100B-token pretraining: 94.7 h = 3.94 d \u2248 \u00a5265 at \u00a52.8/h."
+ }
+}

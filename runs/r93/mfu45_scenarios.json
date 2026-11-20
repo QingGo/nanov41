@@ -1,0 +1,217 @@
+{
+  "inputs": {
+    "replay_ms": 181.76,
+    "train_ms": 182.4,
+    "tokens": 8192,
+    "F_model_tflop": 14.1546,
+    "head_tflop": 2.0777,
+    "ffn_tflop": 8.3494,
+    "attn_body_tflop": 3.7275,
+    "gemm_bucket_ms": 68.7,
+    "non_gemm_ms": 113.06,
+    "ffn_bucket_share": 0.667,
+    "peak_bf16_tflops": 209.5,
+    "peak_fp8_tflops": 419.0,
+    "peaks": {
+      "bf16": 209.5,
+      "fp8": 419.0,
+      "fp4": 838.0
+    },
+    "flop_share": {
+      "ffn": 0.59,
+      "attn_body": 0.263,
+      "head": 0.147
+    }
+  },
+  "targets_ms": {
+    "raw_40pct": 168.9,
+    "raw_42pct": 160.9,
+    "raw_45pct": 150.1,
+    "raw_48pct": 140.8,
+    "raw_50pct": 135.1,
+    "disc_30pct_all_bf16": 225.2,
+    "disc_30pct_head_fp8": 208.7,
+    "disc_35pct_all_bf16": 193.0,
+    "disc_35pct_head_fp8": 178.9,
+    "disc_40pct_all_bf16": 168.9,
+    "disc_40pct_head_fp8": 156.5,
+    "disc_45pct_all_bf16": 150.1,
+    "disc_45pct_head_fp8": 139.1
+  },
+  "scenarios": [
+    {
+      "scenario": "S0 baseline (P0b measured, fp8 head)",
+      "note": "181.76 ms replay, 45,070 tok/s",
+      "replay_ms": 181.8,
+      "tok_s": 45070,
+      "raw_mfu_pct": 37.17,
+      "disc_mfu_pct": 34.44,
+      "roofline_pct": 34.44,
+      "fp8_frac_of_flops": 0.147,
+      "achieved_tflop_s": 77.9,
+      "cost_8B_cny": 147.9,
+      "cost_10B_cny": 184.9
+    },
+    {
+      "scenario": "S1 + RMS/SwiGLU fused (central)",
+      "note": "existing R45 kernels, unmeasured at d24",
+      "replay_ms": 168.8,
+      "tok_s": 48542,
+      "raw_mfu_pct": 40.04,
+      "disc_mfu_pct": 37.1,
+      "roofline_pct": 37.1,
+      "fp8_frac_of_flops": 0.147,
+      "achieved_tflop_s": 83.9,
+      "cost_8B_cny": 137.3,
+      "cost_10B_cny": 171.7
+    },
+    {
+      "scenario": "S1hi + RMS/SwiGLU fused (upper)",
+      "note": "",
+      "replay_ms": 164.8,
+      "tok_s": 49721,
+      "raw_mfu_pct": 41.01,
+      "disc_mfu_pct": 38.0,
+      "roofline_pct": 38.0,
+      "fp8_frac_of_flops": 0.147,
+      "achieved_tflop_s": 85.9,
+      "cost_8B_cny": 134.1,
+      "cost_10B_cny": 167.6
+    },
+    {
+      "scenario": "S2 + fp8 dense FFN only (central 1.35x)",
+      "note": "fp8 FFN fwd+dgrad, bf16 wgrad; disc drops by construction",
+      "replay_ms": 169.4,
+      "tok_s": 48365,
+      "raw_mfu_pct": 39.89,
+      "disc_mfu_pct": 25.2,
+      "roofline_pct": 25.2,
+      "fp8_frac_of_flops": 0.737,
+      "achieved_tflop_s": 83.6,
+      "cost_8B_cny": 137.8,
+      "cost_10B_cny": 172.3
+    },
+    {
+      "scenario": "S2hi + fp8 dense FFN (optimistic 1.40x)",
+      "note": "",
+      "replay_ms": 168.2,
+      "tok_s": 48713,
+      "raw_mfu_pct": 40.18,
+      "disc_mfu_pct": 25.38,
+      "roofline_pct": 25.38,
+      "fp8_frac_of_flops": 0.737,
+      "achieved_tflop_s": 84.2,
+      "cost_8B_cny": 136.9,
+      "cost_10B_cny": 171.1
+    },
+    {
+      "scenario": "S3 fp8 FFN + RMS/SwiGLU fused",
+      "note": "",
+      "replay_ms": 156.4,
+      "tok_s": 52385,
+      "raw_mfu_pct": 43.2,
+      "disc_mfu_pct": 27.29,
+      "roofline_pct": 27.29,
+      "fp8_frac_of_flops": 0.737,
+      "achieved_tflop_s": 90.5,
+      "cost_8B_cny": 127.3,
+      "cost_10B_cny": 159.1
+    },
+    {
+      "scenario": "S3hi fp8 FFN(1.40) + fusion(upper)",
+      "note": "",
+      "replay_ms": 151.2,
+      "tok_s": 54191,
+      "raw_mfu_pct": 44.69,
+      "disc_mfu_pct": 28.23,
+      "roofline_pct": 28.23,
+      "fp8_frac_of_flops": 0.737,
+      "achieved_tflop_s": 93.6,
+      "cost_8B_cny": 123.0,
+      "cost_10B_cny": 153.8
+    },
+    {
+      "scenario": "S4 = S3hi + extra EW/mHC fusion + tile sweep (upper)",
+      "note": "needs b2-equivalent per-token overhead cut or new fused kernels",
+      "replay_ms": 133.2,
+      "tok_s": 61516,
+      "raw_mfu_pct": 50.74,
+      "disc_mfu_pct": 32.05,
+      "roofline_pct": 32.05,
+      "fp8_frac_of_flops": 0.737,
+      "achieved_tflop_s": 106.3,
+      "cost_8B_cny": 108.4,
+      "cost_10B_cny": 135.5
+    },
+    {
+      "scenario": "B1 bf16 body + RMS/SwiGLU + EW/mHC fusion (upper)",
+      "note": "no body fp8: raw and disc converge, keeps official-convention number high",
+      "replay_ms": 146.8,
+      "tok_s": 55819,
+      "raw_mfu_pct": 46.04,
+      "disc_mfu_pct": 42.66,
+      "roofline_pct": 42.66,
+      "fp8_frac_of_flops": 0.147,
+      "achieved_tflop_s": 96.4,
+      "cost_8B_cny": 119.4,
+      "cost_10B_cny": 149.3
+    },
+    {
+      "scenario": "B2 bf16 body, fusion upper + b2 (+3.5pp modelled as 14 ms)",
+      "note": "",
+      "replay_ms": 132.8,
+      "tok_s": 61705,
+      "raw_mfu_pct": 50.89,
+      "disc_mfu_pct": 47.16,
+      "roofline_pct": 47.16,
+      "fp8_frac_of_flops": 0.147,
+      "achieved_tflop_s": 106.6,
+      "cost_8B_cny": 108.0,
+      "cost_10B_cny": 135.1
+    },
+    {
+      "scenario": "P1 all-bf16 (head too) + fusion + EW (upper)",
+      "note": "head back to bf16 costs ~8.6 ms but adds ~1 pp disc",
+      "replay_ms": 155.4,
+      "tok_s": 52729,
+      "raw_mfu_pct": 43.49,
+      "disc_mfu_pct": 43.49,
+      "roofline_pct": 43.49,
+      "fp8_frac_of_flops": 0.0,
+      "achieved_tflop_s": 91.1,
+      "cost_8B_cny": 126.4,
+      "cost_10B_cny": 158.0
+    }
+  ],
+  "fp8_breakeven_tflops": 364,
+  "fp8_breakeven_pct_of_fp8_peak": 86.9,
+  "assumed_deltas_ms": {
+    "rms_swiglu_fused_ms": [
+      9.0,
+      13.0,
+      17.0
+    ],
+    "extra_ew_mhc_fusion_ms": [
+      6.0,
+      10.0,
+      14.0
+    ],
+    "b2_unlock_ms": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "gemm_tile_sweep_ms": [
+      0.0,
+      2.0,
+      4.0
+    ]
+  },
+  "fp8_ffn_saving_ms": {
+    "1.20x": 7.6,
+    "1.26x": 9.5,
+    "1.35x": 12.4,
+    "1.40x": 13.6
+  },
+  "ffn_bucket_ms": 45.8
+}

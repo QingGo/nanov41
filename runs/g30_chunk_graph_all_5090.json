@@ -1,0 +1,166 @@
+{
+ "total": 262144,
+ "chunk": 16384,
+ "n_chunks": 16,
+ "captured": 16,
+ "grad_mode": "backward",
+ "device": "NVIDIA GeForce RTX 5090",
+ "torch": "2.12.1+cu130",
+ "eager_all_chunks_ms": [
+  5299.2,
+  3685.9,
+  3647.7
+ ],
+ "eager_ms_median": 3685.9,
+ "capture_s": 13.6,
+ "peak_mem_after_capture_gib": 11.54,
+ "eager_prefix_ms": [
+  3714.4,
+  3727.1,
+  3669.7
+ ],
+ "eager_prefix_median": 3714.4,
+ "graph_replay_ms": [
+  3241.4,
+  3243.1,
+  3243.8
+ ],
+ "graph_ms_median": 3243.1,
+ "eager_selfdiff_max": 0.42654201,
+ "eager_selfdiff_worst": [
+  {
+   "name": "inner.layers.1.hc_attn_scale",
+   "rel": 0.42654201
+  },
+  {
+   "name": "inner.layers.2.hc_attn_base",
+   "rel": 0.07966554
+  },
+  {
+   "name": "inner.layers.4.hc_attn_base",
+   "rel": 0.05356774
+  },
+  {
+   "name": "inner.layers.3.hc_attn_scale",
+   "rel": 0.05242943
+  },
+  {
+   "name": "inner.layers.0.hc_attn_base",
+   "rel": 0.04153018
+  }
+ ],
+ "eager_nondet_params": 262,
+ "grad_worst": [
+  {
+   "name": "inner.layers.1.hc_attn_scale",
+   "rel": 0.426542
+  },
+  {
+   "name": "inner.layers.2.hc_attn_base",
+   "rel": 0.079666
+  },
+  {
+   "name": "inner.layers.4.hc_attn_base",
+   "rel": 0.053568
+  },
+  {
+   "name": "inner.layers.3.hc_attn_scale",
+   "rel": 0.052429
+  },
+  {
+   "name": "inner.layers.0.hc_attn_base",
+   "rel": 0.04153
+  },
+  {
+   "name": "inner.layers.3.hc_attn_base",
+   "rel": 0.027867
+  }
+ ],
+ "grad_worst_non_mhc": [
+  {
+   "name": "inner.layers.0.attn.kv_norm.weight",
+   "rel": 0.023315
+  },
+  {
+   "name": "inner.layers.0.attn_norm.weight",
+   "rel": 0.022095
+  },
+  {
+   "name": "inner.layers.0.attn.wkv.weight",
+   "rel": 0.020996
+  },
+  {
+   "name": "inner.layers.3.attn.attn_sink",
+   "rel": 0.018673
+  },
+  {
+   "name": "inner.layers.1.attn.attn_sink",
+   "rel": 0.018078
+  },
+  {
+   "name": "inner.layers.2.attn.q_norm.weight",
+   "rel": 0.017944
+  }
+ ],
+ "n_grad_params": 284,
+ "n_grad_bitexact": 22,
+ "grad_rel_diff_max": 0.426542,
+ "grads_bitexact": false,
+ "loss_eager": [
+  0.74066,
+  0.74029,
+  0.740369,
+  0.740341,
+  0.739869,
+  0.740409,
+  0.740263,
+  0.740118,
+  0.740562,
+  0.7401,
+  0.740415,
+  0.740584,
+  0.740405,
+  0.740564,
+  0.740566,
+  0.740154
+ ],
+ "loss_replay": [
+  0.74066,
+  0.74029,
+  0.740369,
+  0.740341,
+  0.739869,
+  0.740409,
+  0.740263,
+  0.740118,
+  0.740562,
+  0.7401,
+  0.740415,
+  0.740584,
+  0.740405,
+  0.740564,
+  0.740566,
+  0.740154
+ ],
+ "loss_abs_diff": [
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0,
+  0.0
+ ],
+ "loss_first_mismatch_chunk": null,
+ "speedup_prefix": 1.15,
+ "graph_vs_eager_pct": -12.69
+}

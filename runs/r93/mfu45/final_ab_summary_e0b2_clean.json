@@ -1,0 +1,31 @@
+{
+ "steps": 50,
+ "fp8_ffn": false,
+ "b2": true,
+ "arm_a": {
+  "rc": 0,
+  "tokens_per_sec": 43865.7,
+  "raw_bf16_mfu": 0.3617840223112377,
+  "train_seconds": 2390.4,
+  "final_loss": 6.085061
+ },
+ "arm_b": {
+  "rc": 0,
+  "tokens_per_sec": 64749.6,
+  "raw_bf16_mfu": 0.5340253083071667,
+  "train_seconds": 1619.4,
+  "final_loss": 6.112883
+ },
+ "speedup": 1.476087239004507,
+ "raw_mfu_delta_pp": 17.2241285995929,
+ "loss_rel_max": 0.03399882347114148,
+ "gate_tok_s": "PASS",
+ "gate_raw_mfu_45": "PASS",
+ "gate_loss_rel": "FAIL",
+ "bpb": {
+  "a": 1.9573295735019678,
+  "b": 1.9763165153960305,
+  "delta": 0.018986941894062692
+ },
+ "gate_quality_bpb": "FAIL"
+}

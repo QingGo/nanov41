@@ -1,0 +1,127 @@
+{
+  "schema": "nanov41-decode-graph-verify/1",
+  "date": "2026-11-08",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ckpt": "/root/p2b_default.pt",
+  "steps": 64,
+  "contexts": {
+    "64": {
+      "ctx": 64,
+      "eager_vs_graph_forward": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "eager_vs_graph_tokens": {
+        "agreement": 1.0
+      },
+      "capture_parity": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "speed": {
+        "graph_generate_s": 0.2077,
+        "graph_tok_s": 308.12,
+        "graph_ms_per_token": 3.246,
+        "eager_tok_s": 22.34,
+        "speedup": 13.79
+      },
+      "greedy_agreement": 1.0,
+      "text_graph": " village had been able to find a way to get to the river. The water was very cold, and the water was very cold. The water was very cold, and the water was very cold. The water was very cold, and the water was very cold. The water was very cold, and the water was very"
+    },
+    "256": {
+      "ctx": 256,
+      "eager_vs_graph_forward": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "eager_vs_graph_tokens": {
+        "agreement": 1.0
+      },
+      "capture_parity": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "speed": {
+        "graph_generate_s": 0.2037,
+        "graph_tok_s": 314.12,
+        "graph_ms_per_token": 3.184,
+        "eager_tok_s": 22.25,
+        "speedup": 14.12
+      },
+      "greedy_agreement": 1.0,
+      "text_graph": ", and the water was clear. The water was clear, and the water was clear. The water was clear, and the water was clear. The water was clear, and the water was clear. The water was clear, and the water was clear. The water was clear, and the water was clear. The water"
+    },
+    "512": {
+      "ctx": 512,
+      "eager_vs_graph_forward": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "eager_vs_graph_tokens": {
+        "agreement": 1.0
+      },
+      "capture_parity": {
+        "steps": 64,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "speed": {
+        "graph_generate_s": 0.2092,
+        "graph_tok_s": 305.92,
+        "graph_ms_per_token": 3.269,
+        "eager_tok_s": 23.17,
+        "speedup": 13.2
+      },
+      "greedy_agreement": 1.0,
+      "text_graph": " the sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet. The sea was quiet"
+    },
+    "1008": {
+      "ctx": 1008,
+      "eager_vs_graph_forward": {
+        "steps": 16,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "eager_vs_graph_tokens": {
+        "agreement": 1.0
+      },
+      "capture_parity": {
+        "steps": 16,
+        "logit_max_abs": 0.0,
+        "logit_mean_abs": 0.0,
+        "argmax_agreement": 1.0
+      },
+      "speed": {
+        "graph_generate_s": 0.0514,
+        "graph_tok_s": 311.53,
+        "graph_ms_per_token": 3.21,
+        "eager_tok_s": 21.35,
+        "speedup": 14.59
+      },
+      "greedy_agreement": 1.0,
+      "text_graph": " The water was a little too cold. The water was a little too cold."
+    }
+  },
+  "hash_ids": {
+    "same": true,
+    "ref_shape": [
+      1,
+      1,
+      2,
+      4
+    ],
+    "mismatches": 0
+  }
+}

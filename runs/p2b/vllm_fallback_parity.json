@@ -1,0 +1,94 @@
+{
+  "date": "2026-11-07",
+  "experiment": "vLLM generic fallback model for NanoV41",
+  "plugin": "nanov41/vllm_plugin.py",
+  "engine_test": {
+    "gpu": "RTX 4090 24GB",
+    "vllm": "0.33.0",
+    "load_ok_seconds": 18.1,
+    "weights": "random/dummy (load_format=dummy)",
+    "generated_tokens": 8,
+    "output": "\u4e5f\u7ed9\u7f6a\u6076\u5c06\u4e0e canc\u5c06\u4e0e canc\u5c06\u4e0e canc",
+    "notes": [
+      "custom architecture registered as NanoV41ForCausalLM",
+      "forward uses the generic NanoV41 reference path with internal KV/Engram caches",
+      "dummy vLLM Attention exists only to declare a KV-cache group for the scheduler",
+      "VLLM_USE_FLASHINFER_SAMPLER=0 to avoid missing ninja"
+    ]
+  },
+  "real_weights_local_parity": {
+    "checkpoint": "P2b/E-default_seed1235 (0.6B-token A/B run)",
+    "converted": "/tmp/p2b_default_ref.safetensors (745 MB, 852 tensors, bf16)",
+    "missing_keys": 0,
+    "unexpected_keys": 0,
+    "logits_max_abs_diff_vs_ModelProvider": 0.0,
+    "argmax_identical": true,
+    "cpu": true
+  },
+  "remote_real_weights_blocked_by": "shared 4090 instance repeatedly stopped by another task during 745MB upload; no dedicated 4090/5090 inventory available at creation time",
+  "conclusion": "fallback model interface works end-to-end in vLLM with random weights; the same plugin loads the real checkpoint exactly (0 missing, logits bit-identical to native). Remaining work is only transfer/run on a stable GPU, not model code.",
+  "real_weight_engine_test": {
+    "gpu": "RTX 5090 32GB",
+    "vllm": "0.33.0",
+    "load_ok_seconds": 18.75,
+    "load_format": "auto (dummy model.safetensors present so vLLM calls load_weights; plugin loads the real 745MB ref safetensors there)",
+    "prompt": "The capital of France is",
+    "prompt_token_ids": [
+      671,
+      6102,
+      294,
+      8760,
+      344
+    ],
+    "prefill_argmax": [
+      260,
+      270,
+      554,
+      834,
+      7203
+    ],
+    "prefill_top_values": [
+      12.119234085083008,
+      11.85412883758545,
+      10.807168006896973,
+      10.79123306274414,
+      10.653553009033203
+    ],
+    "native_prefill_argmax_same_tokens": [
+      260,
+      270,
+      554,
+      834,
+      7203
+    ],
+    "generated_text": " a part of the world's economy. The country is a part of the world's economy. The country is a part",
+    "generated_token_ids": [
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260,
+      892,
+      294,
+      270,
+      2058,
+      734,
+      8536,
+      16,
+      455,
+      3924,
+      344,
+      260,
+      892
+    ],
+    "note": "initial attempt with load_format=dummy left the plugin random because vLLM's dummy loader initializes after __init__; moving ckpt load into load_weights and returning all parameter names fixed real-weight loading"
+  },
+  "remaining": null
+}
