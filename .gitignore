@@ -141,6 +141,11 @@ infra-refs/
 !/tools/r93_predl_datasets.py
 !/tools/r93_probe_run.sh
 !/tools/r95_build_domain_eval.py
+!/tools/trace_attrib.py
+!/tools/make_aligned_config.py
+!/tools/aligned_build.py
+!/tools/climbmix_to_p2.py
+!/tools/m1_ab_report.py
 
 # One-off kernel/benchmark experiments (default ignored; curated packages are whitelisted).
 /tl_kernels/
