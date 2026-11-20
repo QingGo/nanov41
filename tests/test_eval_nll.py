@@ -18,5 +18,7 @@ def test_chunked_nll_matches_full_logits():
     logits = p.logits(ids)
     ref = (logits[:, :-1].float().logsumexp(-1)
            - logits[:, :-1].float().gather(-1, ids[:, 1:].unsqueeze(-1)).squeeze(-1))
-    np.testing.assert_allclose(fast, ref.double().numpy(), rtol=0, atol=0)
+    # Not bitwise: the chunked path runs the head GEMM on smaller M slices, so BLAS
+    # reduction order differs from the single full-logits pass (platform dependent).
+    np.testing.assert_allclose(fast, ref.double().numpy(), rtol=1e-5, atol=1e-5)
     assert fast.shape == (2, 15)
