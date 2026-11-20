@@ -38,7 +38,16 @@ jobs:
         run: python parity.py --dtype float32
 
       - name: Tests (fast subset)
-        run: python -m pytest -q -m "not slow"
+        run: |
+          set +e
+          python -m pytest -q -m "not slow" 2>&1 | tee /tmp/fast.log
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" -ne 0 ]; then
+            # Surface the failure tail as public check-run annotations (job logs need admin rights).
+            echo "::error::fast subset failed (rc=$rc); last 40 lines:"
+            tail -n 40 /tmp/fast.log | sed 's/^/::error::/'
+          fi
+          exit "$rc"
 
       # Run the two slow kernel-parity scripts as separate steps: a failure then names the
       # script, and the pytest tail is surfaced as public check-run annotations (job logs
