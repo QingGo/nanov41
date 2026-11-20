@@ -7,6 +7,11 @@
     y.copy_(x)                                # fp32 -> bf16，原地写回切片
 
 R45 试过"compute kernel + 可追踪 copy_"（2 kernel）→ 无收益（`fused_rope.py` 已证伪）。
+R79 T2-attn（opt-in，`NANOV41_ATTN_V3_ROPE_IN=1`）：q 的 fwd/bwd RoPE 折进
+`tl_sparse_attn_v3` 的 kernel（省 1 fwd kernel + 1 bwd kernel + 1 个 bf16 clone/层）；
+kv/o 的 rope 仍走本文件。此时 `_attn_forward` 不再对 q 调 rope_tail，而是把
+`freqs` 传给 attention（只在 `start_pos == 0`、v3 installed 且其自身开关打开时）。
+
 R49 换思路：**patch `Attention.forward` / `Attention._window_kv` 的调用点，让 rope 返回张量并被赋值**，
 于是可以做成"原地单 kernel + custom Function"，不需要 copy_、也不经过 fp32 中间量：
 
@@ -158,6 +163,22 @@ def rope_tail(x: torch.Tensor, freqs_cis: torch.Tensor, inverse: bool = False):
 
 
 # --------------------------------------------------------------------------- model patch
+def _rope_in_ok(M):
+    """R79：q 的 RoPE 是否可以交给 tl_sparse_attn_v3 的 kernel 做（env + 安装 + 路径检查）。"""
+    if _REF_ROPE or not HAS_TRITON:
+        return False
+    try:
+        from . import tl_sparse_attn_v3 as _v3
+    except Exception:  # noqa: BLE001
+        return False
+    if getattr(M, "sparse_attn", None) is not getattr(_v3, "sparse_attn_v3", None):
+        return False
+    try:
+        return bool(_v3.rope_in())
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def _attn_forward(self, x: torch.Tensor, start_pos: int):
     M = _MOD
     bsz, seqlen, _ = x.size()
@@ -166,7 +187,14 @@ def _attn_forward(self, x: torch.Tensor, start_pos: int):
 
     qr = self.q_norm(self.wq_a(x))
     q = self.wq_b(qr).unflatten(-1, (self.n_local_heads, self.head_dim))
-    q = rope_tail(q, freqs_cis)
+
+    rope_in = bool(_rope_in_ok(M) and start_pos == 0)
+    fr = None
+    if rope_in:
+        # [m, rd] fp32 (re,im) 视图；kernel 内重建 forward RoPE（逐位同 _rope_tail_kernel）
+        fr = torch.view_as_real(freqs_cis).reshape(seqlen, rd)
+    else:
+        q = rope_tail(q, freqs_cis)
 
     kv, topk_idxs = self._window_kv(x, freqs_cis, start_pos)
     if self.compress_ratio:
@@ -174,7 +202,11 @@ def _attn_forward(self, x: torch.Tensor, start_pos: int):
         kv = torch.cat([kv, compress_kv], dim=1)
         topk_idxs = torch.cat([topk_idxs, compress_idxs], dim=-1)
 
-    o = M.sparse_attn(q, kv, self.attn_sink, topk_idxs, self.softmax_scale)
+    if rope_in:
+        o = M.sparse_attn(q, kv, self.attn_sink, topk_idxs, self.softmax_scale,
+                          freqs=fr, rd=rd)
+    else:
+        o = M.sparse_attn(q, kv, self.attn_sink, topk_idxs, self.softmax_scale)
     o = rope_tail(o, freqs_cis, True)
 
     o = o.view(bsz, seqlen, self.n_local_groups, -1)

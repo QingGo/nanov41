@@ -22,6 +22,19 @@ Layout recognized (prefill, start_pos=0)
    rows ``>= m`` (the reference offsets them by ``kv.size(1)``, which equals ``m``
    for the prefill chunk).  For d12: 64 window + 32 compressed = 96 columns.
 
+Chunked-BPTT layout (`start_pos > 0`, enabled via ``right_band=True`` + ``win_hint``)
+-----------------------------------------------------------------------------
+`chunked_prefill._chunk_window_kv_forward` lays the window KV out as
+``cat([last win-1 token keys in absolute order, this chunk's keys])``, so query ``i``
+attends to KV rows ``i .. i+win-1`` and the window columns of ``topk_idxs`` are exactly
+``i + c`` (no ``-1`` padding).  That is a "right band" instead of the causal band above;
+`_band_plan(..., right=True)` builds the matching tile mask.  Routing this layout here is
+what makes chunked-BPTT gradients bitwise reproducible: the reference fallback takes the
+kv gradient through ``index_select`` backward -> atomic ``index_add``, which is not
+deterministic on CUDA (measured 22/284 bitwise-stable params, max relative diff ~0.2-0.3;
+with the fast path 284/284 are bitwise identical, and the same-chunk graph replay is
+bitwise equal to eager).
+
 Anything else (decode/ring-buffer order, general callers, malformed layouts) falls
 back to the reference implementation, bit-for-bit.
 
@@ -287,23 +300,30 @@ _CACHE_ON = os.environ.get("FAST_ATTN_CACHE", "1").lower() not in ("0", "false",
 _DETECT_CACHE: dict = {}
 
 
-def _band_plan(m: int, win: int, bm: int, device: torch.device) -> _BandPlan:
-    """Cache the per-tile boolean band mask for (m, win, bm, device).
+def _band_plan(m: int, win: int, bm: int, device: torch.device,
+               right: bool = False) -> _BandPlan:
+    """Cache the per-tile boolean band mask for (m, win, bm, device[, mode]).
 
-    Keys for tile ``i`` are taken from ``kv_pad`` at ``[i*bm, i*bm + w)`` where
-    ``kv_pad`` is the window KV left-padded by ``win-1`` zeros.  In absolute KV-row
-    coordinates that tile covers ``i*bm - (win-1) ... i*bm + bm - 1``; the mask below
-    is expressed in those absolute coordinates, so the left/right padding rows (and
-    query rows past ``m`` in the last tile) are correctly invalid.
+    Standard prefill mode (``right=False``): kv rows ``0..m-1`` are the window sequence and
+    row == absolute position; query ``i`` attends to rows ``i-win+1 .. i``.  Keys for tile
+    ``i`` are taken from ``kv_pad`` at ``[i*bm, i*bm + w)`` where ``kv_pad`` is the window KV
+    left-padded by ``win-1`` zeros, so in absolute KV-row coordinates the tile covers
+    ``i*bm - (win-1) ... i*bm + bm - 1``.
+
+    Chunked mode (``right=True``, used for ``start_pos > 0`` chunks): the window KV is
+    ``cat([last win-1 token keys in absolute order, this chunk's keys])``, so query ``i``
+    attends to rows ``i .. i+win-1`` (``_chunk_window_kv_forward`` emits that layout and the
+    matching indices).  There is no left pad; the tile covers KV rows
+    ``i*bm ... i*bm + bm + win - 2``.
     """
-    key = (device.type, device.index, m, win, bm)
+    key = (device.type, device.index, m, win, bm, bool(right))
     plan = _PLANS.get(key)
     if plan is not None:
         return plan
     nb = (m + bm - 1) // bm
     m_pad = nb * bm
     w = bm + win - 1
-    pad_left = win - 1
+    pad_left = 0 if right else win - 1
     pad_len = m_pad + pad_left
 
     rows = (
@@ -315,12 +335,20 @@ def _band_plan(m: int, win: int, bm: int, device: torch.device) -> _BandPlan:
         - pad_left
         + torch.arange(w, device=device, dtype=torch.int64).view(1, w)
     )  # [nb, w] absolute key position
-    mask = (
-        (keys.unsqueeze(1) >= 0)
-        & (keys.unsqueeze(1) < m)
-        & (keys.unsqueeze(1) <= rows.unsqueeze(2))
-        & (keys.unsqueeze(1) >= rows.unsqueeze(2) - win + 1)
-    )  # [nb, bm, w]
+    if right:
+        mask = (
+            (keys.unsqueeze(1) >= rows.unsqueeze(2))
+            & (keys.unsqueeze(1) <= rows.unsqueeze(2) + win - 1)
+            & (keys.unsqueeze(1) < m + win - 1)
+        )
+    else:
+        mask = (
+            (keys.unsqueeze(1) >= 0)
+            & (keys.unsqueeze(1) < m)
+            & (keys.unsqueeze(1) <= rows.unsqueeze(2))
+            & (keys.unsqueeze(1) >= rows.unsqueeze(2) - win + 1)
+        )
+    # [nb, bm, w]
     plan = _BandPlan(m, win, bm, nb, m_pad, w, pad_left, pad_len, mask)
     if len(_PLANS) >= _PLANS_MAX:  # bounded cache (training uses one shape)
         _PLANS.clear()
@@ -329,8 +357,14 @@ def _band_plan(m: int, win: int, bm: int, device: torch.device) -> _BandPlan:
 
 
 # --------------------------------------------------------------------------- kernels
-def _fast_path(q, kv, attn_sink, topk_idxs, softmax_scale, win, ncomp):
-    """Blocked band attention + gathered compressed columns (see module docstring)."""
+def _fast_path(q, kv, attn_sink, topk_idxs, softmax_scale, win, ncomp, right=False):
+    """Blocked band attention + gathered compressed columns (see module docstring).
+
+    ``right=True`` is the chunked-BPTT (``start_pos > 0``) layout: the window KV is
+    ``cat([previous win-1 token keys in absolute order, this chunk's keys])`` and query ``i``
+    attends to rows ``i .. i+win-1`` (see `_band_plan`).  The compressed part is unchanged: it
+    gathers absolute rows from the same concatenated KV.
+    """
     b, m, h, d = q.shape
     device = q.device
     n = kv.size(1)
@@ -357,7 +391,7 @@ def _fast_path(q, kv, attn_sink, topk_idxs, softmax_scale, win, ncomp):
     if not kv_w.is_contiguous():
         kv_w = kv_w.contiguous()
 
-    plan = _band_plan(m, win, _BM, device)
+    plan = _band_plan(m, win, _BM, device, right=right)
     nb, bm, m_pad, w, pad_left = plan.nb, plan.bm, plan.m_pad, plan.w, plan.pad_left
 
     # ---- queries, padded to whole tiles (extra rows are sliced off at the end)
@@ -365,8 +399,13 @@ def _fast_path(q, kv, attn_sink, topk_idxs, softmax_scale, win, ncomp):
     q2 = q_pad.reshape(b * m_pad, h, d)  # [b*m_pad, h, d] (view)
     q_blocks = q_pad.view(b, nb, bm, h, d).permute(0, 3, 1, 2, 4).contiguous()  # [b,h,nb,bm,d]
 
-    # ---- window keys: view-only tiles of the KV (one small left/right padded copy)
-    kv_pad = F.pad(kv_w[:, :m], (0, 0, pad_left, m_pad - m))  # [b, m_pad+win-1, d]
+    # ---- window keys: view-only tiles of the KV (one small right / left+right padded copy)
+    if right:
+        win_len = m + win - 1  # history(win-1) + this chunk(m), one row per absolute position
+        kv_win = kv_w[:, :win_len]
+        kv_pad = F.pad(kv_win, (0, 0, 0, m_pad - m)) if m_pad != m else kv_win
+    else:
+        kv_pad = F.pad(kv_w[:, :m], (0, 0, pad_left, m_pad - m))  # [b, m_pad+win-1, d]
     # NB: Tensor.unfold appends the window dim at the end -> [b, nb, d, w] view.
     k_tiles = kv_pad.unfold(1, w, bm)
 
@@ -444,12 +483,47 @@ def _fast_path(q, kv, attn_sink, topk_idxs, softmax_scale, win, ncomp):
 
 
 # --------------------------------------------------------------------------- entry
-def sparse_attn_fast(q, kv, attn_sink, topk_idxs, softmax_scale):
+def _check_right_band(topk_idxs, m: int, win: int, n: int, ncomp: int) -> bool:
+    """Verify the chunked (``start_pos > 0``) window layout once per shape.
+
+    ``_chunk_window_kv_forward`` lays the window KV out as
+    ``cat([last win-1 token keys in absolute order, this chunk's keys])``, so the window part of
+    ``topk_idxs`` is exactly ``i + c`` (query ``i``, slot ``c``) - no ``-1`` padding and no
+    clamping.  Compressed columns (if any) must be ``-1`` or absolute rows in
+    ``[m+win-1, n)``.  The result is cached by shape like `detect_layout`.
+    """
+    key = ("right", topk_idxs.shape, topk_idxs.dtype, topk_idxs.stride(), m, win, n, ncomp)
+    hit = _DETECT_CACHE.get(key)
+    if hit is not None:
+        return bool(hit)
+    ok = topk_idxs.shape[-1] == win + ncomp
+    if ok:
+        expected = (torch.arange(m, device=topk_idxs.device, dtype=torch.int64).view(m, 1)
+                    + torch.arange(win, device=topk_idxs.device, dtype=torch.int64).view(1, win))
+        ok = bool((topk_idxs[:, :, :win] == expected.unsqueeze(0)).all())
+    if ok and ncomp:
+        comp = topk_idxs[:, :, win:]
+        ok = bool(((comp == -1) | ((comp >= m + win - 1) & (comp < n))).all())
+    if len(_DETECT_CACHE) > 256:
+        _DETECT_CACHE.clear()
+    _DETECT_CACHE[key] = ok
+    return ok
+
+
+def sparse_attn_fast(q, kv, attn_sink, topk_idxs, softmax_scale,
+                     win_hint=None, right_band=False):
     """Drop-in replacement for ``patched_env.sparse_attn`` with the same semantics.
 
     q: [b,m,h,d]  kv: [b,n,d]  attn_sink: [h]  topk_idxs: [b,m,topk] (-1 invalid).
     The fast path is used only when the prefill band layout is verified; otherwise the
     reference fallback runs (so decode / arbitrary index tensors stay exact).
+
+    ``win_hint`` + ``right_band=True`` select the chunked (``start_pos > 0``) layout:
+    ``win_hint`` is the window width the caller used for the de-rotated window KV, and the
+    window part of ``topk_idxs`` must be the ``i + c`` pattern of `_check_right_band`.
+    The reference fallback's kv gradient is nondeterministic (index_select backward ->
+    atomic index_add), so routing the chunked layout here is what makes chunked BPTT
+    bitwise reproducible.
     """
     _STATS["calls"] += 1
     if topk_idxs.numel() == 0 or _DISABLED:
@@ -459,6 +533,23 @@ def sparse_attn_fast(q, kv, attn_sink, topk_idxs, softmax_scale):
         return _ref_sparse_attn(q, kv, attn_sink, topk_idxs, softmax_scale)
 
     b, m, h, d = q.shape
+    if right_band and win_hint and q.is_cuda:
+        win = min(int(win_hint), int(topk_idxs.size(-1)))
+        ncomp = int(topk_idxs.size(-1)) - win
+        if (win >= 1 and kv.size(1) >= m + win - 1
+                and topk_idxs.shape[0] == b and topk_idxs.shape[1] == m
+                and _check_right_band(topk_idxs, m, win, kv.size(1), ncomp)):
+            _STATS["fast_calls"] += 1
+            _STATS["fast_tokens"] += b * m
+            _STATS["fast_window_blocks"] += (m + _BM - 1) // _BM
+            _STATS["fast_compress_cols"] += ncomp
+            return _fast_path(q, kv, attn_sink, topk_idxs, softmax_scale, win, ncomp,
+                              right=True)
+        # A right-band caller whose layout did not validate must not fall through to the standard
+        # prefill detection (it could be misread); use the reference implementation instead.
+        _STATS["layout_fail"] += 1
+        _STATS["fallback_calls"] += 1
+        return _ref_sparse_attn(q, kv, attn_sink, topk_idxs, softmax_scale)
     if kv.size(1) < m or topk_idxs.shape[0] != b or topk_idxs.shape[1] != m:
         _STATS["fallback_calls"] += 1
         return _ref_sparse_attn(q, kv, attn_sink, topk_idxs, softmax_scale)

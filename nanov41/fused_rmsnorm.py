@@ -28,6 +28,8 @@ import os
 
 import torch
 
+from . import fp8_cast_registry as _castreg
+
 try:  # pragma: no cover - triton is GPU-only
     import triton
     import triton.language as tl
@@ -92,6 +94,38 @@ if HAS_TRITON:
         tl.store(R + rows, r, mask=rmask)
 
     @triton.jit
+    def _rms_fwd_kernel_fp8(
+        X, W, Y, R, Y8, S8,
+        T, D: tl.constexpr, BD: tl.constexpr, BM: tl.constexpr, EPS: tl.constexpr,
+        MAX: tl.constexpr,
+    ):
+        """Same math as _rms_fwd_kernel, plus a fused per-row FP8 copy (V4 Fig.5 pattern).
+
+        The fp8 value is quantised from the **bf16-rounded output** (exactly what a downstream
+        standalone quantiser would see), so the consumer's numerics are preserved.
+        """
+        pid = tl.program_id(0)
+        rows = pid * BM + tl.arange(0, BM)
+        rmask = rows < T
+        cols = tl.arange(0, BD)
+        cmask = cols < D
+        m2 = rmask[:, None] & cmask[None, :]
+        x = tl.load(X + rows[:, None] * D + cols[None, :], mask=m2, other=0.0).to(tl.float32)
+        ss = tl.sum(x * x, axis=1) / D
+        r = tl.rsqrt(ss + EPS)
+        w = tl.load(W + cols, mask=cmask, other=0.0).to(tl.float32)
+        y = x * r[:, None] * w[None, :]
+        yb = y.to(tl.bfloat16)
+        tl.store(Y + rows[:, None] * D + cols[None, :], yb, mask=m2)
+        tl.store(R + rows, r, mask=rmask)
+        yf = yb.to(tl.float32)
+        amax = tl.max(tl.abs(yf), axis=1)
+        s = tl.maximum(amax, 1e-12) / MAX
+        tl.store(S8 + rows, s, mask=rmask)
+        q = tl.minimum(tl.maximum(yf / s[:, None], -MAX), MAX).to(tl.float8e4nv)
+        tl.store(Y8 + rows[:, None] * D + cols[None, :], q, mask=m2)
+
+    @triton.jit
     def _rms_bwd_kernel(
         X, DY, W, R, DX, DW_PART, T,
         D: tl.constexpr, BD: tl.constexpr, BM: tl.constexpr,
@@ -113,6 +147,37 @@ if HAS_TRITON:
         tl.store(DX + rows[:, None] * D + cols[None, :], dx.to(DX.dtype.element_ty), mask=m2)
         dwp = tl.sum(dy * xh, axis=0)  # [D]
         tl.store(DW_PART + pid * D + cols, dwp, mask=cmask)
+
+    @triton.jit
+    def _rms_bwd_kernel_fp8(
+        X, DY, W, R, DX, DW_PART, DX8, S8, T,
+        D: tl.constexpr, BD: tl.constexpr, BM: tl.constexpr, MAX: tl.constexpr,
+    ):
+        """Same math as _rms_bwd_kernel + fused per-row FP8 copy of dX (feeds the next linear's dgrad)."""
+        pid = tl.program_id(0)
+        rows = pid * BM + tl.arange(0, BM)
+        rmask = rows < T
+        cols = tl.arange(0, BD)
+        cmask = cols < D
+        m2 = rmask[:, None] & cmask[None, :]
+        x = tl.load(X + rows[:, None] * D + cols[None, :], mask=m2, other=0.0).to(tl.float32)
+        dy = tl.load(DY + rows[:, None] * D + cols[None, :], mask=m2, other=0.0).to(tl.float32)
+        w = tl.load(W + cols, mask=cmask, other=0.0).to(tl.float32)
+        r = tl.load(R + rows, mask=rmask, other=0.0)
+        xh = x * r[:, None]
+        d_hat = dy * w[None, :]
+        s = tl.sum(d_hat * xh, axis=1) / D
+        dx = r[:, None] * (d_hat - xh * s[:, None])
+        dxb = dx.to(tl.bfloat16)
+        tl.store(DX + rows[:, None] * D + cols[None, :], dxb, mask=m2)
+        dwp = tl.sum(dy * xh, axis=0)
+        tl.store(DW_PART + pid * D + cols, dwp, mask=cmask)
+        dxf = dxb.to(tl.float32)
+        amax = tl.max(tl.abs(dxf), axis=1)
+        sa = tl.maximum(amax, 1e-12) / MAX
+        tl.store(S8 + rows, sa, mask=rmask)
+        q = tl.minimum(tl.maximum(dxf / sa[:, None], -MAX), MAX).to(tl.float8e4nv)
+        tl.store(DX8 + rows[:, None] * D + cols[None, :], q, mask=m2)
 
     @triton.jit
     def _dw_reduce_kernel(
@@ -144,8 +209,16 @@ class _RMSNormFn(torch.autograd.Function):
         y = torch.empty_like(x)
         r = torch.empty(t, dtype=torch.float32, device=x.device)
         bd = triton.next_power_of_2(d)
-        grid = (triton.cdiv(t, BM),)
-        _rms_fwd_kernel[grid](x2, weight, y, r, t, D=d, BD=bd, BM=BM, EPS=eps)
+        if _castreg.enabled():
+            bm8 = int(os.environ.get("NANOV41_RMS_FP8_BM", "4"))
+            bm8 = max(1, min(bm8, BM))
+            y8 = torch.empty((t, d), dtype=torch.float8_e4m3fn, device=x.device)
+            s8 = torch.empty(t, dtype=torch.float32, device=x.device)
+            _rms_fwd_kernel_fp8[(triton.cdiv(t, bm8),)](
+                x2, weight, y, r, y8, s8, t, D=d, BD=bd, BM=bm8, EPS=eps, MAX=448.0)
+            _castreg.register(y, y8, s8.view(t, 1))
+        else:
+            _rms_fwd_kernel[(triton.cdiv(t, BM),)](x2, weight, y, r, t, D=d, BD=bd, BM=BM, EPS=eps)
         ctx.save_for_backward(x2, weight, r)
         ctx.eps = eps
         return y
@@ -160,13 +233,29 @@ class _RMSNormFn(torch.autograd.Function):
             dy2 = dy2.contiguous()
         dx = torch.empty_like(x2)
         bd = triton.next_power_of_2(d)
-        grid = (triton.cdiv(t, BM),)
+        fuse = _castreg.enabled()
+        if fuse:
+            bm8 = max(1, min(int(os.environ.get("NANOV41_RMS_FP8_BM", "4")), BM))
+            grid = (triton.cdiv(t, bm8),)
+            dx8 = torch.empty((t, d), dtype=torch.float8_e4m3fn, device=x2.device)
+            s8 = torch.empty(t, dtype=torch.float32, device=x2.device)
+        else:
+            bm8 = BM
+            grid = (triton.cdiv(t, BM),)
+            dx8 = s8 = None
         npart = grid[0]
         dw_part = torch.empty(npart, d, dtype=torch.float32, device=x2.device)
-        _rms_bwd_kernel[grid](x2, dy2, weight, r, dx, dw_part, t, D=d, BD=bd, BM=BM)
+        if fuse:
+            _rms_bwd_kernel_fp8[grid](x2, dy2, weight, r, dx, dw_part, dx8, s8, t,
+                                      D=d, BD=bd, BM=bm8, MAX=448.0)
+        else:
+            _rms_bwd_kernel[grid](x2, dy2, weight, r, dx, dw_part, t, D=d, BD=bd, BM=BM)
         dw = torch.empty(d, dtype=torch.float32, device=x2.device)
         _dw_reduce_kernel[(triton.cdiv(d, _DW_BK),)](dw_part, dw, npart, D=d, BD=_DW_BK, BK=_DW_BK)
-        return dx.view(dy.shape).to(dy.dtype), dw.to(weight.dtype), None
+        dx_ret = dx.view(dy.shape).to(dy.dtype)
+        if fuse:
+            _castreg.register(dx_ret, dx8, s8.view(t, 1))
+        return dx_ret, dw.to(weight.dtype), None
 
 
 def rmsnorm_fused(x: torch.Tensor, weight: torch.Tensor, eps: float = 1e-6) -> torch.Tensor:

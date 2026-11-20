@@ -54,4 +54,7 @@ def test_kernel_parity(name: str, timeout: int, slow: bool) -> None:  # noqa: AR
     )
     out = proc.stdout + proc.stderr
     assert proc.returncode == 0, f"{script.name} exited {proc.returncode}\n{out[-4000:]}"
+    if "skipped" in proc.stdout:
+        # Heavy-memory parity scripts opt out by default (NANOV41_RUN_HEAVY_CPU_TESTS=1 to run).
+        pytest.skip(proc.stdout.strip().splitlines()[-1])
     assert "PASS" in proc.stdout, f"{script.name} did not report PASS\n{out[-4000:]}"

@@ -443,6 +443,19 @@ else:  # pragma: no cover
         raise RuntimeError("triton 不可用（Mac）")
 
 
+
+def fused_head_nll_v3(hidden, weight, ids, ignore_index=-100):
+    """Forward-only per-token NLL [B, S-1] from the v3 fused head (no logits materialised).
+
+    Used by the eval harness when ``NANOV41_EVAL_FUSED_HEAD=1`` and the head/geometry is
+    supported (d=384, TP*V < 2**31).  The returned values are nats per scored position.
+    """
+    if not HAS_TRITON:
+        raise RuntimeError("triton 不可用")
+    st = _forward_state(hidden, weight, ids, ignore_index)
+    b, s = hidden.shape[:2]
+    return st["LOSS"][: b * s].reshape(b, s)[:, :-1]
+
 def fused_head_ce_v3(hidden, weight, ids, ignore_index=-100):
     """hidden [b,s,d]、weight [V,d]、ids [b,s] → 标量 loss（autograd 可用）。"""
     if not HAS_TRITON:

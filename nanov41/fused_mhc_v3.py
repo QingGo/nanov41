@@ -1075,6 +1075,142 @@ def mhc_post_mixes_pre(x1, res, post, comb, pmix, fn, eps=1e-20):
     return y.view(b, s, HC, d), mixes.view(b, s, MIX), li.view(b, s, d)
 
 
+
+# =====================================================================
+# M3: fused-autograd variant -- merge split_sinkhorn into the cell Functions
+# =====================================================================
+class _MixesPreSplitFn(torch.autograd.Function):
+    """hc_mixes + hc_pre + split_sinkhorn in ONE Function.
+
+    Saves only the 4-stream block input (plus tiny coefficients) and recomputes the mixes +
+    sinkhorn forward in backward, instead of the multi-Function version saving x twice plus
+    mixes / pre / post / comb / sinkhorn workspace.
+    """
+
+    @staticmethod
+    def forward(ctx, x, fn, pmix, scale, base, iters, eps, norm_eps):
+        _require(x)
+        t, hc, d = x.shape
+        x2 = x.reshape(t, hc * d)
+        mixes, li, r = _launch_mixes_pre(x2, fn, pmix, True, norm_eps)
+        pre, post, comb, minit, ws = _launch_split_sinkhorn(mixes, scale, base, iters, eps)
+        ctx.save_for_backward(x, fn, pmix, scale, base)
+        ctx.iters, ctx.eps, ctx.norm_eps = int(iters), float(eps), float(norm_eps)
+        return li, pre, post, comb
+
+    @staticmethod
+    def backward(ctx, dli, gpre, gpost, gcomb):
+        x, fn, pmix, scale, base = ctx.saved_tensors
+        t, hc, d = x.shape
+        k = hc * d
+        x2 = x.reshape(t, k)
+        mixes, _, r = _launch_mixes_pre(x2, fn, pmix, True, ctx.norm_eps)
+        pre, post, comb, minit, ws = _launch_split_sinkhorn(
+            mixes, scale, base, ctx.iters, ctx.eps)
+        nprog = _cdiv(t, BM_S)
+        dmix = torch.empty_like(mixes)
+        db = torch.empty(nprog, MIX, dtype=torch.float32, device=x.device)
+        ds = torch.empty(nprog, 3, dtype=torch.float32, device=x.device)
+        _split_sinkhorn_bwd_kernel[(nprog,)](
+            mixes, scale, pre, post, comb, minit, ws,
+            _g_or_zeros(gpre, pre).contiguous(),
+            _g_or_zeros(gpost, post).contiguous(),
+            _g_or_zeros(gcomb, comb).contiguous(),
+            dmix, db, ds, t, ITERS=ctx.iters, HC=HC, MIX=MIX, BM=BM_S, EPS=ctx.eps,
+            num_warps=_w("NANOV41_V3_W_SS", 4),
+        )
+        dx = torch.empty_like(x)
+        du = torch.empty(t, MIX, dtype=torch.bfloat16, device=x.device)
+        dpmix = torch.empty(t, HC, dtype=torch.float32, device=x.device)
+        _mixes_pre_bwd_kernel[(_cdiv(t, BM),)](
+            x2, fn, pmix if pmix is not None else x2,
+            dli if dli is not None else x2,
+            mixes, r, dmix, dx, du, dpmix, t,
+            D=d, K=k, HC=HC, MIX=MIX, MIXP=MIXP, BK=BK, BM=BM, HAS_PRE=True,
+            num_warps=_w("NANOV41_V3_W_MIX", 4), num_stages=2,
+        )
+        dfn = torch.mm(du.t(), x2).to(fn.dtype)
+        return dx, dfn, dpmix, ds.sum(0), db.sum(0), None, None, None
+
+
+class _PostMixesPreSplitFn(torch.autograd.Function):
+    """hc_post + hc_mixes + hc_pre + split_sinkhorn in ONE Function.
+
+    Saves x1 (single-stream), the 4-stream residual and small coefficients; recomputes y /
+    mixes / sinkhorn in backward instead of saving y (a full 4-stream tensor) and the sinkhorn
+    state.
+    """
+
+    @staticmethod
+    def forward(ctx, x1, res, post, comb, pmix, fn, scale, base, iters, eps, norm_eps):
+        _require(res)
+        t, hc, d = res.shape
+        y, mixes, r, li = _launch_pm_pre(x1.reshape(t, d), res, post, comb, pmix, fn, norm_eps)
+        pre2, post2, comb2, minit2, ws2 = _launch_split_sinkhorn(mixes, scale, base, iters, eps)
+        ctx.save_for_backward(x1, res, post, comb, pmix, fn, scale, base)
+        ctx.iters, ctx.eps, ctx.norm_eps = int(iters), float(eps), float(norm_eps)
+        return y, li, pre2, post2, comb2
+
+    @staticmethod
+    def backward(ctx, gy, dli, gpre2, gpost2, gcomb2):
+        x1, res, post, comb, pmix, fn, scale, base = ctx.saved_tensors
+        t, hc, d = res.shape
+        k = hc * d
+        y, mixes, r, li = _launch_pm_pre(x1.reshape(t, d), res, post, comb, pmix, fn, ctx.norm_eps)
+        pre2, post2, comb2, minit2, ws2 = _launch_split_sinkhorn(
+            mixes, scale, base, ctx.iters, ctx.eps)
+        gy = _g_or_zeros(gy, res)
+        nprog = _cdiv(t, BM_S)
+        dmix = torch.empty_like(mixes)
+        db = torch.empty(nprog, MIX, dtype=torch.float32, device=res.device)
+        ds = torch.empty(nprog, 3, dtype=torch.float32, device=res.device)
+        _split_sinkhorn_bwd_kernel[(nprog,)](
+            mixes, scale, pre2, post2, comb2, minit2, ws2,
+            _g_or_zeros(gpre2, pre2).contiguous(),
+            _g_or_zeros(gpost2, post2).contiguous(),
+            _g_or_zeros(gcomb2, comb2).contiguous(),
+            dmix, db, ds, t, ITERS=ctx.iters, HC=HC, MIX=MIX, BM=BM_S, EPS=ctx.eps,
+            num_warps=_w("NANOV41_V3_W_SS", 4),
+        )
+        dx1 = torch.empty_like(x1)
+        dres = torch.empty_like(res)
+        du = torch.empty(t, MIX, dtype=torch.bfloat16, device=res.device)
+        dpost = torch.empty(t, HC, dtype=torch.float32, device=res.device)
+        dcomb = torch.empty(t, HC * HC, dtype=torch.float32, device=res.device)
+        dpre = torch.empty(t, HC, dtype=torch.float32, device=res.device)
+        _pm_pre_bwd_kernel[(_cdiv(t, PMPFB_BM),)](
+            dx1.reshape(t, d), dres, dpost, dcomb, dpre, du,
+            gy.contiguous(), (dli if dli is not None else y).reshape(t, d).contiguous(),
+            y, x1.reshape(t, d), res, post, comb, pmix, mixes, r, dmix, fn, t,
+            D=d, K=k, HC=HC, MIX=MIX, MIXP=MIXP, BK=PMPFB_BK, BM=PMPFB_BM,
+            num_warps=_w("NANOV41_V3_W_PMPB", 4), num_stages=PMPFB_S,
+        )
+        dfn = torch.mm(du.t(), y.reshape(t, k)).to(fn.dtype)
+        return dx1, dres, dpost, dcomb, dpre, dfn, ds.sum(0), db.sum(0), None, None, None
+
+
+def _block_forward_fused_autograd(self, x, start_pos, pre_mix, image_mask, *attn_args):
+    """Block.forward with ONE autograd Function per mHC cell (5 Functions -> 2 + final post)."""
+    b, s, hc, d = x.shape
+    t = b * s
+    x_flat = x.reshape(t, hc, d)
+    pmix_flat = pre_mix.reshape(t, hc) if pre_mix is not None else None
+    li, attn_pre, attn_post, attn_comb = _MixesPreSplitFn.apply(
+        x_flat, self.hc_attn_fn, pmix_flat, self.hc_attn_scale, self.hc_attn_base,
+        self.hc_sinkhorn_iters, self.hc_eps, self.norm_eps)
+    h = self.attn_norm(li.view(b, s, d))
+    h = self.attn(h, start_pos, *attn_args)
+    y, li2, ffn_pre, ffn_post, ffn_comb = _PostMixesPreSplitFn.apply(
+        h.reshape(t, d), x_flat, attn_post.reshape(t, hc),
+        attn_comb.reshape(t, hc * hc).contiguous(), attn_pre.reshape(t, hc),
+        self.hc_ffn_fn, self.hc_ffn_scale, self.hc_ffn_base,
+        self.hc_sinkhorn_iters, self.hc_eps, self.norm_eps)
+    h2 = self.ffn_norm(li2.view(b, s, d))
+    h2 = self.ffn(h2, image_mask)
+    y2 = mhc_post(h2, y.view(b, s, hc, d), ffn_post.view(b, s, hc),
+                  ffn_comb.view(b, s, hc, hc))
+    return y2, ffn_pre.view(b, s, hc)
+
 # =====================================================================
 # Block patching
 # =====================================================================
@@ -1131,10 +1267,23 @@ def _resolve_block(target):
     return block
 
 
-def install(target=None, *, fused_block: bool = True) -> dict:
-    """Patch `Block.hc_mixes/hc_pre/hc_post` (+ `forward` when fused_block). Idempotent."""
+def _want_fused_autograd(fused_autograd):
+    if fused_autograd is None:
+        return os.environ.get("NANOV41_MHC_V3_FUSED_AUTOGRAD", "0").lower() in (
+            "1", "true", "yes", "on")
+    return bool(fused_autograd)
+
+
+def install(target=None, *, fused_block: bool = True, fused_autograd: bool | None = None) -> dict:
+    """Patch `Block.hc_mixes/hc_pre/hc_post` (+ `forward` when fused_block). Idempotent.
+
+    fused_autograd=True (or env NANOV41_MHC_V3_FUSED_AUTOGRAD=1) uses the two merged autograd
+    Functions instead of the 5-Function version: fewer saved tensors in backward, same kernels.
+    """
     global _INSTALLED
+    fused_autograd = _want_fused_autograd(fused_autograd)
     block = _resolve_block(target)
+    fwd = _block_forward_fused_autograd if fused_autograd else _block_forward
     if _INSTALLED is not None:
         if _INSTALLED["cls"] is not block:
             uninstall()
@@ -1142,8 +1291,13 @@ def install(target=None, *, fused_block: bool = True) -> dict:
             if fused_block and not _INSTALLED["forward_patched"]:
                 prev = _INSTALLED["prev"]
                 prev["forward"] = block.__dict__.get("forward", _MISSING)
-                block.forward = _block_forward
+                block.forward = fwd
                 _INSTALLED["forward_patched"] = True
+            elif fused_block and _INSTALLED.get("fused_autograd") != fused_autograd:
+                prev = _INSTALLED["prev"]
+                prev["forward"] = block.__dict__.get("forward", _MISSING)
+                block.forward = fwd
+                _INSTALLED["fused_autograd"] = fused_autograd
             return dict(_INSTALLED["prev"])
     prev = {}
     for name, fn in _METHODS.items():
@@ -1152,9 +1306,10 @@ def install(target=None, *, fused_block: bool = True) -> dict:
     forward_patched = False
     if fused_block:
         prev["forward"] = block.__dict__.get("forward", _MISSING)
-        block.forward = _block_forward
+        block.forward = fwd
         forward_patched = True
-    _INSTALLED = {"cls": block, "prev": prev, "forward_patched": forward_patched}
+    _INSTALLED = {"cls": block, "prev": prev, "forward_patched": forward_patched,
+                  "fused_autograd": fused_autograd}
     return dict(prev)
 
 

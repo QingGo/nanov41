@@ -186,7 +186,9 @@ if HAS_TILELANG:
 
     # ------------------------------------------------------------------ bwd 主 kernel
     @tilelang.jit(pass_configs=pass_configs)
-    def _bwd_kernel(h: int, d: int, win: int, nc: int, scale: float, g: int, lb: int, threads: int):
+    def _bwd_kernel(h: int, d: int, win: int, nc: int, scale: float, g: int, lb: int, threads: int,
+                    bf16_dkv: bool = False):
+        DKV = BF16 if bf16_dkv else FP32
         b = T.symbolic("b")
         m = T.symbolic("m")
         n = T.symbolic("n")
@@ -205,7 +207,7 @@ if HAS_TILELANG:
             dq: T.Tensor[(b, m, h, d), BF16],
             rowsum: T.Tensor[(b, m, h), FP32],
             dsink_rows: T.Tensor[(b, m, h), FP32],
-            dkv_c: T.Tensor[(b, m, max(nc, 1), d), FP32],
+            dkv_c: T.Tensor[(b, m, max(nc, 1), d), DKV],
         ):
             with T.Kernel(T.ceildiv(m, g), b, threads=threads) as (bx, by):
                 q_s = T.alloc_shared((GH, d), FP16)
@@ -216,7 +218,7 @@ if HAS_TILELANG:
                 p_c = T.alloc_shared((GH, max(g * nc, 1)), FP16)
                 ds_c = T.alloc_shared((GH, max(g * nc, 1)), FP16)
                 dq_s = T.alloc_shared((GH, d), BF16)
-                dkc_s = T.alloc_shared((max(g * nc, 1), d), FP32)
+                dkc_s = T.alloc_shared((max(g * nc, 1), d), DKV)
                 acc_s = T.alloc_fragment((GH, W), FP32)
                 dp = T.alloc_fragment((GH, W), FP32)
                 tmp = T.alloc_fragment((GH, W), FP32)

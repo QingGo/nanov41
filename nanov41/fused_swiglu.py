@@ -23,6 +23,8 @@ import os
 
 import torch
 
+from . import fp8_cast_registry as _castreg
+
 try:  # pragma: no cover - triton is GPU-only
     import triton
     import triton.language as tl
@@ -111,14 +113,114 @@ if HAS_TRITON:
         tl.store(DU + idx, du.to(DU.dtype.element_ty), mask=mask)
 
 
+    @triton.jit
+    def _swiglu_fwd_kernel_fp8(G, U, O, Y8, S8, T,
+                               INT: tl.constexpr, BI: tl.constexpr, LIM, HAS_LIM: tl.constexpr,
+                               BR: tl.constexpr, MAX: tl.constexpr):
+        """Row-based SwiGLU fwd + fused per-row FP8 copy (feeds the following w2 linear)."""
+        pid = tl.program_id(0)
+        rows = pid * BR + tl.arange(0, BR)
+        rmask = rows < T
+        cols = tl.arange(0, BI)
+        cmask = cols < INT
+        m2 = rmask[:, None] & cmask[None, :]
+        idx = rows[:, None] * INT + cols[None, :]
+        g = tl.load(G + idx, mask=m2, other=0.0).to(tl.float32)
+        u = tl.load(U + idx, mask=m2, other=0.0).to(tl.float32)
+        if HAS_LIM:
+            u = tl.minimum(tl.maximum(u, -LIM), LIM)
+            g = tl.minimum(g, LIM)
+        y = g * tl.sigmoid(g) * u
+        yb = y.to(tl.bfloat16)
+        tl.store(O + idx, yb, mask=m2)
+        yf = yb.to(tl.float32)
+        amax = tl.max(tl.abs(yf), axis=1)
+        s = tl.maximum(amax, 1e-12) / MAX
+        tl.store(S8 + rows, s, mask=rmask)
+        q = tl.minimum(tl.maximum(yf / s[:, None], -MAX), MAX).to(tl.float8e4nv)
+        tl.store(Y8 + idx, q, mask=m2)
+
+    @triton.jit
+    def _swiglu_bwd_kernel_fp8(G, U, DO, DG, DU, DG8, DU8, SG, SU, T,
+                               INT: tl.constexpr, BI: tl.constexpr, LIM, HAS_LIM: tl.constexpr,
+                               BR: tl.constexpr, MAX: tl.constexpr):
+        """Row-based SwiGLU bwd + fused FP8 copies of dGate/dUp (feed the w1/w3 dgrad)."""
+        pid = tl.program_id(0)
+        rows = pid * BR + tl.arange(0, BR)
+        rmask = rows < T
+        cols = tl.arange(0, BI)
+        cmask = cols < INT
+        m2 = rmask[:, None] & cmask[None, :]
+        idx = rows[:, None] * INT + cols[None, :]
+        gp = tl.load(G + idx, mask=m2, other=0.0).to(tl.float32)
+        up_ = tl.load(U + idx, mask=m2, other=0.0).to(tl.float32)
+        do = tl.load(DO + idx, mask=m2, other=0.0).to(tl.float32)
+        g = gp
+        u = up_
+        if HAS_LIM:
+            u = tl.minimum(tl.maximum(u, -LIM), LIM)
+            g = tl.minimum(g, LIM)
+        sig = tl.sigmoid(g)
+        silu = g * sig
+        dy_dg = u * (sig * (1.0 + g * (1.0 - sig)))
+        dg = do * dy_dg
+        du = do * silu
+        if HAS_LIM:
+            dg = tl.where(gp < LIM, dg, 0.0)
+            du = tl.where((up_ > -LIM) & (up_ < LIM), du, 0.0)
+        dgb = dg.to(tl.bfloat16)
+        dub = du.to(tl.bfloat16)
+        tl.store(DG + idx, dgb, mask=m2)
+        tl.store(DU + idx, dub, mask=m2)
+        dgf = dgb.to(tl.float32)
+        ag = tl.max(tl.abs(dgf), axis=1)
+        sg = tl.maximum(ag, 1e-12) / MAX
+        tl.store(SG + rows, sg, mask=rmask)
+        qg = tl.minimum(tl.maximum(dgf / sg[:, None], -MAX), MAX).to(tl.float8e4nv)
+        tl.store(DG8 + idx, qg, mask=m2)
+        duf = dub.to(tl.float32)
+        au = tl.max(tl.abs(duf), axis=1)
+        su = tl.maximum(au, 1e-12) / MAX
+        tl.store(SU + rows, su, mask=rmask)
+        qu = tl.minimum(tl.maximum(duf / su[:, None], -MAX), MAX).to(tl.float8e4nv)
+        tl.store(DU8 + idx, qu, mask=m2)
+
 def _launch_fwd(gate, up, out, limit):
     n = gate.numel()
+    if _castreg.enabled():
+        inter = gate.shape[-1]
+        t = n // inter
+        br = int(os.environ.get("NANOV41_SWIGLU_FP8_BR", "8"))
+        bi = triton.next_power_of_2(inter)
+        y8 = torch.empty((t, inter), dtype=torch.float8_e4m3fn, device=gate.device)
+        s8 = torch.empty(t, dtype=torch.float32, device=gate.device)
+        _swiglu_fwd_kernel_fp8[(triton.cdiv(t, br),)](
+            gate.reshape(t, inter), up.reshape(t, inter), out.reshape(t, inter), y8, s8, t,
+            INT=inter, BI=bi, LIM=float(limit), HAS_LIM=limit > 0, BR=br, MAX=448.0)
+        _castreg.register(out, y8, s8.view(t, 1))
+        return
     _swiglu_fwd_kernel[(triton.cdiv(n, BLOCK),)](gate, up, out, n, float(limit),
                                                  HAS_LIM=limit > 0, BLOCK=BLOCK)
 
 
 def _launch_bwd(gate, up, dout, dgate, dup, limit):
     n = gate.numel()
+    if _castreg.enabled():
+        inter = gate.shape[-1]
+        t = n // inter
+        br = int(os.environ.get("NANOV41_SWIGLU_FP8_BR", "8"))
+        bi = triton.next_power_of_2(inter)
+        z = lambda: torch.empty((t, inter), dtype=torch.float8_e4m3fn, device=gate.device)
+        dg8, du8 = z(), z()
+        sg8 = torch.empty(t, dtype=torch.float32, device=gate.device)
+        su8 = torch.empty(t, dtype=torch.float32, device=gate.device)
+        _swiglu_bwd_kernel_fp8[(triton.cdiv(t, br),)](
+            gate.reshape(t, inter), up.reshape(t, inter), dout.reshape(t, inter),
+            dgate.reshape(t, inter), dup.reshape(t, inter), dg8, du8, sg8, su8, t,
+            INT=inter, BI=bi, LIM=float(limit), HAS_LIM=limit > 0, BR=br, MAX=448.0)
+        _castreg.register(dgate, dg8, sg8.view(t, 1))
+        _castreg.register(dup, du8, su8.view(t, 1))
+        return
     _swiglu_bwd_kernel[(triton.cdiv(n, BLOCK),)](gate, up, dout, dgate, dup, n, float(limit),
                                                  HAS_LIM=limit > 0, BLOCK=BLOCK)
 

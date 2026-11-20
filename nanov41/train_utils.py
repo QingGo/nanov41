@@ -23,6 +23,12 @@ except Exception:  # pragma: no cover
     _CE_TRITON = False
 
 
+def _head_fwdgrad_enabled() -> bool:
+    """Env gate for the forward-precomputed head-gradient path (default off)."""
+    return os.environ.get("NANOV41_HEAD_FWDGRAD", "0").strip().lower() not in (
+        "", "0", "false", "no", "off")
+
+
 def moe_grouped_forward(self, x, image_mask=None):
     """Exact-math replacement for reference MoE.forward (sort once, no where/sync)."""
     shape = x.size()
@@ -243,8 +249,11 @@ class _FusedHeadCE(torch.autograd.Function):
         z2 = torch.zeros((), dtype=torch.float32, device=hidden.device)
         count = torch.zeros((), dtype=torch.float32, device=hidden.device)
         # 只有 CUDA 张量才走 Triton（CPU 对拍/门禁在 GPU 机器上跑时不能误走 GPU kernel）
+        # NOTE: the Triton CE forward also returns the per-row lse, so z-loss can reuse it
+        # instead of materialising logits (Marin 8B retro: z-loss 1e-4 is the standard fix for
+        # lm_head norm growth during cooldown; keep the fast path).
         use_triton_ce = (_CE_TRITON and hidden.is_cuda and _triton_ce is not None
-                         and _triton_ce.available() and z_loss == 0)
+                         and _triton_ce.available())
         lse_all = (torch.empty(n, dtype=torch.float32, device=hidden.device)
                    if use_triton_ce else None)
         for i in range(0, n, chunk):
@@ -258,8 +267,11 @@ class _FusedHeadCE(torch.autograd.Function):
                 row = F.cross_entropy(lc, tc, reduction="none", ignore_index=ignore_index)
                 total = total + row.float().sum()                        # 跨 chunk fp32 累加
             count = count + (tc != ignore_index).sum()
-            if z_loss:  # z-loss 路径很少用，保持 fp32 语义
-                z2 = z2 + torch.logsumexp(lc.float(), -1).pow(2).sum()
+            if z_loss:  # z = logsumexp over the vocab, averaged over all positions
+                if use_triton_ce:
+                    z2 = z2 + lse_all[i:i + chunk].pow(2).sum()
+                else:
+                    z2 = z2 + torch.logsumexp(lc.float(), -1).pow(2).sum()
         loss = total / count
         if z_loss:
             loss = loss + z_loss * z2 / n
@@ -316,9 +328,26 @@ class _FusedHeadCE(torch.autograd.Function):
 
 def fused_head_ce(hidden, weight, ids, chunk=None, ignore_index=-100, z_loss=0.0):
     """hidden [b,s,D] → loss；head 权重 [V,D]；ids [b,s]。等价于
-    head_bf16_forward + chunked_cross_entropy_shift（+ 可选 z-loss），但显存 O(chunk·V)。"""
+    head_bf16_forward + chunked_cross_entropy_shift（+ 可选 z-loss），但显存 O(chunk·V)。
+
+    z-loss 的反向会额外物化几份 [chunk, V] fp32 临时张量（lse/softmax/d），所以默认 chunk 从
+    2048 降到 256（显存 ~1/8）；否则 32GB 卡在图捕获阶段会 OOM（实测 129k 词表、b=16×1024、
+    graph capture 时 30.5GB 已用，再要 3.95GB 直接失败）。可用 NANOV41_CE_CHUNK 覆盖。
+    """
     if chunk is None:
-        chunk = int(os.environ.get("NANOV41_CE_CHUNK", "2048"))
+        chunk = int(os.environ.get("NANOV41_CE_CHUNK", "256" if z_loss else "2048"))
+    # Forward-precomputed dX/dW path (env-gated, default off): skips the backward logits recompute
+    # (task-22 attribution: ~4.95 ms/8k) by doing the gradient GEMMs while logits are hot in fwd.
+    # z_loss is supported since 2026-11-16 (bf16 fwdgrad path; the fp8-dlogits path cannot carry the
+    # z-term, see head_fwdgrad.fused_head_ce_fwdgrad) -- before that `z_loss != 0` disabled every
+    # fast path and cost +17.7% step time (R93 S2 measurement).
+    if _head_fwdgrad_enabled():
+        try:
+            from . import head_fwdgrad as _hfg
+            if _hfg.available():
+                return _hfg.fused_head_ce_fwdgrad(hidden, weight, ids, chunk, ignore_index, z_loss)
+        except Exception:  # noqa: BLE001 - never break the default path
+            pass
     _fp8 = os.environ.get("NANOV41_HEAD_FP8", "").lower()
     if _fp8 in ("2", "v2") and z_loss == 0:
         try:

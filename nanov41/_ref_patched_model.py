@@ -6,6 +6,7 @@ Patches (all documented in the script):
   P3 prefill index keys shared as a local tensor instead of the detached cache
   P4 Transformer.forward gains full_logits parameter
   P5 forward returns per-position logits when full_logits=True
+  P6 dense-FFN branch (ffn_impl/dense_inter_dim + DenseFFN) for dense-vs-MoE
 
 Do not import this module directly: it uses the official code's sibling imports
 (`engram`, `kernel`, ...). Load it through `nanov41.patched_env.import_patched()`.
@@ -76,6 +77,9 @@ class ModelArgs:
     n_routed_experts: int = 8
     n_shared_experts: int = 1
     n_activated_experts: int = 2
+    # PATCH P6: FFN selector for dense-vs-MoE ablations.
+    ffn_impl: Literal["moe", "dense"] = "moe"
+    dense_inter_dim: int = 0  # dense FFN hidden width; 0 -> moe_inter_dim
     score_func: Literal["softmax", "sigmoid", "sqrtsoftplus"] = "sqrtsoftplus"
     gate_temp: float = 1.0
     norm_topk_prob: bool = True
@@ -868,6 +872,25 @@ class Expert(nn.Module):
         return self.w2(x.to(dtype))
 
 
+class DenseFFN(nn.Module):
+    """PATCH P6: plain SwiGLU FFN, the dense counterpart of MoE (dense-vs-MoE ablations).
+
+    The official model has no dense-FFN path (Block always builds MoE), so dense controls used to
+    be emulated with a 1-expert MoE, which keeps a token-dependent gate scalar on the FFN. This is
+    the real thing: one SwiGLU FFN, no router, no gate, no route_scale.
+    """
+
+    def __init__(self, args: ModelArgs):
+        super().__init__()
+        self.inter_dim = int(args.dense_inter_dim or args.moe_inter_dim)
+        self.w = Expert(args.dim, self.inter_dim, swiglu_limit=args.swiglu_limit)
+
+    def forward(self, x: torch.Tensor, image_mask: torch.Tensor | None = None) -> torch.Tensor:
+        shape = x.size()
+        y = self.w(x.view(-1, shape[-1]))
+        return y.view(shape)
+
+
 class MoE(nn.Module):
     """Top-k routed experts plus one shared expert every token goes through. Experts are split
     across ranks, so `self.experts` is None for those another rank owns."""
@@ -943,7 +966,10 @@ class Block(nn.Module):
         self.layer_id = layer_id
         self.norm_eps = args.norm_eps
         self.attn = self.attention_cls(layer_id, args)
-        self.ffn = MoE(layer_id, args)
+        if args.ffn_impl == "dense":
+            self.ffn = DenseFFN(args)
+        else:
+            self.ffn = MoE(layer_id, args)
         self.engram = None
         if engram_layout is not None and layer_id in engram_layout.layer_ids:
             self.engram = Engram(args, layer_id, engram_layout)

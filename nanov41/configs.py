@@ -8,8 +8,9 @@ Structural invariants that must hold for the reference code to behave:
 - `compress_ratios` has one entry per backbone layer; layers sharing a value share one
   compressed KV + one indexer, produced by the FIRST layer of that group, and that first
   layer must be listed in both `kv_source_layers` and `index_source_layers`.
-- `index_source_layers` must be a subset of `kv_source_layers` (only KV owners can build
-  index keys).
+- `index_source_layers` may be a superset of `kv_source_layers`: extra index sources are
+  **Reindex** layers (reuse the most recent main KV / indexer K, recompute their own Top-K);
+  `kv_source_layers` are the **Full** layers. A layer is Reuse if it is in neither list.
 - `n_heads % o_groups == 0` and `(n_heads * head_dim) % o_groups == 0`.
 """
 
@@ -37,7 +38,8 @@ _COMMON = dict(
     candidate_topk_blocks=0,
     candidate_block_size=0,
     vision_n_layers=0,
-    engram_layer_ids=[],  # Engram tables need the tokenizer; enabled in a later milestone
+    engram_layer_ids=[],  # REQUIRED in the OPD student (docs/engram-design.md); disabled in
+    # these scratch configs until the training-capable table lands (P1)
     engram_num_embeddings=[],
     engram_max_ngram_size=0,
     engram_vocab_size=0,
@@ -133,6 +135,68 @@ D12 = dict(
     max_seq_len=1024,
 )
 
+# Scaling ladder configs for the "does a bigger model raise discounted MFU / lower tok/s?" sweep.
+# Same architecture family/pattern as d12 (1 ratio-0 layer, 5 ratio-2 layers, then ratio-1 CED
+# decoder layers), wider and deeper. Param counts are regression-tested in tests/test_configs.py.
+# d12 with 32 routed experts (2 active): +85M total params, SAME active parameters/FLOPs.
+# This is the "free capacity" probe: quality-per-FLOP may improve by expert capacity, while the
+# only new costs are optimizer/memory traffic (not per-token compute).
+D12E32 = dict(D12, n_routed_experts=32, n_activated_experts=2)
+
+D16 = dict(
+    **_COMMON,
+    vocab_size=129280,
+    dim=512,
+    moe_inter_dim=512,
+    n_layers=16,
+    n_heads=8,
+    n_routed_experts=16,
+    n_shared_experts=1,
+    n_activated_experts=2,
+    q_lora_rank=128,
+    head_dim=64,
+    rope_head_dim=16,
+    o_groups=2,
+    o_lora_rank=128,
+    window_size=64,
+    compress_ratios=[0, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    kv_source_layers=[1, 6],
+    index_source_layers=[1, 6],
+    index_n_heads=4,
+    index_head_dim=32,
+    index_topk=32,
+    hc_sinkhorn_iters=20,
+    max_batch_size=8,
+    max_seq_len=1024,
+)
+
+D20 = dict(
+    **_COMMON,
+    vocab_size=129280,
+    dim=640,
+    moe_inter_dim=640,
+    n_layers=20,
+    n_heads=8,
+    n_routed_experts=16,
+    n_shared_experts=1,
+    n_activated_experts=2,
+    q_lora_rank=160,
+    head_dim=64,
+    rope_head_dim=16,
+    o_groups=2,
+    o_lora_rank=160,
+    window_size=64,
+    compress_ratios=[0, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    kv_source_layers=[1, 6],
+    index_source_layers=[1, 6],
+    index_n_heads=4,
+    index_head_dim=32,
+    index_topk=32,
+    hc_sinkhorn_iters=20,
+    max_batch_size=8,
+    max_seq_len=1024,
+)
+
 # Same tiny model but the indexer keeps *all* reachable compressed positions. The official
 # indexer applies ReLU to its scores, so a randomly-initialised model produces many exact
 # zeros and `topk` tie-breaking then depends on tensor shape (batch length), making
@@ -147,5 +211,19 @@ TINY_ALL_TOPK = dict(TINY, index_topk=TINY["max_seq_len"])
 D8_DENSE = dict(D8, n_activated_experts=D8["n_routed_experts"])
 D12_DENSE = dict(D12, n_activated_experts=D12["n_routed_experts"])
 
+# R90 Stage-1 architecture search: expert-activation count arms at fixed total capacity.
+# Same parameters, same experts; only how many are activated per token changes (FLOPs/token
+# scales accordingly: top1 = 0.5x, top2 = 1x, top4 = 2x of the top-2 baseline).
+D12_TOP1 = dict(D12, n_activated_experts=1)
+D12_TOP4 = dict(D12, n_activated_experts=4)
+
+# R92 vocab-truncation pilot (2026-11-15): identical d12 body, 32,000-token output vocabulary
+# (= DeepSeek official BPE prefix truncation: ids 0-2 specials + 256 byte tokens + 31,741 merges).
+# Used to measure the *Truncated-vocab* scheme A against the 129,280 control on the same data
+# (bpb compared at equal bytes via each tokenizer's bytes/token: 4.604 vs 4.181).
+D12_V32K = dict(D12, vocab_size=32000)
+
 CONFIGS = {"tiny": TINY, "tiny_all_topk": TINY_ALL_TOPK, "d8": D8, "d8_dense": D8_DENSE,
-           "d12": D12, "d12_dense": D12_DENSE}
+           "d12e32": D12E32, "d16": D16, "d20": D20,
+           "d12": D12, "d12_dense": D12_DENSE, "d12_top1": D12_TOP1, "d12_top4": D12_TOP4,
+           "d12_v32k": D12_V32K}

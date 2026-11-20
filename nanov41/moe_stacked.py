@@ -130,8 +130,11 @@ def patch_model(model, M) -> int:
         if experts is None:
             continue
         e0 = experts[mod.experts_start_idx]
-        dim = e0.w1.weight.shape[0]
-        inter = e0.w1.weight.shape[1]
+        # Linear(dim, inter).weight has shape [inter, dim]; the stacked layout is [E, dim, inter]
+        # (`_copy_from_experts` stores the transpose), so the reads must not be swapped.  D8/D12
+        # are square and hid this; the aligned d12 (dim=512, moe_inter=256) is not.
+        dim = e0.w1.weight.shape[1]
+        inter = e0.w1.weight.shape[0]
         stack = _StackedWeights(mod.n_local_experts, dim, inter).to(
             device=e0.w1.weight.device, dtype=e0.w1.weight.dtype)
         _copy_from_experts(stack, experts, mod.experts_start_idx, mod.experts_end_idx)

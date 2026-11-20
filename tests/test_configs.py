@@ -12,6 +12,9 @@ from nanov41.model import NanoV41
         ("tiny_all_topk", 683_416, 617_880),
         ("d8", 81_620_944, 15_429_584),
         ("d12", 193_408_360, 94_121_320),
+        ("d12e32", 278_416_936, 179_129_896),
+        ("d16", 353_924_000, 221_541_280),
+        ("d20", 596_378_328, 430_899_928),
     ],
 )
 def test_param_counts(name: str, total: int, non_embedding: int) -> None:
@@ -20,7 +23,7 @@ def test_param_counts(name: str, total: int, non_embedding: int) -> None:
     assert model.num_params_non_embedding() == non_embedding
 
 
-@pytest.mark.parametrize("name", ["tiny", "tiny_all_topk", "d8", "d12"])
+@pytest.mark.parametrize("name", ["tiny", "tiny_all_topk", "d8", "d12", "d12e32", "d16", "d20"])
 def test_configs_build(name: str) -> None:
     model = NanoV41(CONFIGS[name])
     assert model.vocab_size == CONFIGS[name]["vocab_size"]

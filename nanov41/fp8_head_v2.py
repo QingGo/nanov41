@@ -16,6 +16,8 @@ e4m3 单笔 GEMM 约 3–4% max-rel；**不是逐位对齐 bf16 ref**。训练�
 """
 from __future__ import annotations
 
+import os
+
 import torch
 import torch.nn.functional as F
 
@@ -129,3 +131,97 @@ def fused_head_ce_fp8(hidden, weight, ids, chunk=2048, ignore_index=-100, z_loss
 
 def available() -> bool:
     return hasattr(torch, "_scaled_mm") and torch.cuda.is_available()
+
+
+# ---------------------------------------------------------------------------------------------
+# Head-weight quantisation cache (NANOV41_HEAD_WCACHE=1, default OFF)
+# ---------------------------------------------------------------------------------------------
+# The fused fp8 head (``head_fwdgrad._FP8HeadCEFwdGrad`` / ``_FP8HeadCEv2``) quantises the whole
+# [V, D] head weight **once per micro-batch** (``_q_row`` for the logits GEMM, ``_q_col`` for the
+# dX GEMM, plus the [D, V] physical transpose).  Under ``--grad-accum 32`` that is 32x per
+# optimizer step of pure repeated bandwidth work: R77 eager attribution puts it at ~1.5-2.7 ms
+# per 16k-token micro-batch (aten::clamp/copy_/div/mul/abs/amax on [129280, 512]).
+#
+# The head weight only changes when the optimizer steps, so with ``NANOV41_HEAD_WCACHE=1`` we keep
+# the fp8 copies + scales in **static preallocated buffers** and refill them **in place** from the
+# current weight via :func:`refresh_weight_cache` (called once per optimizer step, *outside* the
+# captured CUDA graph).  A capture that reads these buffers keeps their pointers, so graph replay
+# just consumes the cached fp8 weight.  Within a step the weight is constant, therefore the cached
+# quantisation is **bitwise identical** to quantising per micro-batch (same kernels, same inputs).
+#
+# API:
+#   wcache_enabled()                     -> env flag
+#   refresh_weight_cache(weight=None)    -> refill the static buffers (eager; in-place copy_)
+#   weight_cache()                       -> the singleton buffer holder (read-only use by forward)
+class _WeightQuantCache:
+    """Static fp8 copies of the head weight [V, D] and their scales (pointers never change)."""
+
+    __slots__ = ("wq_row", "sw_f", "wphys", "sw_col", "wq_dx", "version", "ready",
+                 "weight", "refreshes")
+
+    def __init__(self):
+        self.wq_row = None   # [V, D] fp8_e4m3, per-row scaled   (forward logits GEMM B)
+        self.sw_f = None     # [1, V]  fp32, row scales
+        self.wphys = None    # [D, V]  fp8_e4m3 contiguous, per-column scaled (dX GEMM B)
+        self.sw_col = None   # [1, D]  fp32, column scales
+        self.wq_dx = None    # [V, D]  fp8_e4m3 view of wphys (stride(0) == 1)
+        self.version = 0
+        self.ready = False
+        self.weight = None   # last weight tensor seen (enables the argument-less refresh)
+        self.refreshes = 0
+
+    def shape_ok(self, weight) -> bool:
+        return (self.wq_row is not None and self.wq_row.shape[0] == weight.shape[0]
+                and self.wq_row.shape[1] == weight.shape[1]
+                and self.wq_row.device == weight.device)
+
+
+_CACHE = _WeightQuantCache()
+
+
+def wcache_enabled() -> bool:
+    return os.environ.get("NANOV41_HEAD_WCACHE", "0").strip().lower() not in (
+        "", "0", "false", "no", "off")
+
+
+def weight_cache() -> "_WeightQuantCache":
+    return _CACHE
+
+
+def refresh_weight_cache(weight=None) -> bool:
+    """Refill the static fp8 head-weight buffers from ``weight`` [V, D] (bf16 or fp32).
+
+    Must run **outside** the captured CUDA graph (it is eager work, done once per optimizer step
+    right after ``bundle.step()`` / ``opt.step()``).  The buffers are written in place so their
+    data pointers -- which the graph has captured -- never change.  With ``weight=None`` the last
+    tensor seen by the fused fp8 head is used (so the training loop needs no extra plumbing).
+    """
+    c = _CACHE
+    w = weight if weight is not None else c.weight
+    if w is None:
+        return False
+    c.weight = w
+    with torch.no_grad():
+        wb = w.detach()
+        if wb.dtype != torch.bfloat16:
+            wb = wb.to(torch.bfloat16)
+        # exactly the same two quantisations the per-micro-batch path uses
+        wq_row, sw_row = _q_row(wb)
+        wq_col, sw_col = _q_col(wb)
+        sw_f = sw_row.reshape(1, -1).contiguous()
+        wphys = wq_col.t().contiguous()
+        if not c.shape_ok(wb):
+            # first refresh (eager, before graph capture): allocate the static buffers once
+            c.wq_row = torch.empty_like(wq_row)
+            c.sw_f = torch.empty_like(sw_f)
+            c.wphys = torch.empty_like(wphys)
+            c.sw_col = torch.empty_like(sw_col)
+            c.wq_dx = c.wphys.t()
+        c.wq_row.copy_(wq_row)
+        c.sw_f.copy_(sw_f)
+        c.wphys.copy_(wphys)
+        c.sw_col.copy_(sw_col)
+    c.version += 1
+    c.refreshes += 1
+    c.ready = True
+    return True

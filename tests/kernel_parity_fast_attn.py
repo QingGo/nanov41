@@ -30,8 +30,18 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import sys
 from pathlib import Path
+
+# Opt-in only: this parity harness allocates multi-GB reference activations and writes large
+# temporary tensors, which is hostile to an 8 GB laptop (and unnecessary for the kernel work).
+# On the GPU box or a big-memory host: NANOV41_RUN_HEAVY_CPU_TESTS=1 python3 tests/kernel_parity_fast_attn.py
+if os.environ.get("NANOV41_RUN_HEAVY_CPU_TESTS", "0").strip().lower() not in (
+        "1", "true", "yes", "on"):
+    print("kernel_parity_fast_attn: skipped (heavy CPU/disk test; "
+          "set NANOV41_RUN_HEAVY_CPU_TESTS=1 to run)")
+    raise SystemExit(0)
 
 import torch
 

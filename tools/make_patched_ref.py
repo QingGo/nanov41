@@ -2,7 +2,7 @@
 
 The official `ref/model.py` is inference-first: buffers detach the compression/indexer
 paths (fine for serving, fatal for gradients) and `Transformer.forward` is decorated with
-`torch.inference_mode()`. This script copies the file and applies exactly five minimal,
+`torch.inference_mode()`. This script copies the file and applies exactly six minimal,
 documented patches — everything else stays byte-identical to the official code so that
 the parity tests (patched vs pristine) are meaningful.
 
@@ -70,6 +70,49 @@ def build_patched_source() -> str:
     assert old in src, "forward logits patch anchor not found"
     src = src.replace(old, new)
 
+    # P6: dense-FFN branch for dense-vs-MoE ablations. ModelArgs gains ffn_impl/dense_inter_dim,
+    # a plain SwiGLU DenseFFN is added, and Block builds it when args.ffn_impl == "dense".
+    old = "    n_activated_experts: int = 2\n"
+    new = ("    n_activated_experts: int = 2\n"
+           "    # PATCH P6: FFN selector for dense-vs-MoE ablations.\n"
+           '    ffn_impl: Literal["moe", "dense"] = "moe"\n'
+           "    dense_inter_dim: int = 0  # dense FFN hidden width; 0 -> moe_inter_dim\n")
+    assert src.count(old) == 1, "ffn_impl field anchor not found"
+    src = src.replace(old, new, 1)
+
+    old = "class MoE(nn.Module):\n"
+    new = '''class DenseFFN(nn.Module):
+    """PATCH P6: plain SwiGLU FFN, the dense counterpart of MoE (dense-vs-MoE ablations).
+
+    The official model has no dense-FFN path (Block always builds MoE), so dense controls used to
+    be emulated with a 1-expert MoE, which keeps a token-dependent gate scalar on the FFN. This is
+    the real thing: one SwiGLU FFN, no router, no gate, no route_scale.
+    """
+
+    def __init__(self, args: ModelArgs):
+        super().__init__()
+        self.inter_dim = int(args.dense_inter_dim or args.moe_inter_dim)
+        self.w = Expert(args.dim, self.inter_dim, swiglu_limit=args.swiglu_limit)
+
+    def forward(self, x: torch.Tensor, image_mask: torch.Tensor | None = None) -> torch.Tensor:
+        shape = x.size()
+        y = self.w(x.view(-1, shape[-1]))
+        return y.view(shape)
+
+
+class MoE(nn.Module):
+'''
+    assert src.count(old) == 1, "MoE class anchor not found"
+    src = src.replace(old, new, 1)
+
+    old = "        self.ffn = MoE(layer_id, args)\n"
+    new = ('        if args.ffn_impl == "dense":\n'
+           "            self.ffn = DenseFFN(args)\n"
+           "        else:\n"
+           "            self.ffn = MoE(layer_id, args)\n")
+    assert src.count(old) == 1, "block ffn anchor not found"
+    src = src.replace(old, new, 1)
+
     header = (
         '"""AUTO-GENERATED from ../ref/model.py by tools/make_patched_ref.py. Do not edit.\n\n'
         "Patches (all documented in the script):\n"
@@ -77,7 +120,8 @@ def build_patched_source() -> str:
         "  P2 prefill compressed KV shared as a local tensor instead of the detached cache\n"
         "  P3 prefill index keys shared as a local tensor instead of the detached cache\n"
         "  P4 Transformer.forward gains full_logits parameter\n"
-        "  P5 forward returns per-position logits when full_logits=True\n\n"
+        "  P5 forward returns per-position logits when full_logits=True\n"
+        "  P6 dense-FFN branch (ffn_impl/dense_inter_dim + DenseFFN) for dense-vs-MoE\n\n"
         "Do not import this module directly: it uses the official code's sibling imports\n"
         "(`engram`, `kernel`, ...). Load it through `nanov41.patched_env.import_patched()`.\n"
         '"""\n\n'

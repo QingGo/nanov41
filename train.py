@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import os
 import pathlib
 import sys
 import time
@@ -33,6 +34,14 @@ if str(ROOT) not in sys.path:
 
 from nanov41.configs import CONFIGS  # noqa: E402
 from nanov41.model import NanoV41, init_random_weights  # noqa: E402
+from nanov41.nano_engram import (  # noqa: E402
+    SparseRowAdam,
+    apply_preset,
+    engram_param_count,
+    engram_tables,
+    install as install_engram,
+    load_tokenizer_adapter,
+)
 from nanov41.patched_env import import_patched  # noqa: E402
 from nanov41.train_utils import fused_head_ce  # noqa: E402
 
@@ -85,16 +94,32 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--log-every", type=int, default=5)
     ap.add_argument("--out", default="")
+    # Engram is mandatory in the OPD student (docs/engram-design.md); the presets below enable it.
+    ap.add_argument("--engram", default="none", choices=["none", "tiny", "d12", "d16", "d20"])
+    ap.add_argument("--tokenizer", default=os.environ.get("NANOV41_DS_TOKENIZER_JSON"),
+                    help="pinned DeepSeek-V4.1-Flash tokenizer.json (required with --engram)")
+    ap.add_argument("--engram-lr", type=float, default=1e-2,
+                    help="sparse Adam lr for Engram table rows (default 1e-2)")
     args = ap.parse_args()
 
     cfg = CONFIGS[args.config]
+    tokenizer = None
+    if args.engram != "none":
+        if not args.tokenizer:
+            print("error: --engram needs --tokenizer (or $NANOV41_DS_TOKENIZER_JSON)", file=sys.stderr)
+            return 2
+        install_engram()
+        cfg = apply_preset(cfg, args.engram)
+        tokenizer = load_tokenizer_adapter(args.tokenizer)
     assert args.seq_len <= cfg["max_seq_len"], "seq_len > config max_seq_len"
     assert args.batch_size <= cfg["max_batch_size"], "batch_size > config max_batch_size"
 
     torch.manual_seed(args.seed)
-    model = NanoV41(cfg, param_dtype=args.dtype).to(args.device)
+    model = NanoV41(cfg, tokenizer=tokenizer, param_dtype=args.dtype).to(args.device)
     init_random_weights(model, seed=args.seed)
     n_params = model.num_params()
+    tables = engram_tables(model)
+    engram_params = engram_param_count(model)
     fused_ce = (args.fused_head_ce == "on"
                 or (args.fused_head_ce == "auto" and args.device != "cpu" and args.dtype == "bf16"))
     if fused_ce:
@@ -112,10 +137,16 @@ def main() -> int:
     )
     print(f"[budget] batch={args.batch_size}x{args.seq_len}={batch_tokens} tok/step, "
           f"~{flops_per_step/1e9:.2f} GFLOP/step, dtype={args.dtype}", flush=True)
+    if tables:
+        print(f"[engram] preset={args.engram} layers={cfg['engram_layer_ids']} "
+              f"tables={[(t.num_embeddings, t.dim) for t in tables]} "
+              f"table_params={engram_params/1e6:.2f}M lr={args.engram_lr:g} "
+              f"(dense params {n_params/1e6:.2f}M)", flush=True)
     if args.steps == 0:
         return 0
 
     opt = torch.optim.AdamW(param_groups(model, args.weight_decay), lr=args.lr, betas=(0.9, 0.95), eps=1e-8)
+    sparse_opt = SparseRowAdam(tables, lr=args.engram_lr) if tables else None
     t0 = time.time()
     losses = []
     for step in range(args.steps):
@@ -138,6 +169,8 @@ def main() -> int:
         if args.grad_clip:
             torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
         opt.step()
+        if sparse_opt is not None:
+            sparse_opt.step()  # deterministic row-grad reduction + sparse Adam on touched rows
         losses.append(loss.item())
         if step % args.log_every == 0 or step == args.steps - 1:
             tok_s = ((step + 1) * batch_tokens) / max(time.time() - t0, 1e-9)
@@ -151,7 +184,10 @@ def main() -> int:
     if args.out:
         out = pathlib.Path(args.out)
         out.parent.mkdir(parents=True, exist_ok=True)
-        torch.save({"cfg": cfg, "state_dict": model.state_dict(), "step": args.steps, "args": vars(args)}, out)
+        payload = {"cfg": cfg, "state_dict": model.state_dict(), "step": args.steps,
+                   "args": vars(args),
+                   "engram_optimizer": sparse_opt.state_dict() if sparse_opt is not None else None}
+        torch.save(payload, out)
         print(f"[save] {out}")
     return 0
 

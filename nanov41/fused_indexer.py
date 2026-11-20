@@ -33,6 +33,10 @@ except Exception:  # noqa: BLE001
 __all__ = ["index_scores_fused", "index_scores_ref", "install", "uninstall", "available"]
 
 _ENABLED = os.environ.get("NANOV41_IDX_FUSED", "0").lower() not in ("0", "false", "no", "off")
+# R79 T2-attn: fold the prefill causal bound (`arange(ncomp) >= (i+1)//ratio` -> -inf) into the
+# score kernel, instead of a separate masked_fill_ over [b,s,ncomp] (0.61 ms/replay = 0.305/8k).
+# Same element values => bitwise identical scores; default OFF, validated via G1/G2.
+_MASK_FUSE = os.environ.get("NANOV41_IDX_MASK_FUSE", "0").lower() not in ("0", "false", "no", "off")
 _INSTALLED = None
 BT = int(os.environ.get("NANOV41_IDX_BT", "64"))
 BC = int(os.environ.get("NANOV41_IDX_BC", "64"))
@@ -51,6 +55,7 @@ if HAS_TRITON:
         Q, K, W, OUT, S, N,
         QB, QS, KB, KN,
         H: tl.constexpr, D: tl.constexpr, BT: tl.constexpr, BC: tl.constexpr,
+        RATIO: tl.constexpr = 1, PREFILL: tl.constexpr = False,
     ):
         pid_t = tl.program_id(0)
         pid_b = tl.program_id(1)
@@ -71,19 +76,28 @@ if HAS_TRITON:
             sb = tl.maximum(s, 0.0).to(tl.bfloat16)
             wv = tl.load(W + pid_b * (S * H) + ts * H + h, mask=tm, other=0.0).to(tl.float32)
             acc += (sb.to(tl.float32) * wv[:, None]).to(tl.bfloat16).to(tl.float32)
+        if PREFILL:
+            # 预填充因果边界：query 行 ts 只能看 compress 组 < (ts+1)//ratio（与官方
+            # masked_fill_(arange(ncomp) >= compress_lens, -inf) 逐元素等价）
+            limit = (ts + 1) // RATIO
+            acc = tl.where(cs[None, :] < limit[:, None], acc, float("-inf"))
         tl.store(OUT + pid_b * (S * N) + ts[:, None] * N + cs[None, :],
                  acc.to(OUT.dtype.element_ty), mask=tm[:, None] & cm[None, :])
 
-    def index_scores_fused(q, index_k, weights):
+    def index_scores_fused(q, index_k, weights, ratio=1, prefill=False):
         """q [b,s,h,d] bf16, index_k [b,n,d] bf16, weights [b,s,h] bf16 ->
-        [b,s,n] bf16（= relu(q·k) 按 head 用 weights 加权求和）。"""
+        [b,s,n] bf16（= relu(q·k) 按 head 用 weights 加权求和）。
+
+        `prefill=True`（且 `ratio` 与 compress_ratio 一致）时，直接把因果边界以外的位置写成
+        -inf（等价于调用方随后做的 masked_fill_），省掉一次 [b,s,n] 的 mask 物化。"""
         b, s, h, d = q.shape
         n = index_k.shape[1]
         out = torch.empty(b, s, n, dtype=torch.bfloat16, device=q.device)
         _idx_scores_kernel[(triton.cdiv(s, BT), b, triton.cdiv(n, BC))](
             q, index_k, weights, out, s, n,
             q.stride(0), q.stride(1), index_k.stride(0), index_k.stride(1),
-            H=h, D=d, BT=BT, BC=BC, num_warps=4, num_stages=2,
+            H=h, D=d, BT=BT, BC=BC, RATIO=int(ratio), PREFILL=bool(prefill),
+            num_warps=4, num_stages=2,
         )
         return out
 
@@ -115,8 +129,10 @@ def _indexer_forward(self, x: torch.Tensor, qr: torch.Tensor, latent: torch.Tens
 
     index_k = M.shared_attn.index_k[:bsz, : end_pos // ratio]
     weights = self.weights_proj(x) * (self.softmax_scale * self.n_heads**-0.5)
-    if _ENABLED and q.is_cuda:
-        index_score = index_scores_fused(q, index_k, weights)
+    use_fused = _ENABLED and q.is_cuda
+    fuse_mask = bool(_MASK_FUSE and use_fused and start_pos == 0 and M.world_size == 1)
+    if use_fused:
+        index_score = index_scores_fused(q, index_k, weights, ratio, fuse_mask)
     else:
         index_score = torch.einsum("bshd,btd->bsht", q, index_k)
         index_score = (index_score.relu_() * weights.unsqueeze(-1)).sum(dim=2)
@@ -125,8 +141,9 @@ def _indexer_forward(self, x: torch.Tensor, qr: torch.Tensor, latent: torch.Tens
 
     if start_pos == 0:
         compress_lens = (torch.arange(1, seqlen + 1, device=x.device) // ratio).unsqueeze(-1)
-        index_score.masked_fill_(torch.arange(seqlen // ratio, device=x.device) >= compress_lens,
-                                 -torch.inf)
+        if not fuse_mask:
+            index_score.masked_fill_(
+                torch.arange(seqlen // ratio, device=x.device) >= compress_lens, -torch.inf)
     else:
         compress_lens = end_pos // ratio
 
